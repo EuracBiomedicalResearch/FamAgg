@@ -1,17 +1,22 @@
 Package: FamAgg
 Type: Package
 Title: Pedigree analysis and familial aggregation
-Version: 0.99.4
+Version: 0.99.5
 Author: J. Rainer, D. Taliun, C.X. Weichenberger
 Maintainer: Johannes Rainer <johannes.rainer@eurac.edu>
+URL: https://github.com/jotsetung/FamAgg
+BugReports: https://github.com/jotsetung/FamAgg/issues
 Imports: gap, BiocGenerics, Matrix, utils, survey
 Depends: methods, kinship2, igraph
 Suggests: knitr, BiocStyle, RUnit, rmarkdown
 VignetteBuilder: knitr
-Description: Framework providing basic pedigree analysis and plotting utilities as well as a variety of methods to evaluate familial aggregation of traits
-                 in large ancestral pedigrees.
-Collate: Classes.R Generics.R Constructors.R Methods-FAData.R Methods-FAProbResults.R Methods-FAKinGroupResults.R Methods-FAKinSumResults.R
-                 Methods-FAGenIndexResults.R Methods-FAIncidenceRatio.R utils.R matched-controls.R Methods.R plotting-functions.R zzz.R
+Description: Framework providing basic pedigree analysis and plotting utilities
+	     as well as a variety of methods to evaluate familial aggregation of
+	     traits in large ancestral pedigrees.
+Collate: Classes.R Generics.R Constructors.R Methods-FAData.R Methods-FAProbResults.R
+	 Methods-FAKinGroupResults.R Methods-FAKinSumResults.R Methods-FAGenIndexResults.R
+	 Methods-FAIncidenceRatio.R utils.R matched-controls.R Methods.R plotting-functions.R
+	 zzz.R
 biocViews: Genetics
 License: MIT + file LICENSE
 Copyright: Haplopainter1.043.pl (http://haplopainter.sourceforge.net) Copyright (c) 2004-2008 Holger Thiele

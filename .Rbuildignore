@@ -1,0 +1,3 @@
+vignettes/FamAgg.org
+.git
+^\.travis\.yml$
