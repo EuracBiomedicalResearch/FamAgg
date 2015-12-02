@@ -5,16 +5,22 @@
 #   https://github.com/craigcitro/r-travis/wiki
 
 language: r
+bioc_required: true
 
 ##
 warnings_are_errors: true
 sudo: required
-bioc_required: true
 
 r_binary_packages:
  - RUnit
  - gap
  - survey
+ - knitr
+ - rmarkdown
+
+bioc_packages:
+ - BiocGenerics
+ - BiocStyle
 
 notifications:
   email:
@@ -23,5 +29,5 @@ notifications:
 
 env:
   global:
-    - BIOC_USE_DEVEL="TRUE"
+    - BIOC_USE_DEVEL="FALSE"
 

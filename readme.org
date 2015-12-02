@@ -3,13 +3,14 @@
 #+email: johannes.rainer@eurac.edu
 
 # badges:
+
+
 [[http://www.bioconductor.org/packages/devel/bioc/html/FamAgg.html][http://www.bioconductor.org/shields/years-in-bioc/FamAgg.svg]]
 
-Devel version:
-[[http://bioconductor.org/checkResults/devel/bioc-LATEST/FamAgg][http://www.bioconductor.org/shields/build/devel/bioc/FamAgg.svg]]
+Build reports:
+[[http://bioconductor.org/checkResults/devel/bioc-LATEST/FamAgg][http://www.bioconductor.org/shields/build/devel/bioc/FamAgg.svg]] ... Bioconductor devel.
 
-Travis check report:
-[[https://travis-ci.org/jotsetung/FamAgg][https://travis-ci.org/jotsetung/FamAgg.svg?branch=master]]
+[[https://travis-ci.org/jotsetung/FamAgg][https://travis-ci.org/jotsetung/FamAgg.svg?branch=master]] ... Travis CI.
 
 * =FamAgg=: Pedigree Analysis and Familial Aggregation
 
