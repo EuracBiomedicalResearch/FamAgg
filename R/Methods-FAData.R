@@ -44,7 +44,8 @@ validateFAData <- function(object){
     if(length(object@.trait) > 0){
         ## trait has to have the same length than the pedigree has rows.
         if(length(object@.trait) != nrow(object@pedigree))
-            Complaints <- c(Complaints, "\ntrait has to have the same length than the pedigree has columns!")
+            Complaints <- c(Complaints,
+                            "\ntrait has to have the same length than the pedigree has columns!")
     }
     if(length(Complaints)>0){
         return(Complaints)
@@ -139,13 +140,15 @@ setReplaceMethod("pedigree", "FAData", function(object, value){
         if(!noColNames(value)){
             ## check the colnames
             if(sum(CN %in% colnames(value)) != length(CN)){
-                stop("pedigree is expected to have column names ", paste(CN, collapse=", "), ".")
+                stop(paste0("pedigree is expected to have column names ",
+                            paste(CN, collapse=", "), "."))
             }
             value <- value[, CN]
         }else{
             ## no col names, thus assuming they fit what we expect.
             if(ncol(value)!=length(CN))
-                stop("pedigree is expected to have ", length(CN), " columns but I got ", ncol(value), "!")
+                stop(paste0("pedigree is expected to have ", length(CN),
+                            " columns but I got ", ncol(value), "!"))
             colnames(value) <- CN
 
         }
@@ -271,19 +274,23 @@ setReplaceMethod("trait", "FAData", function(object, value){
     if(is.numeric(value)){
         ## check that trait is 0, 1, NA
         if(!all(unique(value) %in% c(0, 1, NA)))
-            stop("trait should be a named logical vector or numeric vector with values 0, 1 and NA!")
+            stop(paste0("trait should be a named logical vector or numeric",
+                        " vector with values 0, 1 and NA!"))
     }else{
         stop("trait has to be either a named logical or numerical vector!")
     }
     if(is.null(names(value)))
-        stop("trait has to be a named vector with the names corresponding to the IDs used in the pedigree")
+        stop(paste0("trait has to be a named vector with the names",
+                    " corresponding to the IDs used in the pedigree"))
     Pedigree <- pedigree(object)
     traitInPed <- names(value) %in% Pedigree$id
     ## subsetting trait to those...
     if(!any(traitInPed))
-        stop("None of the ids in trait (i.e. names of the input argument trait) can be matched to ids in the pedigree!")
+        stop(paste0("None of the ids in trait (i.e. names of the input",
+                    " argument trait) can be matched to ids in the pedigree!"))
     value <- value[traitInPed]
-    message(paste0(sum(traitInPed), " of in total ", length(traitInPed), " trait values can be matched to IDs in the pedigree."))
+    message(paste0(sum(traitInPed), " of in total ", length(traitInPed),
+                   " trait values can be matched to IDs in the pedigree."))
     trait <- as.numeric(rep(NA, nrow(Pedigree)))
     names(trait) <- Pedigree$id
     ## filling with values...
@@ -344,7 +351,8 @@ setMethod("family",
           })
 
 setMethod("buildPed", "FAData",
-          function(object, id=NULL, max.generations.up=3, max.generations.down=16, prune=FALSE, ...){
+          function(object, id=NULL, max.generations.up=3, max.generations.down=16,
+                   prune=FALSE, ...){
               ped <- pedigree(object)
               if(is.null(id))
                   return(ped)
@@ -433,7 +441,8 @@ setMethod("[", "FAData", .bracketSubset)
     ## i can be boolean -> has to be the same length than haveRows
     if(is.logical(i)){
         if(length(i) != haveRows)
-            stop("If 'i' is a logical vector its length has to match the number individuals in the pedigree!")
+            stop(paste0("If 'i' is a logical vector its length has to match",
+                        " the number individuals in the pedigree!"))
         ## transform to numeric
         i <- which(i)
     }
@@ -442,10 +451,12 @@ setMethod("[", "FAData", .bracketSubset)
         iLen <- length(i)
         i <- match(i, rownames(data))
         if(all(is.na(i))){
-            stop("None of the elements in 'i' matches an id of an individual (i.e. rownames of pedigree)!")
+            stop(paste0("None of the elements in 'i' matches an id of an",
+                        " individual (i.e. rownames of pedigree)!"))
         }
         if(any(is.na(i))){
-            warning(sum(is.na(i)), " elements in 'i' can not be matched to ids of individuals and were thus discarded.")
+            warning(paste0(sum(is.na(i)), " elements in 'i' can not be",
+                           " matched to ids of individuals and were thus discarded."))
             i <- i[!is.na(i)]
         }
     }
@@ -455,7 +466,8 @@ setMethod("[", "FAData", .bracketSubset)
     if(length(i)==0)
         stop("'i' has to be a numeric between 1 and ", haveRows, "!")
     if(iLen != length(i))
-        warning("Some of the values in 'i' are outside of the allowed range [1,",haveRows, "] and were thus discarded")
+        warning(paste0("Some of the values in 'i' are outside of the",
+                       " allowed range [1,",haveRows, "] and were thus discarded"))
     ## have it.
     return(i)
 }
@@ -562,6 +574,148 @@ setMethod("genealogicalIndexTest", "FAData",
           })
 
 
+##****************************************************************************
+##
+##  familial incidence rate as described in Kerber
+##
+##
+setMethod("familialIncidenceRate", "FAData",
+          function(object, trait=NULL, timeAtRisk=NULL, prune=TRUE){
+              ## .FR is defined in Methods-FAIncidenceRatio.R
+              FR <- .FR(ped=pedigree(object), kin=kinship(object), trait=trait,
+                        timeAtRisk=timeAtRisk, prune=prune, perFamilyTest=FALSE)
+              return(FR[[1]])
+          })
+
+##****************************************************************************
+##
+##  familialIncidenceRateTest method.
+##
+setMethod("familialIncidenceRateTest", "FAData",
+          function(object, trait=NULL, nsim=50000, traitName=NULL, timeAtRisk=NULL,
+                   prune=TRUE, strata=NULL, ...){
+              if(is.null(trait)){
+                  if(length(object@.trait) == 0)
+                      stop("trait is missing!")
+                  trait <- trait(object)
+              }
+              object <- as(object, "FAIncidenceRateResults")
+              trait(object) <- trait
+              if(!is.null(traitName))
+                  object@traitname <- traitName
+              ## run the simulation
+              object <- runSimulation(object, nsim=nsim, timeAtRisk=timeAtRisk,
+                                      strata=strata, prune=prune, ...)
+              return(object)
+          })
+
+
+##****************************************************************************
+##
+##  fsir method.
+##  familial standardized incidence rate as described in Kerber
+##
+setMethod("fsir", "FAData", function(object, trait=NULL, lambda=NULL, timeInStrata=NULL,
+                                     prune=TRUE){
+    ## First we need to do a lot of checking and testing.
+    if(is.null(trait)){
+        ## check internal trait...
+        if(length(object@.trait) == 0)
+            stop("trait is missing!")
+        trait <- trait(object)
+    }
+    ## Check lambda
+    if(is.null(lambda))
+        stop("lambda missing!")
+    if(is.null(names(lambda)))
+        stop(paste0("lambda has to be a named vector with the names",
+                    "corresponding to the strata names!"))
+    ## Check timeInStrata
+    if(is.null(timeInStrata))
+        stop("timeInStrata missing!")
+    if(class(timeInStrata)!="matrix")
+        stop("timeInStrata has to be a matrix!")
+    if(nrow(timeInStrata) != length(object$id))
+        stop(paste0("timeInStrata has to have the same number of rows as",
+                    " there are individuals in the pedigree!"))
+    if(length(lambda)!=ncol(timeInStrata))
+        stop("length of lambda has to match the number of columns of timeInStrata!")
+    if(!all(colnames(timeInStrata) %in% names(lambda)))
+        stop("Names of lambda does not match the colnames of timeInStrata!")
+    lambda <- lambda[colnames(timeInStrata)]
+    ## Done.
+    trait(object) <- trait
+    trait <- trait(object)   # that way we ensure that we have the same ordering.
+    kin <- kinship(object)
+    ## Just to be on the save side... ensure that the ordering of id/Trait matches the kin
+    kin <- kin[names(trait), names(trait)]
+    diag(kin) <- 0
+    ## Now start subsetting the data:
+    ## * NA in trait
+    nas <- is.na(trait)
+    if(any(nas)){
+        warning(paste0("Excluding ", sum(nas),
+                       " individuals because of a missing value in the trait."))
+        trait <- trait[!nas]
+        kin <- kin[!nas, !nas]
+        timeInStrata <- timeInStrata[!nas, , drop=FALSE]
+    }
+    ## * NA in timeInStrata.
+    nas <- apply(timeInStrata, MARGIN=1, function(z){
+        any(is.na(z))
+    })
+    if(any(nas)){
+        warning(paste0("Excluding ", sum(nas),
+                       " individuals because of a missing value in timeInStrata."))
+        trait <- trait[!nas]
+        kin <- kin[!nas, !nas]
+        timeInStrata <- timeInStrata[!nas, , drop=FALSE]
+    }
+    if(prune){
+        ## * Not related, i.e. individuals with a kinship sum of 0
+        nas <- colSums(kin) == 0
+        if(any(nas)){
+            warning(paste0("Excluding ", sum(nas),
+                           " individuals because they do not share kinship",
+                           " with any individual in the pedigree."))
+            trait <- trait[!nas]
+            kin <- kin[!nas, !nas]
+            timeInStrata <- timeInStrata[!nas, , drop=FALSE]
+        }
+    }
+    ## Well done. Now let's do the test:
+    fsirs <- doFsir(affected=trait, kin=kin, lambda=lambda, timeInStrata=timeInStrata)
+    ## Prepare the results vector.
+    allIds <- object$id
+    allFsirs <- rep(NA, length(allIds))
+    names(allFsirs) <- allIds
+    allFsirs[names(trait)] <- as.numeric(fsirs)
+    return(allFsirs)
+})
+
+##****************************************************************************
+##
+##  fsirTest method.
+##
+setMethod("fsirTest", "FAData",
+          function(object, trait=NULL, nsim=50000, traitName=NULL, lambda=NULL,
+                   timeInStrata=NULL, prune=TRUE, strata=NULL, ...){
+              if(is.null(trait)){
+                  if(length(object@.trait) == 0)
+                      stop("trait is missing!")
+                  trait <- trait(object)
+              }
+              object <- as(object, "FAStdIncidenceRateResults")
+              trait(object) <- trait
+              if(!is.null(traitName))
+                  object@traitname <- traitName
+              ## run the simulation
+              object <- runSimulation(object, nsim=nsim, lambda=lambda,
+                                      timeInStrata=timeInStrata,
+                                      strata=strata, prune=prune, ...)
+              return(object)
+          })
+
 
 
 .checkLabels <- function(label, fam){
@@ -579,7 +733,8 @@ setMethod("genealogicalIndexTest", "FAData",
     ## check and match by names.
     subset <- names(label) %in% fam$id
     if(sum(subset) == 0){
-        warning("None of the names of label match to ids in the pedigree! Argument label was thus discarded!")
+        warning(paste0("None of the names of label match to ids in the",
+                       " pedigree! Argument label was thus discarded!"))
         return(NULL)
     }
     label <- label[subset]
@@ -697,7 +852,9 @@ setMethod("plotPed", "FAData",
                               text4.below.symbol <- texts
                       }
                   }else{
-                      warning("Discarding argument highlight.ids. It should be a character vector of ids or a (named) list of character vectors with ids.")
+                      warning(paste0("Discarding argument highlight.ids. It",
+                                     " should be a character vector of ids or a",
+                                     " (named) list of character vectors with ids."))
                   }
               }
               ## Note that label1 to label3 has precedence to any other argument!
@@ -844,7 +1001,9 @@ sanitizeSex <- function(x){
         ## require values 1, 2, NA
         numrange <- unique(x)
         if(!all(c(1, 2) %in% numrange))
-            stop("If column sex is numeric it has to contain 1 (=male) and 2 (=female) values! Unknown or missing can be encoded by NA or any other number than 1 or 2.")
+            stop(paste0("If column sex is numeric it has to contain 1 (=male) ",
+                        "and 2 (=female) values! Unknown or missing can be encoded",
+                        " by NA or any other number than 1 or 2."))
         news <- rep(NA, length(x))
         news[which(x == 1)] <- "M"
         news[which(x == 2)] <- "F"
@@ -861,14 +1020,17 @@ sanitizeSex <- function(x){
         chars <- unique(x)
         if(length(chars) == 2){
             if(!all(c("M", "F") %in% chars))
-                stop("Male and female individuals have to be represented by 'M' and 'F', respectively!")
+                stop(paste0("Male and female individuals have to be represented",
+                            " by 'M' and 'F', respectively!"))
         }
         if(length(chars) == 1){
             if(!any(c("M", "F") %in% chars))
-                stop("Male and female individuals have to be represented by 'M' and 'F', respectively!")
+                stop(paste0("Male and female individuals have to be represented",
+                            " by 'M' and 'F', respectively!"))
         }
         if(length(chars[!is.na(chars)]) > 2)
-            warning("All characters in column sex other than M and F (or male, female etc) are set to NA!")
+            warning(paste0("All characters in column sex other than M and F",
+                           " (or male, female etc) are set to NA!"))
         news <- rep(NA, length(x))
         news[which(x == "M")] <- "M"
         news[which(x == "F")] <- "F"

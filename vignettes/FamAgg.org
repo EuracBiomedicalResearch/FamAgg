@@ -1,4 +1,4 @@
-#+TITLE: Pedigree analysis and familial aggregation
+#+TITLE: Pedigree Analysis and Familial Aggregation
 #+AUTHOR:    Johannes Rainer, Daniel Taliun, Christian X. Weichenberger
 #+EMAIL:     johannes.rainer@eurac.edu
 #+DESCRIPTION:
@@ -11,35 +11,28 @@
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
 
-#+latex: %\VignetteEngine{knitr::knitr}
+#+latex: %\VignetteEngine{knitr::rmarkdown}
 #+latex: %\VignetteIndexEntry{Pedigree analysis and familial aggregation}
 #+latex: %\VignetteKeywords{Genetics}
 #+latex: %\VignetteDepends{FamAgg}
 #+latex: %\VignettePackage{FamAgg}
 
-#+BEGIN_SRC R :ravel echo=FALSE, results='asis'
-  BiocStyle::markdown()
-#+END_SRC
-
 #+BEGIN_HTML
-<!--
-%%\VignetteIndexEntry{Pedigree analysis and familial aggregation}
-%%\VignetteKeywords{Genetics}
-%%\VignetteDepends{FamAgg}
-%%\VignettePackage{FamAgg}
-%%\VignetteEngine{knitr::rmarkdown}
--->
-
 ---
-title: "Pedigree analysis and familial aggregation"
-author: "Johannes Rainer, Daniel Taliun, Christian X. Weichenberger"
-date: "2015-10-09"
+title: "Pedigree Analysis and Familial Aggregation"
 graphics: yes
 output:
   BiocStyle::html_document:
     toc_depth: 2
   BiocStyle::pdf_document:
     toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Pedigree Analysis and Familial Aggregation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{FamAgg}
+  %\VignettePackage{FamAgg}
+  %\VignetteKeywords{Genetics}
 bibliography: references.bib
 csl: biomed-central.csl
 references:
@@ -50,8 +43,16 @@ references:
     given: noname
 ---
 
+**Package**: `r Biocpkg("FamAgg")`<br />
+**Authors**: `r packageDescription("ensembldb")[["FamAgg"]] `<br />
+**Modified**: 2 December, 2015<br />
+**Compiled**: `r date()`
+
 #+END_HTML
 
+# #+BEGIN_SRC R :ravel echo=FALSE, results='asis', message=FALSE
+#   BiocStyle::markdown()
+# #+END_SRC
 
 * How to export this to a =Rmd= vignette			   :noexport:
 
@@ -499,14 +500,27 @@ average kinship values among the control sets is then used to estimate the
 probability that the observed level of kinship among the cases is due to
 chance.
 
+As an example we analyze here data from the Minnesota Breast Cancer Record which
+is provided by the =kinship2= package. In brief, this data set consists of
+genealogical information from 426 unrelated founders diagnosed with breast
+cancer whose families entered a longitudinal study on cancer in the state of
+Minnesota (USA) in 1944. Cancer cases are encoded with a =1= in column =cancer=
+in the =minnbreast= =data.frame=. Note however that, besides breast cancer, also
+prostate cancer cases are reported. This unfortunately causes a systematic bias
+in the data set as families were only included if a founder was diagnosed with
+breast cancer, but all occurrences of both breast and prostate cancer are
+reported. Based on this bias many of the results below should be taken with
+caution. Another important information is provided in column =endage=, which
+represents either the age of cancer onset, the age at the end of the study or
+the age at death of the participant.
+
 We next calculate the genealogical index for cancer occurrence in a subset of
 the Minnesota Breast Cancer Record data set. We first generate the appropriate
 =FAData= object containing the pedigree and perform the analysis using the
-=genealogicalIndexTest= method on the =cancer= trait in which cases of breast or
-prostate cancer are reported.  In its default setting the =genealogicalIndexTest=
-function uses all phenotyped individuals in the pedigree as control population
-from which sets of random samples equal in size to the number of affected are
-drawn.
+=genealogicalIndexTest= method on the =cancer= trait. In its default setting the
+=genealogicalIndexTest= function uses all phenotyped individuals in the pedigree
+as control population from which sets of random samples equal in size to the
+number of affected are drawn.
 
 Note that, to reduce computation time, we perform the analysis only on a subset
 of families from the Minnesota Breast Cancer record and reduce the number of
@@ -535,7 +549,8 @@ of cancer cases, thus, the analysis presented here is biased.
   tcancer <- mbsub$cancer
   names(tcancer) <- as.character(mbsub$id)
   ## Calculate the genealogical index:
-  gi <- genealogicalIndexTest(fad, trait=tcancer, traitName="cancer", nsim=nsim)
+  gi <- genealogicalIndexTest(fad, trait=tcancer, traitName="cancer",
+                              nsim=nsim)
 
   ## Display the result:
   result(gi)
@@ -610,8 +625,8 @@ sets are shown in grey color.
 In the example above we tested for an enrichment of cancer cases in the full
 data set, i.e. across all families. In addition we could however also perform
 the test individually for each family, by setting the =perFamilyTest= parameter
-of the =genealogicalIndexTest= to =TRUE=, and thus test for a clustering of cancer
-cases within each family.
+of the =genealogicalIndexTest= to =TRUE=, and thus test for a clustering of
+cancer cases within each family.
 
 
 # The FR from Kerber
@@ -621,7 +636,7 @@ individual with any affected in a given trait in the pedigree and the time at
 risk for each individual. Thus, the FR is an estimate for the risk per gene-time
 for each individual given the disease-experience in the cohort.
 
-As /time at risk/ for each individual we use the /endage/ column in the
+As /time at risk/ for each individual we use the =endage= column in the
 Minnesota Breast Cancer data set, that represents the participant's age at the
 last follow-up or at cancer incidence. This estimate of time at risk is rather
 crude and in a real life situation a better, more accurate, estimate that bases
@@ -635,10 +650,6 @@ details and options related to /time at risk/.
   ## a measure for time at risk.
   fr <- familialIncidenceRate(fad, trait=tcancer, timeAtRisk=mbsub$endage)
 
-  ## Extracting the actual FR values; the analysis was performed on the
-  ## complete pedigree and the results are thus present in the first
-  ## element of the list.
-  fr <- fr[[1]]
 #+END_SRC
 
 Next we calculate the mean FR within each family and plot this information.
@@ -791,7 +802,7 @@ test is shown in the figure below. The mother (individual =17609=) in this group
 and all her daughters have cancer, the mother is however not directly related to
 the affected founder of this family (individual =17517= of family =432=, see
 figure above for the full pedigree of this family).
-We are also submitting the familial incidence ratio values calculated above with
+We are also submitting the familial incidence rate values calculated above with
 argument =label1= which are then displayed below the ID of each individual in
 the plot.
 
@@ -800,15 +811,70 @@ the plot.
           prune=TRUE, label1=fr)
 #+END_SRC
 
-** Familial standardized incidence ratio 			   :noexport:
+** Familial standardized incidence rate 			   :noexport:
 
-The familial standardized incidence ration (FSIR) \cite{Kerber:1995cx} weights
+The familial standardized incidence rate (FSIR) \cite{Kerber:1995cx} weights
 the disease status of relatives based on their degree of relatedness with the
-proband. Formally, the FSIR is defined as the standardized incidence ratio (SIR)
-or standardized mortality ratio \cite{Breslow:1987wc} in epidemiology, i.e. as
-the ratio between the number of cases by the /expected/ number of casee, only
-that both, observed and expected cases are in addition also weighted by the
-degree of relatedness (i.e. kinship value) between individuals in the pedigree.
+proband. Formally, the FSIR is defined as the standardized incidence rate (SIR)
+or standardized mortality rate \cite{Breslow:1987wc} in epidemiology, i.e. as
+the ratio between /observed/ and /expected/ number of cases, only that both are
+in addition also weighted by the degree of relatedness (i.e. kinship value)
+between individuals in the pedigree.
+
+In the next example we calculate the familial incidence rate assessing in
+addition the significance of the calculated rate for each individual using Monte
+Carlo simulations. As /time at risk/ we use, as above, column =endage= from the
+Minnesota Breast Cancer data set, that, if provided, represents the age of
+cancer onset, the age of death or age at end of study. In addition we perform
+stratified sampling.
+
+#+BEGIN_SRC R :ravel warning=FALSE
+  ## Calculating the familial incidence rate using the "endage" as time at risk
+  ## and performing sex-stratified sampling.
+  fir <- familialIncidenceRateTest(fad, trait=tcancer, nsim=nsim,
+                                   timeAtRisk=mbsub$endage, strata=fad$sex)
+  head(result(fir))
+  ## The number of individuals with a (raw) p-value < 0.05
+  length(which(result(fir)$pvalue < 0.05))
+
+  ## use the $fir accessor.
+
+#+END_SRC
+
+The familial incidence rate can be extracted easily from the result object using
+the =familialIncidenceRate= method or using =$fir=. Also, the p-value from the
+simulation analysis and the time at risk can be accessed using the =$= operator.
+
+#+BEGIN_SRC R
+  head(familialIncidenceRate(fir))
+  head(fir$fir)
+
+  ## Time at risk.
+  head(fir$tar)
+  head(fir$timeAtRisk)
+
+  ## p-value
+  head(fir$pvalue)
+
+#+END_SRC
+
+Next we calculate the familial standardized incidence rate, using population
+incidence rates for breast and prostate cancer from Cancer Research UK. The
+numbers are given as number of new cases per 100000 individuals per year, 155.3
+and 1.1 for breast cancer in females and males and 0 and 134.3 for prostate
+cancer in females and males. We are thus summing the cases for breast and
+prostate cancer for males and females, divide that by 100000 and use this as
+argument /lambda/.
+
+As described above, only families of a founder diagnosed with breast cancer were
+included in the study, while both, breast and prostate cancer cases were
+considered within each family. Thus, the results from the FSIR might be biased.
+
+#+BEGIN_SRC R :ravel warning=FALSE
+
+#+END_SRC
+
++ Compare FIR vs FSIR.
 
 
 * TODOs								   :noexport:
@@ -944,8 +1010,11 @@ degree of relatedness (i.e. kinship value) between individuals in the pedigree.
     controls, considering also the probability for sex.
 
 
-** TODO Implement the Kerber method.
-
+** CANCELED Implement the Kerber method.
+   CLOSED: [2015-11-13 Fri 07:31]
+   - State "CANCELED"   from "TODO"       [2015-11-13 Fri 07:31] \\
+     No idea what I meant with that. Actually, I implemented both methods from Kerber
+     in the end, the FIR and the FSIR.
 ** DONE Implement =plotRes= method for =FAKinClustResult=.
    CLOSED: [2015-09-18 Fri 13:45]
    - State "DONE"       from "TODO"       [2015-09-18 Fri 13:45]
@@ -976,4 +1045,98 @@ degree of relatedness (i.e. kinship value) between individuals in the pedigree.
 ** DONE Rename =FAKinClustResult= into =FAKinSum=
    CLOSED: [2015-09-23 Wed 07:20]
    - State "DONE"       from "TODO"       [2015-09-23 Wed 07:20]
+
+** TODO Implement a =familialIncidenceRateTest= with simulation. [85%]
+
++ [X] =FAFamRateResults= class similar to the above ones. What would be the
+  /ideal/ name? =FAIncidenceRateResults=, =FARateResults=, =FAInciRateResults=,
+  =FAFirResults=? *Name*: =FAIncidenceRateResults=
++ [X] Implement random sampling to generate a background distribution and
+  assess significance levels for familial incidence rates.
++ [X] Implement the =result= method.
++ [X] Implement the =plotRes= method.
++ [X] Implement the =plotPed= method.
++ [X] Documentation.
++ [ ] Vignette.
+
+** TODO Implement a =fsirTest= with simulation. [92%]
+
++ [X] Class: =FAStdIncidenceRateResults=.
++ [X] Implement random (stratified) sampling method.
++ [X] Implement the =result= method.
++ [X] Implement the =[= and the =show= method.
++ [X] Implement the =plotPed= method.
++ [X] Implement the =plotRes= method.
++ [X] Implement the =timeInStrata= getter/setter method.
++ [X] Implement the =lambda= getter method.
++ [X] Implement the =fsir= method for =FAStdIncidenceRateResults= object (just
+  returning =@sim$fsir=).
++ [X] Implement the =$= method for =FAStdIncidenceRateResults= object.
++ [X] Method =resultForId= for a single individual that lists: fsir, timeAtRisk,
+  lambda and eventually p-value.
++ [X] Documentation.
++ [ ] Vignette.
+
+
+** TODO Check and eventually implement some more =$= methods for the results objects.
+
+We've got already some nice =$= methods for =FAIncidenceRateResults= and
+=FAStdIncidenceRateResults=, would be nice to have some similar ones for the
+other methods (e.g. to directly access estimates or the p-value).
+
+
+** DONE Merge the git and svn FamAgg version [40/40]
+   CLOSED: [2015-12-02 Wed 08:47]
+   - State "DONE"       from "TODO"       [2015-12-02 Wed 08:47]
+Have to merge the two versions, since development in the svn FamAgg continued
+independently of the git version (in which stuff related to the inclusion into
+Bioconductor was changed).
+
++ [X] DESCRIPTION
++ [X] NAMESPACE
+
++ [X] R/Classes.R
++ [X] R/Constructors.R
++ [X] R/Generics.R
++ [X] R/Methods-FAData.R
++ [X] R/Methods-FAGenIndexResults.R
++ [X] R/Methods-FAIncidenceRatio.R <- Methods-FAIncidenceRateResults.R
++ [X] R/Methods-FAKinGroupResults.R
++ [X] R/Methods-FAKinSumResults.R
++ [X] R/Methods-FAProbResults.R
++ [X] <- R/Methods-FAStdIncidenceRateResults.R
++ [X] R/Methods.R
++ [X] R/matched-controls.R
++ [X] R/plotting-functions.R
++ [X] R/utils.R
++ [X] zzz.R
+
++ [X] inst/unitTests/test_FAData.R
++ [X] inst/unitTests/test_controls_N_sampling.R
++ [X] inst/unitTests/test_fsir.R
++ [X] inst/unitTests/test_genealogical_index.R
++ [X] inst/unitTests/test_incidence_ratio.R
++ [X] inst/unitTests/test_kinship_group.R
++ [X] inst/unitTests/test_kinship_sum.R
++ [X] inst/unitTests/test_plotting.R
++ [X] inst/unitTests/test_probability.R
++ [X] inst/unitTests/test_utilities.R
+
++ [X] inst/NEWS
+
++ [X] man/FAData-analysis.Rd
++ [X] man/FAData.Rd
++ [X] man/FAGenIndexResults.Rd
++ [X] <- man/FAIncidenceRateResults.Rd
++ [X] man/FAKinGroupResults.Rd
++ [X] man/FAKinSumResults.Rd
++ [X] man/FAProbResults.Rd
++ [X] <- man/FAStdIncidenceRateResults.Rd
++ [X] man/Pedigree-utils.Rd
++ [X] man/defineControls.Rd
++ [X] man/plotting-functions.Rd
+
++ [X] vignettes/FamAgg.org
+
+
 * References

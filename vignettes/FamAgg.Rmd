@@ -1,25 +1,18 @@
-```{r echo=FALSE, results='asis'}
-BiocStyle::markdown()
-```
-
-<!--
-%%\VignetteIndexEntry{Pedigree analysis and familial aggregation}
-%%\VignetteKeywords{Genetics}
-%%\VignetteDepends{FamAgg}
-%%\VignettePackage{FamAgg}
-%%\VignetteEngine{knitr::rmarkdown}
--->
-
 ---
-title: "Pedigree analysis and familial aggregation"
-author: "Johannes Rainer, Daniel Taliun, Christian X. Weichenberger"
-date: "2015-10-09"
+title: "Pedigree Analysis and Familial Aggregation"
 graphics: yes
 output:
   BiocStyle::html_document:
     toc_depth: 2
   BiocStyle::pdf_document:
     toc_depth: 2
+vignette: >
+  %\VignetteIndexEntry{Pedigree Analysis and Familial Aggregation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{FamAgg}
+  %\VignettePackage{FamAgg}
+  %\VignetteKeywords{Genetics}
 bibliography: references.bib
 csl: biomed-central.csl
 references:
@@ -29,6 +22,11 @@ references:
   - family: noname
     given: noname
 ---
+
+**Package**: `r Biocpkg("FamAgg")`<br />
+**Authors**: `r packageDescription("ensembldb")[["FamAgg"]] `<br />
+**Modified**: 2 December, 2015<br />
+**Compiled**: `r date()`
 
 # Introduction
 
@@ -443,14 +441,27 @@ average kinship values among the control sets is then used to estimate the
 probability that the observed level of kinship among the cases is due to
 chance.
 
+As an example we analyze here data from the Minnesota Breast Cancer Record which
+is provided by the `kinship2` package. In brief, this data set consists of
+genealogical information from 426 unrelated founders diagnosed with breast
+cancer whose families entered a longitudinal study on cancer in the state of
+Minnesota (USA) in 1944. Cancer cases are encoded with a `1` in column `cancer`
+in the `minnbreast` `data.frame`. Note however that, besides breast cancer, also
+prostate cancer cases are reported. This unfortunately causes a systematic bias
+in the data set as families were only included if a founder was diagnosed with
+breast cancer, but all occurrences of both breast and prostate cancer are
+reported. Based on this bias many of the results below should be taken with
+caution. Another important information is provided in column `endage`, which
+represents either the age of cancer onset, the age at the end of the study or
+the age at death of the participant.
+
 We next calculate the genealogical index for cancer occurrence in a subset of
 the Minnesota Breast Cancer Record data set. We first generate the appropriate
 `FAData` object containing the pedigree and perform the analysis using the
-`genealogicalIndexTest` method on the `cancer` trait in which cases of breast or
-prostate cancer are reported.  In its default setting the `genealogicalIndexTest`
-function uses all phenotyped individuals in the pedigree as control population
-from which sets of random samples equal in size to the number of affected are
-drawn.
+`genealogicalIndexTest` method on the `cancer` trait. In its default setting the
+`genealogicalIndexTest` function uses all phenotyped individuals in the pedigree
+as control population from which sets of random samples equal in size to the
+number of affected are drawn.
 
 Note that, to reduce computation time, we perform the analysis only on a subset
 of families from the Minnesota Breast Cancer record and reduce the number of
@@ -478,7 +489,8 @@ fad <- FAData(pedigree=mbped)
 tcancer <- mbsub$cancer
 names(tcancer) <- as.character(mbsub$id)
 ## Calculate the genealogical index:
-gi <- genealogicalIndexTest(fad, trait=tcancer, traitName="cancer", nsim=nsim)
+gi <- genealogicalIndexTest(fad, trait=tcancer, traitName="cancer",
+			    nsim=nsim)
 
 ## Display the result:
 result(gi)
@@ -553,8 +565,8 @@ plotRes(giStrata)
 In the example above we tested for an enrichment of cancer cases in the full
 data set, i.e. across all families. In addition we could however also perform
 the test individually for each family, by setting the `perFamilyTest` parameter
-of the `genealogicalIndexTest` to `TRUE`, and thus test for a clustering of cancer
-cases within each family.
+of the `genealogicalIndexTest` to `TRUE`, and thus test for a clustering of
+cancer cases within each family.
 
 A per-individual risk of e.g. disease can be calculated using the *familial
 incidence rate* (FR) [@Kerber:1995cx]. This measure considers the kinship of each
@@ -562,7 +574,7 @@ individual with any affected in a given trait in the pedigree and the time at
 risk for each individual. Thus, the FR is an estimate for the risk per gene-time
 for each individual given the disease-experience in the cohort.
 
-As *time at risk* for each individual we use the *endage* column in the
+As *time at risk* for each individual we use the `endage` column in the
 Minnesota Breast Cancer data set, that represents the participant's age at the
 last follow-up or at cancer incidence. This estimate of time at risk is rather
 crude and in a real life situation a better, more accurate, estimate that bases
@@ -575,11 +587,6 @@ details and options related to *time at risk*.
 ## We use the endage provided in the minnesota breast cancer record as
 ## a measure for time at risk.
 fr <- familialIncidenceRate(fad, trait=tcancer, timeAtRisk=mbsub$endage)
-
-## Extracting the actual FR values; the analysis was performed on the
-## complete pedigree and the results are thus present in the first
-## element of the list.
-fr <- fr[[1]]
 ```
 
 Next we calculate the mean FR within each family and plot this information.
@@ -724,7 +731,7 @@ test is shown in the figure below. The mother (individual `17609`) in this group
 and all her daughters have cancer, the mother is however not directly related to
 the affected founder of this family (individual `17517` of family `432`, see
 figure above for the full pedigree of this family).
-We are also submitting the familial incidence ratio values calculated above with
+We are also submitting the familial incidence rate values calculated above with
 argument `label1` which are then displayed below the ID of each individual in
 the plot.
 

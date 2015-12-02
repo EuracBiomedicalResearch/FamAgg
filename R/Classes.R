@@ -127,3 +127,50 @@ setClass("FAGenIndexResults",
          )
          )
 
+
+##************************************************
+##
+##       FAIncidenceRateResults
+##
+##       sim: the results from the simulation.
+##       nsim: the number of simulations.
+##************************************************
+setClass("FAIncidenceRateResults",
+         contains="FAData",
+         slots=c(
+             sim="list",
+             nsim="numeric",
+             timeAtRisk="numeric"
+         ),
+         prototype=list(
+             sim=list(),
+             nsim=0,
+             timeAtRisk=numeric()
+         )
+         )
+
+##************************************************
+##
+##       FAStdIncidenceRateResults
+##
+##       sim: the results from the simulation.
+##       nsim: the number of simulations.
+##************************************************
+setClass("FAStdIncidenceRateResults",
+         contains="FAData",
+         slots=c(
+             sim="list",
+             nsim="numeric",
+             timeInStrata="matrix",
+             lambda="numeric"
+         ),
+         prototype=list(
+             sim=list(),
+             nsim=0,
+             timeInStrata=matrix(),
+             lambda=numeric()
+         )
+         )
+
+
+

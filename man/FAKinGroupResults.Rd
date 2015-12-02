@@ -226,7 +226,7 @@
     %%   Returns the number of independent groups of affected individuals.
     %% }
 
-    \code{plotPed}{
+    \item{plotPed}{
       Plots a pedigree for one of the affected kinship groups in the
       simulation results. The ids of all individuals of the affected
       kinship group are highlighted in the plot in red.
@@ -234,7 +234,7 @@
       the plotting and details below for additional settings.
     }
 
-    \code{plotRes}{
+    \item{plotRes}{
       Plots the distribution of counts of randomly sampled affected
       counts within the kinship group along with the
       actually observed kinship sum.
@@ -337,6 +337,8 @@
   \code{\link{probabilityTest}},
   \code{\link{kinshipSumTest}},
   \code{\link{genealogicalIndexTest}},
+  \code{\link{familialIncidenceRateTest}},
+  \code{\link{fsirTest}},
   \code{\link{buildPed}},
   \code{\link{plotPed}},
   \code{\link{switchPlotfun}}

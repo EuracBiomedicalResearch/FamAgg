@@ -288,6 +288,8 @@
   \code{\link{probabilityTest}},
   \code{\link{kinshipGroupTest}},
   \code{\link{kinshipSumTest}},
+  \code{\link{familialIncidenceRateTest}},
+  \code{\link{fsirTest}},
   \code{\link{plotPed}}
 }
 \examples{

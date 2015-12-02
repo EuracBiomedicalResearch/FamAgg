@@ -132,7 +132,7 @@ setMethod("result", "FAKinSumResults", function(object, method="BH"){
     ## colnames(res) <- c("trait_name", "total_phenotyped", "total_affected", "affected_id",
     ##                    "kinship_sum", "freq", "pvalue", "padj")
     ## warning("Don't know yet how the Pedigree Size is calculated!!!")
-    return(res[order(res$pvalue), , drop=FALSE])
+    return(res[order(res$pvalue, -res$kinship_sum), , drop=FALSE])
 })
 
 

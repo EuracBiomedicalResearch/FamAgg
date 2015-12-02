@@ -44,14 +44,49 @@ test_estimate_time_at_risk <- function(){
                                 incidenceDate=idates, deathDate=ddates)
 }
 
-notrun_test_fr_simulation <- function(){
+test_fr_simulation <- function(){
+    doPlot <- FALSE
     fr <- FamAgg:::.FR(ped=pedigree(fad), kin=kinship(fad), trait=tcancer,
                        timeAtRisk=tar)
-    ## the same using simulations.
-    system.time(
-        frSim <- FamAgg:::.FRSimulation(pedigree(fad), kinship(fad), tcancer,
-                                        tar, nsim=1000)
-    )
+    fr <- fr[[1]]
+    fr2 <- familialIncidenceRate(fad, trait=tcancer,
+                                 timeAtRisk=tar)
+    checkEquals(fr, fr2)
+    ## Use the familialIncidenceRateTest
+    set.seed(18011977)
+    frRes <- FamAgg:::familialIncidenceRateTest(fad, trait=tcancer,
+                                                timeAtRisk=tar, nsim=1000)
+    checkEquals(frRes@sim$fir, fr)
+    ## Do the simulation using dummy strata.
+    set.seed(18011977)
+    frStrat <- FamAgg:::familialIncidenceRateTest(fad, trait=tcancer,
+                                                  timeAtRisk=tar, nsim=1000,
+                                                  strata=rep(1, length(fad$id)))
+    checkEquals(frRes@sim$fir, frStrat@sim$fir)
+    checkEquals(frRes@sim$pvalue, frStrat@sim$pvalue)
+    ## Repeat using the low mem version.
+    set.seed(18011977)
+    frLM <- FamAgg:::familialIncidenceRateTest(fad, trait=tcancer,
+                                               timeAtRisk=tar, nsim=1000,
+                                               lowMem=TRUE)
+    checkEquals(frRes@sim$fir, frLM@sim$fir)
+    checkEquals(frRes@sim$pvalue, frLM@sim$pvalue)
+    ##
+    ## plotting...
+    if(doPlot){
+        res <- result(frRes)
+        plotPed(frRes, id="4")
+        plotPed(frRes, family=19)
+        plotPed(frRes, id=res[1, "id"])
+        ## plotRes.
+        plotRes(frRes, id="4")
+        plotRes(frRes, id=res[1, "id"])
+    }
+
+    ## Testing the $ accessors.
+    checkEquals(frRes$fir, frRes@sim$fir)
+    checkEquals(frRes$tar, FamAgg:::timeAtRisk(frRes))
+
 }
 
 

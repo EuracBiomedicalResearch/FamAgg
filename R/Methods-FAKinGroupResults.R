@@ -306,7 +306,10 @@ setMethod("result", "FAKinGroupResults", function(object, method="BH"){
                             kinship_pvalue=NA,
                             kinship_padj=NA,
                             check.names=FALSE, stringsAsFactors=FALSE)
-        warning("No simulation data available! This means that either no simulation was run yet (using the kinshipTest function or runSimulation method) or that the simulation returned no result.")
+        warning(paste0("No simulation data available! This means that",
+                       " either no simulation was run yet (using the ",
+                       "kinshipTest function or runSimulation method) ",
+                       "or that the simulation returned no result."))
         return(MyRes)
     }
     affKin <- affectedKinshipGroups(object)

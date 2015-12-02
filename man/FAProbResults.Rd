@@ -296,7 +296,9 @@
   \code{\link{probabilityTest}},
   \code{\link{kinshipGroupTest}},
   \code{\link{kinshipSumTest}},
-  \code{\link{genealogicalIndexTest}}
+  \code{\link{genealogicalIndexTest}},
+  \code{\link{familialIncidenceRateTest}},
+  \code{\link{fsirTest}}
 }
 \examples{
 

@@ -145,14 +145,14 @@
 \section{Methods and Functions}{
   \describe{
 
-    \code{plotPed}{
+    \item{plotPed}{
       Plots a pedigree for one of the affected individuals in the
       simulation results. The id of the selected affected individual
       (specified with argument \code{id}) is highlighted in red.
       See \code{\link{plotPed}} for more details.
     }
 
-    \code{plotRes}{
+    \item{plotRes}{
       Plots the distribution of kinship sums between random sets of
       samples individuals from the Monte Carlo simulation along with the
       actually observed kinship sum for the affected individual
@@ -243,6 +243,8 @@
   \code{\link{kinshipGroupTest}},
   \code{\link{kinshipSumTest}},
   \code{\link{genealogicalIndexTest}},
+  \code{\link{familialIncidenceRateTest}},
+  \code{\link{fsirTest}},
   \code{\link{plotPed}}
 }
 \examples{

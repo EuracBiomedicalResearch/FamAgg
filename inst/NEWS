@@ -1,9 +1,29 @@
+CHANGES IN VERSION 0.99.6
+-------------------------
+
+NEW FEATURES
+    o Monte Carlo simulation to assess significance of familial incidence
+      rate and familial standardized incidence rates.
+    o New FAIncidenceRateResults object along with its methods.
+    o New FAStdIncidenceRateResults object along with its methods.
+    o New function factor2matrix to convert a factor into a matrix.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+    o Vignette: extended content and adapted to use Bioconductor style.
+    o Results from the kinship sum test are now, in addition to the p-value, also
+      sorted by the kinship sum.
+
+BUG FIXES
+    o Fixed some problems in the documentation.
+
+
 CHANGES IN VERSION 0.99.5
 -------------------------
 
 SIGNIFICANT USER-VISIBLE CHANGES
     o Some changes related to the github repository.
     o Added a readme.org file.
+
 
 CHANGES IN VERSION 0.99.4
 -------------------------

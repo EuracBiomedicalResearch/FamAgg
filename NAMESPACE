@@ -18,18 +18,20 @@ importFrom(survey, stratsample)
 ## importMethodsFrom(AnnotationHub, query, mcols)
 
 ## exported functions
-export("FAData", "connectedSubgraph", "doPlotPed", "estimateTimeAtRisk", "ped2graph",
-       "sliceAge", "subPedigree", "switchPlotfun")
+export("FAData", "connectedSubgraph", "doPlotPed", "estimateTimeAtRisk", "factor2matrix",
+       "ped2graph", "sliceAge", "subPedigree", "switchPlotfun")
 ## exported classes
 exportClasses("FAData", "FAProbResults", "FAKinGroupResults",
-              "FAKinSumResults", "FAGenIndexResults")
+              "FAKinSumResults", "FAGenIndexResults", "FAIncidenceRateResults",
+              "FAStdIncidenceRateResults")
 ## exported methods
 exportMethods("$", "[", "affectedIndividuals", "affectedKinshipGroups", "age", "age<-",
               "buildPed", "cliques", "cliques<-", "cliqueAndTrait", "family",
-              "kinship", "pedigree", "pedigree<-",
+              "kinship", "lambda", "pedigree", "pedigree<-",
               "pedigreeSize", "phenotypedIndividuals",
-              "plotPed", "plotRes", "shareKinship", "result", "trait", "trait<-",
-              "traitByClique", "kinship")
+              "plotPed", "plotRes", "resultForId", "shareKinship", "result", "trait", "trait<-",
+              "traitByClique", "kinship", "timeAtRisk", "timeAtRisk<-",
+              "timeInStrata")
 ## basic pedigree utils
 exportMethods("countGenerations", "estimateGenerations", "generationsFrom", "getAncestors",
               "getChildren", "getSiblings", "getMissingMate", "getCommonAncestor",
@@ -39,7 +41,8 @@ exportMethods("getAll", "getExternalMatched", "getGenerationMatched",
               "getGenerationSexMatched", "getSexMatched")
 
 ## analysis methods...
-exportMethods("familialIncidenceRate", "genealogicalIndexTest", "kinshipSumTest",
-              "kinshipGroupTest", "probabilityTest", "runSimulation")
+exportMethods("familialIncidenceRate", "familialIncidenceRateTest", "fsir", "fsirTest",
+              "genealogicalIndexTest", "kinshipSumTest", "kinshipGroupTest", "probabilityTest",
+              "runSimulation")
 
 

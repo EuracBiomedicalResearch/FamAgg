@@ -34,11 +34,18 @@ setGeneric("estimateGenerations", function(object, family=NULL, ...)
     standardGeneric("estimateGenerations"))
 
 setGeneric("familialIncidenceRate", function(object, trait=NULL, timeAtRisk=NULL,
-                                             perFamilyTest=FALSE, prune=TRUE, ...)
+                                             prune=TRUE, ...)
     standardGeneric("familialIncidenceRate"))
 
-setGeneric("FSIR", function(object, trait=NULL, lambda=NULL, timeInStrata=NULL)
-    standardGeneric("FSIR"))
+setGeneric("familialIncidenceRateTest", function(object, ...)
+    standardGeneric("familialIncidenceRateTest"))
+
+setGeneric("fsir", function(object, trait=NULL, lambda=NULL, timeInStrata=NULL,
+                            prune=TRUE, ...)
+    standardGeneric("fsir"))
+
+setGeneric("fsirTest", function(object, ...)
+    standardGeneric("fsirTest"))
 
 setGeneric("genealogicalIndexTest", function(object, trait, nsim=50000, traitName,
                                              perFamilyTest=FALSE, controlSetMethod="getAll",
@@ -79,6 +86,9 @@ setGeneric("kinshipGroupTest", function(object, ...)
 setGeneric("kinshipSumTest", function(object, ...)
     standardGeneric("kinshipSumTest"))
 
+setGeneric("lambda", function(object, ...)
+    standardGeneric("lambda"))
+
 setGeneric("oldResult", function(object, ...)
     standardGeneric("oldResult"))
 
@@ -112,11 +122,22 @@ setGeneric("shareKinship", function(object, ...)
 setGeneric("result", function(object, ...)
     standardGeneric("result"))
 
+setGeneric("resultForId", function(object, id=NULL)
+    standardGeneric("resultForId"))
+
 setGeneric("runSimulation", function(object, nsim, ...)
     standardGeneric("runSimulation"))
 
 ## setGeneric("subPedigree", function(ped, id=NULL, all=TRUE)
 ##     standardGeneric("subPedigree"))
+setGeneric("timeAtRisk", function(object, ...)
+    standardGeneric("timeAtRisk"))
+
+setGeneric("timeAtRisk<-", function(object, value)
+    standardGeneric("timeAtRisk<-"))
+
+setGeneric("timeInStrata", function(object, ...)
+    standardGeneric("timeInStrata"))
 
 setGeneric("trait", function(object, ...)
     standardGeneric("trait"))

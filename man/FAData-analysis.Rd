@@ -2,8 +2,15 @@
 \Rdversion{1.1}
 \alias{PedigreeAnalysis}
 \alias{estimateTimeAtRisk}
+\alias{factor2matrix}
 \alias{familialIncidenceRate}
 \alias{familialIncidenceRate,FAData-method}
+\alias{familialIncidenceRateTest}
+\alias{familialIncidenceRateTest,FAData-method}
+\alias{fsir}
+\alias{fsir,FAData-method}
+\alias{fsirTest}
+\alias{fsirTest,FAData-method}
 \alias{genealogicalIndexTest}
 \alias{genealogicalIndexTest,FAData-method}
 \alias{kinshipGroupTest}
@@ -29,10 +36,23 @@ estimateTimeAtRisk(startDate=NULL, startDateFormat="\%Y-\%m-\%d",
                    allowNegative=FALSE, affected=NULL,
                    incidenceSubtract=0.5)
 
+factor2matrix(x)
+
 \S4method{familialIncidenceRate}{FAData}(object, trait=NULL,
                                          timeAtRisk=NULL,
-                                         perFamilyTest=FALSE,
                                          prune=TRUE)
+
+\S4method{familialIncidenceRateTest}{FAData}(object, trait=NULL,
+                                            nsim=50000, traitName=NULL,
+                                            timeAtRisk=NULL, prune=TRUE,
+                                            strata=NULL, ...)
+
+\S4method{fsir}{FAData}(object, trait=NULL, lambda=NULL, timeInStrata=NULL,
+                        prune=TRUE)
+
+\S4method{fsirTest}{FAData}(object, trait=NULL, nsim=50000, traitName=NULL,
+                            lambda=NULL, timeInStrata=NULL, prune=TRUE,
+                            strata=NULL, ...)
 
 \S4method{genealogicalIndexTest}{FAData}(object, trait, nsim=50000,
                                          traitName, perFamilyTest=FALSE,
@@ -130,6 +150,12 @@ sliceAge(x, slices=c(0, 40, Inf))
     individuals. See method description below for more details.
   }
 
+  \item{lambda}{
+    Numeric vector with the incidence rates per stratum from the
+    population. The length of this vector has to match the number of
+    columns of argument \code{timeInStrata}.
+  }
+
   \item{nsim}{
     The number of simulations.
   }
@@ -146,8 +172,9 @@ sliceAge(x, slices=c(0, 40, Inf))
   }
 
   \item{prune}{
-    For \code{familialIncidenceRate} and \code{genealogicalIndexTest}:
-    whether unconnected individuals in the pedigree should be removed.
+    For \code{familialIncidenceRate}, \code{familialIncidenceRateTest},
+    \code{fsir}, \code{fsirTest} and \code{genealogicalIndexTest}: whether unconnected
+    individuals in the pedigree should be removed.
   }
 
   \item{slices}{
@@ -187,6 +214,13 @@ sliceAge(x, slices=c(0, 40, Inf))
     the vector matches the order of the individuals in the pedigree.
   }
 
+  \item{timeInStrata}{
+    For \code{fsir} and \code{fsirTest}: a numeric matrix specifying the time at
+    risk for each individual in each strata. Columns represent the
+    strata, rows the individuals, each cell the time at risk for the
+    individual in the respective strata.
+  }
+
   \item{trait}{
     A named numeric vector (values \code{0}, \code{1} and \code{NA}) or
     logical vector (values \code{FALSE}, \code{TRUE} and \code{NA}) with
@@ -205,12 +239,18 @@ sliceAge(x, slices=c(0, 40, Inf))
   \item{x}{
     For \code{sliceAge}: a numeric vector representing the age of
     individuals.
+    For \code{factor2matrix}: a factor that should be converted into a
+    matrix.
   }
 
   \item{...}{
     For \code{genealogicalIndexTest}: additional arguments passed to the choosen
     \code{controlSetMethod} function (e.g. \code{match.using} for
     \code{\link{getExternalMatched}}).
+
+    For \code{familialIncidenceRateTest}: use \code{lowMem=TRUE} for
+  very large pedigrees. This will use a faster and less memory demanding
+  p-value estimation.
   }
 
 }
@@ -228,34 +268,8 @@ sliceAge(x, slices=c(0, 40, Inf))
 
   \describe{
 
-    \item{estimateTimeAtRisk}{
-      Function to calculate the time at risk based on the start date of
-      the study or the birth date of an individual (\code{startDate})
-      and the study's end date (\code{endDate}), the date of an
-      incidence (e.g. date of diagnosis of a cancer
-      \code{incidenceDate}) or the death of the individual
-      (\code{deathDate}). The time at risk for each individual is
-      calculated as the minimal time period between \code{startDate} and
-      any of \code{endDate}, \code{incidenceDate} or
-      \code{deathDate}. Thus it is also possible to provide just the
-      \code{endDate} along with the \code{startDate}, in which case the
-      \code{endDate} should be the earliest time point of: end date of
-      the study, incidence date or date of death.
-
-      For affected individuals (those for which either an incidence date
-      is provided or the value in the optional argument \code{affected}
-      is \code{TRUE} or bigger than 0), by default half of the time unit
-      is subtracted. For example, a individual that has an incidence
-      after 2 days is 1.5 days at risk. The proportion of the time unit
-      to subtract can be specified with the argument
-      \code{incidenceSubtract}.
-
-      The function returns a numeric vector with the time at risk in
-      days.
-    }
-
     \item{familialIncidenceRate}{
-      Calculate the familial incidence rate (FR) as defined in [Kerber
+      Calculate the familial incidence rate (FIR, or FR) as defined in [Kerber
       (1995)], formula (3). The FR is an estimate for the risk per
       gene-time for each individual for a certain disease (trait) given
       the disease experience in the cohort. The measure considers the
@@ -268,17 +282,51 @@ sliceAge(x, slices=c(0, 40, Inf))
       reduced pedigree, is further cleaned by removing all individuals
       that are not connected with any other in the pedigree.
 
-      The method returns a \code{list} with the FR values for each
+      The method returns a vector with the FIR value for each
       individual. Individuals that were excluded from the test as
-      described above habe an FR of \code{NA}. In the case of
-      \code{perFamilyTest=FALSE} (the default) the length of the list is
-      1 and the first list element contains the FR values estimated
-      based on the whole pedigree.
-      For \code{perFamilyTest=TRUE} the length of the list corresponds
-      to the number of families in the pedigree and each list element
-      contains the FR values for individuals in a specific family
-      calculated on the pedigree of the family. In that case, the names
-      of the list correspond to the family id in the pedigree.
+      described above habe an FR of \code{NA}.
+    }
+
+    \item{familialIncidenceRateTest}{
+      Calculates the familial incidence rate for each individual and in
+      addition assesses the significance of these based on Monte Carlo
+      simulations. See \code{\linkS4class{FAIncidenceRateResults}} for
+      more details.
+
+      The method returns a \code{\linkS4class{FAIncidenceRateResults}}
+      object.
+    }
+
+    \item{fsir}{
+      Calculate the familial standardized incidence rate (FSIR) as
+      defined in [Kerber, 1995], formula (4). The FSIR weights the
+      disease status of relatives based on their degree of relatedness
+      with the proband (Kerber, 1995). Formally, the FSIR is defined as
+      the standardized incidence ratio (SIR) or standardized morality
+      ratio in epidemiology, i.e. as the ratio between the observed and
+      expected number of cases, only that both are in addition also
+      weighted by the degree of relatedness (i.e. kinship value) between
+      individuals in the pedigree.
+
+      Similar to \code{familialIncidenceRate}, the function excludes
+      individuals with missing values in any of the arguments
+      \code{trait}, \code{timeInStrata} (and optionally \code{strata})
+      and all individuals that do not share any kinship with any other
+      individual in the pedigree after removing the above individuals.
+
+      The method returns a vector with the FSIR value for each
+      individual. Individuals excluded as above describe have a FSIR value
+      of \code{NA}.
+    }
+
+    \item{fsirTest}{
+      Calculates the familial standardized incidence rate (FSIR) for
+      each individual and in addition assesses the significance of these
+      based on Monte Carlo simulations. See
+      \code{\linkS4class{FAStdIncidenceRateResults}} for more details.
+
+      The method returns a \code{\linkS4class{FAStdIncidenceRateResults}}
+      object.
     }
 
     \item{genealogicalIndexTest}{
@@ -390,6 +438,46 @@ sliceAge(x, slices=c(0, 40, Inf))
       The function returns a \code{\linkS4class{FAProbResults}} object.
     }
 
+
+  }
+}
+\section{Utility functions}{
+
+  \describe{
+
+    \item{factor2matrix}{
+      Converts a factor into a matrix with columns corresponding to the
+      levels and values (cell row i, column j) being either 0 or 1
+      depending on whether the ith factor was of the level j. See
+      examples below for in or \code{FAStdIncidenceRateResults}.
+    }
+
+    \item{estimateTimeAtRisk}{
+      Function to calculate the time at risk based on the start date of
+      the study or the birth date of an individual (\code{startDate})
+      and the study's end date (\code{endDate}), the date of an
+      incidence (e.g. date of diagnosis of a cancer
+      \code{incidenceDate}) or the death of the individual
+      (\code{deathDate}). The time at risk for each individual is
+      calculated as the minimal time period between \code{startDate} and
+      any of \code{endDate}, \code{incidenceDate} or
+      \code{deathDate}. Thus it is also possible to provide just the
+      \code{endDate} along with the \code{startDate}, in which case the
+      \code{endDate} should be the earliest time point of: end date of
+      the study, incidence date or date of death.
+
+      For affected individuals (those for which either an incidence date
+      is provided or the value in the optional argument \code{affected}
+      is \code{TRUE} or bigger than 0), by default half of the time unit
+      is subtracted. For example, a individual that has an incidence
+      after 2 days is 1.5 days at risk. The proportion of the time unit
+      to subtract can be specified with the argument
+      \code{incidenceSubtract}.
+
+      The function returns a numeric vector with the time at risk in
+      days.
+    }
+
     \item{sliceAge}{
       Generates a matrix with columns corresponding to age slices/strata
       defined by argument \code{slices} and rows to individuals. Each
@@ -399,6 +487,7 @@ sliceAge(x, slices=c(0, 40, Inf))
 
   }
 }
+
 \value{
   Refer to the method and function description above for detailed
   information on the returned result object.
@@ -428,7 +517,8 @@ sliceAge(x, slices=c(0, 40, Inf))
   \code{\linkS4class{FAData}},
   \code{\linkS4class{FAProbResults}},
   \code{\linkS4class{FAKinGroupResults}},
-  \code{\linkS4class{FAKinSumResults}}
+  \code{\linkS4class{FAKinSumResults}},
+  \code{\linkS4class{FAIncidenceRateResults}}
 }
 \examples{
 ##########################
@@ -462,7 +552,21 @@ names(tcancer) <- mbsub$id
 fr <- familialIncidenceRate(fad, trait=tcancer, timeAtRisk=mbsub$endage)
 
 ## Plot the distribution of familial rates
-plot(density(fr[[1]], na.rm=TRUE))
+plot(density(fr, na.rm=TRUE))
+
+## Perform in addition Monte Carlo simulations to assess the significance
+## for the familial incidence rates.
+frRes <- familialIncidenceRateTest(fad, trait=tcancer,
+                                   timeAtRisk=mbsub$endage,
+                                   nsim=500)
+head(result(frRes))
+
+
+##########################
+##
+## Familial Standardized Incidence Rate:
+## Please see examples of FAStdIncidenceRateResults.
+
 
 
 ##########################
@@ -530,6 +634,15 @@ head(stratAge)
 
 ## We could also stratify the disk days from above in per year strata.
 sliceAge(riskDays/365, slices=c(0, 2.5, 5, 10, 20))
+
+
+##########################
+##
+##  Simple example for factor2matrix: generate a matrix for factor $sex
+head(factor2matrix(fad$sex))
+
+
+
 
 }
 \keyword{classes}
