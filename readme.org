@@ -8,6 +8,9 @@
 Devel version:
 [[http://bioconductor.org/checkResults/devel/bioc-LATEST/FamAgg][http://www.bioconductor.org/shields/build/devel/bioc/FamAgg.svg]]
 
+Travis check report:
+[[https://travis-ci.org/jotsetung/FamAgg][https://travis-ci.org/jotsetung/FamAgg.svg?branch=master]]
+
 * =FamAgg=: Pedigree Analysis and Familial Aggregation
 
 For more information please refer to the [[file:vignettes/FamAgg.org]] file.
