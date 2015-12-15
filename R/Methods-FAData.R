@@ -28,11 +28,34 @@ validateFAData <- function(object){
         }else{
             ## Missing one or more colnames!!!
             missingCN <- CN[!(CN %in% colnames(value))]
-            stop(paste0("Required columns ",
-                        paste(missingCN, collapse=", "),
-                        " not present in pedigree!"))
+            Complaints <- c(Complaints, paste0("Required columns ",
+                                               paste(missingCN, collapse=", "),
+                                               " not present in pedigree!"))
+            ## stop(paste0("Required columns ",
+            ##             paste(missingCN, collapse=", "),
+            ##             " not present in pedigree!"))
         }
         object@pedigree$sex <- sanitizeSex(object@pedigree$sex)
+        ## Check that we have a non-NA in id, father, mother
+        if(any(is.na(object@pedigree$id)))
+            Complaints <- c(Complaints, "No NAs in column 'id' allowed!")
+        ## if(any(is.na(object@pedigree$father)))
+        ##     Complaints <- c(Complaints, "No NAs in column 'father' allowed!")
+        ## if(any(is.na(object@pedigree$mother)))
+        ##     Complaints <- c(Complaints, "No NAs in column 'mother' allowed!")
+        ## Check that father and mother id are either 0 or correspond to an ID!
+        FatherId <- as.character(object@pedigree$father)
+        if(!(all(FatherId[!is.na(FatherId)] %in% as.character(object@pedigree$id))))
+            Complaints <- c(Complaints, paste0("Some of the father IDs are not present",
+                                               " in the pedigree! All IDs in column 'father'",
+                                               " have to be either present in the pedigree, or",
+                                               " have to be <NA>."))
+        MotherId <- as.character(object@pedigree$mother)
+        if(!(all(MotherId[!is.na(MotherId)] %in% as.character(object@pedigree$id))))
+            Complaints <- c(Complaints, paste0("Some of the mother IDs are not present",
+                                               " in the pedigree! All IDs in column 'mother'",
+                                               " have to be either present in the pedigree, or",
+                                               " have to be <NA>."))
     }
     if(length(object@age)>0){
         ## has to be a named numeric vector!
@@ -170,8 +193,21 @@ setReplaceMethod("pedigree", "FAData", function(object, value){
         value[, theCol] <- tmp
         rm(tmp)
     }
+    ## Fix father/mother column. We're using NA for not present!
+    if(is.factor(value$father))
+        value$father <- as.character(value$father)
+    if(is.factor(value$mother))
+        value$mother <- as.character(value$mother)
+    if(is.character(value$father))
+        value$father[value$father == ""] <- NA
+    if(is.numeric(value$father))
+        value$father[value$father == 0] <- NA
+    if(is.character(value$mother))
+        value$mother[value$mother == ""] <- NA
+    if(is.numeric(value$mother))
+        value$mother[value$mother == 0] <- NA
     object@pedigree <- value
-    validateFAData(object)
+    validObject(object)
 
     ## save the kinship matrix
     message("Generating the kinship matrix...", appendLF=FALSE)
@@ -388,8 +424,8 @@ setMethod("buildPed", "FAData",
               ped <- ped[as.character(allids), , drop=FALSE]
               ## fixfounders:
               ## set all mothers and fathers that are not in id to 0
-              ped[!(ped$mother %in% ped$id), "mother"] <- 0
-              ped[!(ped$father %in% ped$id), "father"] <- 0
+              ped[!(ped$mother %in% ped$id), "mother"] <- NA
+              ped[!(ped$father %in% ped$id), "father"] <- NA
               ped <- doRemoveChildlessFounders(ped)
               return(ped)
           })
@@ -416,6 +452,10 @@ setMethod("buildPed", "FAData",
         ## subsetting age.
         ageSub <- x@age[names(x@age) %in% rownames(pedSub)]
     }
+    ## In order to have a valid pedigree object, I have to set all father and mother
+    ## IDs which are not in column $id to NA.
+    pedSub[!(pedSub$father %in% pedSub$id), "father"] <- NA
+    pedSub[!(pedSub$mother %in% pedSub$id), "mother"] <- NA
     ## have to use character colnames here.
     kinSub <- kinship(x)[as.character(pedSub$id), as.character(pedSub$id), drop=FALSE]
     newX <- new("FAData", pedigree=pedSub, age=ageSub, .kinship=kinSub)
@@ -425,6 +465,7 @@ setMethod("buildPed", "FAData",
         trait(newX) <- subTrait
         newX@traitname <- x@traitname
     }
+    validObject(newX)
     return(newX)
 }
 setMethod("[", "FAData", .bracketSubset)
@@ -566,7 +607,7 @@ setMethod("genealogicalIndexTest", "FAData",
               trait(object) <- trait
               if(!missing(traitName))
                   object@traitname <- traitName
-              ## run the simulation: calls the runSimulation method for the FAProbResult class.
+              ## run the simulation: calls the runSimulation method for the FAProbResult cla ss.
               object <- runSimulation(object, nsim=nsim, perFamilyTest=perFamilyTest,
                                       controlSetMethod=controlSetMethod,
                                       prune=prune, strata=strata, ...)
@@ -991,53 +1032,25 @@ setMethod("getSexMatched", "FAData",
           })
 
 
-##********************************************************************
+####============================================================
 ##
-##   Utility functions
+##  export
 ##
-##********************************************************************
-sanitizeSex <- function(x){
-    if(is.numeric(x)){
-        ## require values 1, 2, NA
-        numrange <- unique(x)
-        if(!all(c(1, 2) %in% numrange))
-            stop(paste0("If column sex is numeric it has to contain 1 (=male) ",
-                        "and 2 (=female) values! Unknown or missing can be encoded",
-                        " by NA or any other number than 1 or 2."))
-        news <- rep(NA, length(x))
-        news[which(x == 1)] <- "M"
-        news[which(x == 2)] <- "F"
-        return(factor(news, levels=c("M", "F")))
+##  Export the pedigree information.
+##
+####------------------------------------------------------------
+setMethod("export", "FAData", function(object, con, format="ped", ...){
+    if(missing(con))
+        stop("The file name has to be specified!")
+    if(missing(format))
+        stop("The format has to be specified (either 'ped' or 'fam')!")
+    format <- match.arg(format, c("ped", "fam"))
+    ped <- pedigree(object)
+    if(format == "ped" | format == "fam"){
+        ped <- doProcessDf2Ped(ped)
+        write.table(ped, file=con, quote=FALSE, sep="\t", row.names=FALSE,
+                    col.names=FALSE)
     }
-    if(is.factor(x))
-        x <- as.character(x)
-    if(is.character(x)){
-        ## remove all white spaces:
-        x <- gsub(x, pattern="\\s", replacement="")
-        ## that's tricky...kind of...
-        ## just get the first character; want to have M and F...
-        x <- substr(toupper(x), 1, 1)
-        chars <- unique(x)
-        if(length(chars) == 2){
-            if(!all(c("M", "F") %in% chars))
-                stop(paste0("Male and female individuals have to be represented",
-                            " by 'M' and 'F', respectively!"))
-        }
-        if(length(chars) == 1){
-            if(!any(c("M", "F") %in% chars))
-                stop(paste0("Male and female individuals have to be represented",
-                            " by 'M' and 'F', respectively!"))
-        }
-        if(length(chars[!is.na(chars)]) > 2)
-            warning(paste0("All characters in column sex other than M and F",
-                           " (or male, female etc) are set to NA!"))
-        news <- rep(NA, length(x))
-        news[which(x == "M")] <- "M"
-        news[which(x == "F")] <- "F"
-        return(factor(news, levels=c("M", "F")))
-    }
-}
-
-
+})
 
 

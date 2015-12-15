@@ -1,3 +1,21 @@
+CHANGES IN VERSION 0.99.8
+-------------------------
+
+NEW FEATURES
+    o FAData constructor recognizes *.ped and *.fam files and imports their
+      pedigree information correctly.
+    o export method to export pedigree information from a FAData to a ped or fam file.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+    o Founders are now represented by NA in columns 'father' and 'mother'. This fixed
+      potential problems when IDs are character strings and not numeric.
+
+BUG FIXES
+    o Validation of pedigree information in FAData improved.
+    o [ subsetting now ensures that father or mother IDs which are not available
+      in column 'id' are set to NA.
+
+
 CHANGES IN VERSION 0.99.6
 -------------------------
 

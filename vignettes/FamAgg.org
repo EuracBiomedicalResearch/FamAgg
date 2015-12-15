@@ -45,7 +45,7 @@ references:
 
 **Package**: `r Biocpkg("FamAgg")`<br />
 **Authors**: `r packageDescription("FamAgg")[["Author"]] `<br />
-**Modified**: 2 December, 2015<br />
+**Modified**: 15 December, 2015<br />
 **Compiled**: `r date()`
 
 #+END_HTML
@@ -85,6 +85,9 @@ trait. Identification of families or groups of individuals within families with
 significant aggregation of cases can aid also in the selection of interesting
 and promising individuals for whole genome or exome sequencing projects.
 
+For kinship coefficient calculations and pedigree plotting the package relies
+and extends the functionality of the =kinship2= package REF.
+
 
 * Basic pedigree operations
 
@@ -94,7 +97,14 @@ ancestor for a set of individuals in a pedigree or retrieving the identifiers
 (IDs) of all ancestors for an individual.
 Basic pedigree information is stored in =FAData= objects, thus we first generate
 such an object from a subset of the Minnesota Breast Cancer Study provided by
-the =kinship2= package.
+the =kinship2= package. In the example below we generate the =FAData= providing
+a =data.frame= with the pedigree data, alternatively, the pedigree information
+could be imported from a file (see Section [[import.export]]).
+Upon data set creation the kinship matrix (i.e. a matrix containing the kinship
+coefficient between each pair of individuals in the whole pedigree) is
+internally calculated using appropriate functionality from the =kinship2=
+package.
+
 
 #+BEGIN_SRC R :ravel warning=FALSE, message=FALSE
   library(FamAgg)
@@ -487,6 +497,52 @@ does to find the smallest pedigree for a set of individuals, only that
 #+END_SRC
 
 
+* Importing and exporting pedigree data<<import.export>>
+
+Besides providing the pedigree data as a =data.frame=, the =FAData= constructor
+can also read pedigree data from various file formats, such as plink
+\cite{Purcell:2007dg} /ped/ or /fam/ files
+(http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml) or generic text files.
+
+#+BEGIN_SRC R
+  ## Importing a "ped" file.
+  pedFile <- system.file("txt/minnbreastsub.ped.gz", package="FamAgg")
+  ## Quick glance at the file.
+  readLines(pedFile, n=1)
+  fad <- FAData(pedFile)
+
+  head(pedigree(fad))
+
+#+END_SRC
+
+Alternatively we can import pedigree data from generic input files.
+
+#+BEGIN_SRC R
+  ## Creating the FAData reading data from a txt file.
+  pedFile <- system.file("txt/minnbreastsub.txt", package="FamAgg")
+  fad <- FAData(pedigree=pedFile, header=TRUE, id.col="id",
+		family.col="famid", father.col="fatherid",
+		mother.col="motherid")
+
+#+END_SRC
+
+And we can export pedigree data again using the =export= method. In the example
+below we subset the whole pedigree to the pedigree of family 4 and export this
+as a /ped/ file.
+
+#+BEGIN_SRC R
+  tmpF <- tempfile()
+
+  ## Subset the pedigree to family 4
+  fam4 <- fad[fad$family == 4, ]
+
+  ## Export the data
+  export(fam4, tmpF, format="ped")
+#+END_SRC
+
+
+
+
 * Testing for familial aggregation
 
 Familial aggregation aims to identify families within large ancestral
@@ -607,7 +663,7 @@ cases a stratified sampling, as performed below, can be used instead.
   ## We can use the gender information to perform stratified sampling, i.e.
   ## in each permutation a random set of 3 male and 15 females will be selected.
   giStrata <- genealogicalIndexTest(fad, trait=tcancer, traitName="cancer", nsim=nsim,
-                                strata=fad$sex)
+                                    strata=fad$sex)
 
   result(giStrata)
 #+END_SRC
@@ -682,7 +738,7 @@ proportions in the /real/, observed, affected.
 #+BEGIN_SRC R
   ## Perform the kinship sum test.
   kinSum <- kinshipSumTest(fad, trait=tcancer, traitName="cancer",
-                             nsim=nsim, strata=fad$sex)
+                           nsim=nsim, strata=fad$sex)
   head(result(kinSum))
 
 #+END_SRC
@@ -1137,6 +1193,69 @@ Bioconductor was changed).
 + [X] man/plotting-functions.Rd
 
 + [X] vignettes/FamAgg.org
+
+
+** TODO 1a: Perform a comparison of the results.
+
+Could mean:
++ perform a comparison of the results of the individual algorithms within the
+  same data.
++ perform a comparison of the results with other tools (that's most likely what
+  he means).
+
+** TODO 2a: Provide a more detailed description of the random sampling for the kinship sum test.
+
+** TODO 2b: Add a description/reference to the Yu and Zelterman method in the supplement/vignette.
+
+** TODO 3a: Kinship coefficient calculated in =FamAgg= or elsewhere?
+
+It is calculated in the =kinship2= package, clearly state that in the manuscript
+and make a reference to the package.
+
+We added a sentence to the vignette.
+
+** DONE 3b: Add a vignette describing how to load plink files [2/2]
+   CLOSED: [2015-12-15 Tue 14:43]
+   - State "DONE"       from "TODO"       [2015-12-15 Tue 14:43]
++ [X] Implement pedigree import function for a variety of input formats.
++ [X] Implement export method to export pedigrees in different formats.
+
+** DONE FAM format [/]
+   CLOSED: [2015-12-15 Tue 14:43]
+   - State "DONE"       from "TODO"       [2015-12-15 Tue 14:43]
+FAM files are from plink. Description:
+https://www.cog-genomics.org/plink2/formats.
+Text file without header, space or tab separated.
+Fields:
++ Family ID ('FID')
++ Within-family ID ('IID'; cannot be '0')
++ Within-family ID of father ('0' if father isn't in dataset)
++ Within-family ID of mother ('0' if mother isn't in dataset)
++ Sex code ('1' = male, '2' = female, '0' = unknown)
++ Phenotype value ('1' = control, '2' = case, '-9'/'0'/non-numeric = missing
+  data if case/control)
+
+For values other than {1,2,0,-9} it is assumed not to be case-control but numeric;
+we're not going to support that!
+
+** DONE PED format [/]
+   CLOSED: [2015-12-15 Tue 14:44]
+   - State "DONE"       from "TODO"       [2015-12-15 Tue 14:44]
+PED files are from plink. Description: http://www.gwaspi.org/?page_id=145.
+ped files contain no headers and the first 6 columns are the same as those of
+the FAM format.
+Fields:
++ Family ID
++ Sample ID
++ Paternal ID
++ Maternal ID
++ Sex (1=male; 2=female; other=unknown)
++ Affection (0=unknown; 1=unaffected; 2=affected)
++ Genotypes (space or tab separated, 2 for each marker. 0=missing)
+
+
+** TODO 3c: Clearly state which methods are established and which are new.
+
 
 
 * References

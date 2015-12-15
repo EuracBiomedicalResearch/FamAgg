@@ -38,8 +38,45 @@ test_construct <- function(){
     phenoIds <- phenotypedIndividuals(fad)
     checkEquals(phenoIds, as.character(ped$id[!is.na(ped$affected)]))
 
-
 }
+
+test_FAData_from_file <- function(){
+    ## create from file
+    pedfile <- system.file("txt/minnbreastsub.txt", package="FamAgg")
+    checkException(fad2 <- FAData(pedfile, id.col="ID" ))
+    fad2 <- FAData(pedfile, id.col="id", family.col="famid", father.col="fatherid",
+                   mother.col="motherid", sex.col="sex", header=TRUE)
+    ## Now read it from ped
+    pedfile <- system.file("txt/minnbreastsub.ped.gz", package="FamAgg")
+    fadPed <- FAData(pedfile)
+    pedfile <- system.file("txt/minnbreastsub-bad.ped.gz", package="FamAgg")
+    checkException(FAData(pedfile))
+}
+
+
+## Testing the validation methods
+test_validate <- function(){
+    tmpPed <- mbsub[, c("famid", "id", "fatherid", "motherid", "sex")]
+    colnames(tmpPed) <- FamAgg:::.PEDCN
+    ## Don't allow NAs in id, father or mother
+    badPed <- tmpPed
+    badPed[13, "id"] <- NA
+    checkException(FAData(badPed))
+    badPed <- tmpPed
+    badPed[13, "father"] <- NA
+    checkException(FAData(badPed))
+    badPed <- tmpPed
+    badPed[13, "mother"] <- NA
+    checkException(FAData(badPed))
+    ## Don't allow father or mother ids other than 0 or %in% $id
+    badPed <- tmpPed
+    badPed[13, "mother"] <- "123345"
+    checkException(FAData(badPed))
+    badPed <- tmpPed
+    badPed[13, "father"] <- "123345"
+    checkException(FAData(badPed))
+}
+
 
 ## OK, 0.0.6
 test_age <- function(){
@@ -72,7 +109,8 @@ test_pedigree <- function(){
     ## have to transform sex into a factor...
     PedDf$sex <- factor(PedDf$sex, levels=c("M", "F"))
     rownames(PedDf) <- as.character(PedDf$id)
-    checkEquals(tmp2, PedDf)
+
+    checkEquals(tmp2, FamAgg:::sanitizePed(PedDf))
 
     ## submit a pedigree(List) object...
     Ped <- pedigree(id=PedDf[, 2], famid=PedDf[, 1], dadid=PedDf[, 3],
@@ -87,6 +125,7 @@ test_pedigree <- function(){
 
 
 test_subset <- function(){
+    do.plot <- FALSE
     ## mbsub <- .getMinSub()
 
     mbped <- mbsub[, c("famid", "id", "fatherid", "motherid", "sex")]
@@ -99,6 +138,7 @@ test_subset <- function(){
     fadSub <- fad[fad$family==4, ]
     pedSub <- mbped[mbped$family==4, ]
     pedSub$sex <- FamAgg:::sanitizeSex(pedSub$sex)
+    pedSub <- FamAgg:::sanitizePed(pedSub)
     checkEquals(pedigree(fadSub), pedSub)
     ## checking kinship
     kinSub <- kinship(pedigree(id=pedSub$id, dadid=pedSub$father, momid=pedSub$mother,
@@ -110,7 +150,8 @@ test_subset <- function(){
     pedSub <- mbped[ids, ]
     pedSub$sex <- FamAgg:::sanitizeSex(pedSub$sex)
     fadSub <- fad[ids, ]
-    checkEquals(pedigree(fadSub), pedSub)
+    ## Just compare columns other than father and mother, as they have been changed!
+    checkEquals(pedigree(fadSub)[, c("family", "id", "sex")], pedSub[, c("family", "id", "sex")])
     ## kinship checking makes no sense... pedigree function does not work!
     ##-----------------------------------
     ## subset using numeric
@@ -118,17 +159,31 @@ test_subset <- function(){
     pedSub <- mbped[idx, ]
     pedSub$sex <- FamAgg:::sanitizeSex(pedSub$sex)
     fadSub <- fad[idx, ]
-    checkEquals(pedigree(fadSub), pedSub)
+    checkEquals(pedigree(fadSub)[, c("family", "id", "sex")], pedSub[, c("family", "id", "sex")])
     ##-----------------------------------
     ## error testing
     ids <- c("a", "b", "c")
     checkException(fad[ids, ])
 
+    ## Subset to male only:
+    fam4 <- fad[fad$family == "4", ]
+    fam4M <- fam4[fam4$sex == "M", ]
+    checkEquals(all(is.na(fam4M$mother)), TRUE)
+    if(do.plot){
+        ## That should work.
+        plotPed(fam4, family="4")
+        ## Now, how is this going to work if we've got females?
+        ## plotPed(fam4M, family="4")
+    }
+
+
     ## manually defining the object.
-    fad <- new("FAData", pedigree=mbped)
+    fad <- new("FAData")
+    pedigree(fad) <- mbped
     fadSub <- fad[fad$family==4, ]
     pedSub <- mbped[mbped$family==4, ]
     pedSub$sex <- FamAgg:::sanitizeSex(pedSub$sex)
+    pedSub <- FamAgg:::sanitizePed(pedSub)
     checkEquals(pedigree(fadSub), pedSub)
     ## checking kinship
     kinSub <- kinship(pedigree(id=pedSub$id, dadid=pedSub$father, momid=pedSub$mother,
@@ -226,6 +281,7 @@ test_FAData <- function(){
     colnames(PedDf) <- FamAgg:::.PEDCN
     PedDf$sex <- FamAgg:::sanitizeSex(PedDf$sex)
     rownames(PedDf) <- as.character(PedDf$id)
+    PedDf <- FamAgg:::sanitizePed(PedDf)
     checkEquals(PedDf, pedigree(fad))
 
     ## adding also age...
@@ -251,6 +307,7 @@ test_family <- function(){
     rownames(PedDf) <- as.character(PedDf$id)
     fad <- FAData(PedDf)
 
+    PedDf <- FamAgg:::sanitizePed(PedDf)
     Test <- family(fad, id=7)
     checkEquals(Test, PedDf[PedDf$family==4, ])
 }
@@ -333,5 +390,57 @@ test_dollar <- function(){
 
 }
 
+## Here we just want to ensure that it's OK to have either 0 or NA for founders in
+## the pedigree.
+test_kinship2_kinship <- function(){
+    mbped <- mbsub[, c("famid", "id", "fatherid", "motherid", "sex")]
+    colnames(mbped) <- FamAgg:::.PEDCN
+    pediNumeric <- pedigree(id=mbped$id, famid=mbped$family, dadid=mbped$father,
+                            momid=mbped$mother, sex=mbped$sex)
+    kinNumeric <- kinship(pediNumeric)
+    ## Replacing 0s with NAs:
+    mbped$father[mbped$father == 0] <- NA
+    mbped$mother[mbped$mother == 0] <- NA
+    pediNumericNA <- pedigree(id=mbped$id, famid=mbped$family, dadid=mbped$father,
+                              momid=mbped$mother, sex=mbped$sex)
+    kinNumericNA <- kinship(pediNumeric)
+    checkEquals(kinNumeric, kinNumericNA)
+    ## And now character:
+    mbped$id <- as.character(mbped$id)
+    mbped$father <- as.character(mbped$father)
+    mbped$mother <- as.character(mbped$mother)
+    pediCharNA <- pedigree(id=mbped$id, famid=mbped$family, dadid=mbped$father,
+                           momid=mbped$mother, sex=mbped$sex)
+    kinCharNA <- kinship(pediCharNA)
+    checkEquals(kinNumeric, kinCharNA)
+    ## The same but with "0" for founders.
+    mbped$father[is.na(mbped$father)] <- 0
+    mbped$mother[is.na(mbped$mother)] <- 0
+    checkException(pedigree(id=mbped$id, famid=mbped$family, dadid=mbped$father,
+                            momid=mbped$mother, sex=mbped$sex))
+
+    ## "" for "0"
+    mbped$father[mbped$father == "0"] <- ""
+    mbped$mother[mbped$mother == "0"] <- ""
+    pediCharZ <- pedigree(id=mbped$id, famid=mbped$family, dadid=mbped$father,
+                          momid=mbped$mother, sex=mbped$sex)
+    kinCharZ <- kinship(pediCharZ)
+    checkEquals(kinNumeric, kinCharZ)
+}
+
+test_export <- function(){
+    mbped <- mbsub[, c("famid", "id", "fatherid", "motherid", "sex")]
+    colnames(mbped) <- FamAgg:::.PEDCN
+    far <- FAData(pedigree=mbped)
+    fam4 <- far[far$family == 4, ]
+    tmpF <- paste0(tempfile(), ".ped")
+    export(fam4, tmpF, format="ped")
+    fam4imported <- FAData(tmpF)
+    checkEquals(as.character(pedigree(fam4)$family), pedigree(fam4imported)$family)
+    checkEquals(as.character(pedigree(fam4)$id), pedigree(fam4imported)$id)
+    checkEquals(as.character(pedigree(fam4)$father), pedigree(fam4imported)$father)
+    checkEquals(as.character(pedigree(fam4)$mother), pedigree(fam4imported)$mother)
+    checkEquals(as.character(pedigree(fam4)$sex), as.character(pedigree(fam4imported)$sex))
+}
 
 

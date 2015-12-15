@@ -24,13 +24,15 @@ buildPedigree <- function(ped, ids){
     subfam <- ped[as.character(ids), ]
     ## now recursively add parents, if needed...
     parents <- as.character(unique(c(subfam$father, subfam$mother)))
-    parents[is.na(parents)] <- 0
-    parents <- parents[parents!=0]
+    ## parents[is.na(parents)] <- 0
+    ## parents <- parents[parents!=0]
+    parents <- parents[!is.na(parents)]
     while(!all(parents %in% as.character(subfam$id))){
         subfam <- ped[unique(c(as.character(subfam$id), parents)), ]
         parents <- as.character(unique(c(subfam$father, subfam$mother)))
-        parents[is.na(parents)] <- 0
-        parents <- parents[parents!=0]
+        ## parents[is.na(parents)] <- 0
+        ## parents <- parents[parents!=0]
+        parents <- parents[!is.na(parents)]
     }
     return(subfam)
 }
@@ -45,7 +47,7 @@ doGetSiblings <- function(ped, id=NULL){
 }
 
 ## gets all the ancestors for (one or more) id(s)
-doGetAncestors <- function(ped, id=NULL, maxlevel=3, founder=0){
+doGetAncestors <- function(ped, id=NULL, maxlevel=3){
     if(is.null(id))
         stop("At least one id has to be specified!")
     allids <- NULL
@@ -55,7 +57,8 @@ doGetAncestors <- function(ped, id=NULL, maxlevel=3, founder=0){
             ped[as.character(ped$id) %in% id, c("father", "mother")],
             use.names=FALSE
         )
-        zeros <- newids == founder
+        zeros <- is.na(newids)
+        ##zeros <- newids == founder
         if(all(zeros) | length(newids)==0)
             break
         newids <- newids[!zeros]
@@ -110,6 +113,7 @@ ped2df <- function(ped){
     if(!any(colnames(ped)=="famid"))
         ped <- cbind(ped, famid=rep(1, nrow(ped)))
     ped <- ped[ , c("famid", "id", "findex", "mindex", "sex")]
+    ## FIXME!!! Can I get NAs as findex too?
     ## have to rematch the fater id and mother id...
     notZ <- which(ped[, "findex"] > 0)
     ped[notZ, "findex"] <- ped[ped[notZ, "findex"], "id"]
@@ -179,7 +183,8 @@ doShareKinship <- function(ped, kin, id){
 ## a childless founder is an individual which id is not present in the
 ## father or mother column of the pedigree and which has 0 in mother and father
 doRemoveChildlessFounders <- function(ped){
-    founders <- ped[ped$mother == 0 & ped$father == 0, , drop=FALSE]
+    ## founders <- ped[ped$mother == 0 & ped$father == 0, , drop=FALSE]
+    founders <- ped[is.na(ped$mother) & is.na(ped$father), , drop=FALSE]
     if(nrow(founders) > 0){
         torem <- !((founders$id %in% ped$father) | (founders$id %in% ped$mother))
         if(any(torem)){
@@ -226,6 +231,29 @@ checkPedCol <- function(ped){
     return(ped)
 }
 
+## Sanitize the pedigree the way we want: sex should be sanitized (if present),
+## father and mother column should contain NA for founders instead of "" or 0.
+sanitizePed <- function(ped){
+    if(any(colnames(ped) == "sex"))
+        ped$sex <- sanitizeSex(ped$sex)
+    Father <- ped$father
+    if(is.factor(Father))
+        Father <- as.character(Father)
+    if(is.numeric(Father))
+        Father[which(Father == 0)] <- NA
+    if(is.character(Father))
+        Father[which(Father == "")] <- NA
+    Mother <- ped$mother
+    if(is.factor(Mother))
+        Mother <- as.character(Mother)
+    if(is.numeric(Mother))
+        Mother[which(Mother == 0)] <- NA
+    if(is.character(Mother))
+        Mother[which(Mother == "")] <- NA
+    ped$father <- Father
+    ped$mother <- Mother
+    return(ped)
+}
 
 ## find the subPedigree (smallest pedigree) includin the individuals specified
 ## with id and all eventually needed additionals
@@ -251,8 +279,8 @@ subPedigree <- function(ped, id=NULL, all=TRUE){
     subped <- ped[inds, ]
     subped <- doRemoveChildlessFounders(subped)
     ## fix founders.
-    subped[!(subped$father %in% subped$id), "father"] <- 0
-    subped[!(subped$mother %in% subped$id), "mother"] <- 0
+    subped[!(subped$father %in% subped$id), "father"] <- NA
+    subped[!(subped$mother %in% subped$id), "mother"] <- NA
     if(CL == "pedigree" | CL == "pedigreeList")
         subped <- df2ped(subped)
     return(subped)
@@ -415,13 +443,13 @@ ped2graph <- function(ped){
         ped <- ped2df(ped)
     ped <- checkPedCol(ped)
     ## define end/starting points
-    ped[!ped[, "father"] %in% ped$id, "father"] <- 0
-    ped[!ped[, "mother"] %in% ped$id, "mother"] <- 0
+    ped[!ped[, "father"] %in% ped$id, "father"] <- NA
+    ped[!ped[, "mother"] %in% ped$id, "mother"] <- NA
     eds <- apply(ped[, c("id", "father", "mother")], MARGIN=1, function(x){
         retval <- c()
-        if(x["father"] != 0)
+        if(!is.na(x["father"]))
             retval <- x[c("father", "id")]
-        if(x["mother"] != 0)
+        if(!is.na(x["mother"]))
             retval <- c(retval, x[c("mother", "id")])
         return(retval)
     })
@@ -448,7 +476,7 @@ doFindFounders <- function(ped, family){
     }
     ped <- ped[ped$family == family, , drop=FALSE]
     ## OK, now we have the pedigree of a single family... try to find founders.
-    founders <- ped$id[which(ped$father == 0 & ped$mother == 0)]
+    founders <- ped$id[which(is.na(ped$father) & is.na(ped$mother))]
     ## determine for each founder the number of generations of its children, grandchildren etc.
     founderGen <- doCountGenerations(ped, id=founders, direction="down")
     founders <- names(founderGen)[founderGen == max(founderGen)][1]
@@ -589,6 +617,55 @@ doGetGenerationFrom2 <- function(ped, id, generation=0){
     allgens[names(gens4individuals)] <- gens4individuals
     return(allgens)
 }
+
+##********************************************************************
+##
+##   Utility functions
+##
+##********************************************************************
+sanitizeSex <- function(x){
+    if(is.numeric(x)){
+        ## require values 1, 2, NA
+        numrange <- unique(x)
+        if(!all(c(1, 2) %in% numrange))
+            stop(paste0("If column sex is numeric it has to contain 1 (=male) ",
+                        "and 2 (=female) values! Unknown or missing can be encoded",
+                        " by NA or any other number than 1 or 2."))
+        news <- rep(NA, length(x))
+        news[which(x == 1)] <- "M"
+        news[which(x == 2)] <- "F"
+        return(factor(news, levels=c("M", "F")))
+    }
+    if(is.factor(x))
+        x <- as.character(x)
+    if(is.character(x)){
+        ## remove all white spaces:
+        x <- gsub(x, pattern="\\s", replacement="")
+        ## that's tricky...kind of...
+        ## just get the first character; want to have M and F...
+        x <- substr(toupper(x), 1, 1)
+        chars <- unique(x)
+        if(length(chars) == 2){
+            if(!all(c("M", "F") %in% chars))
+                stop(paste0("Male and female individuals have to be represented",
+                            " by 'M' and 'F', respectively!"))
+        }
+        if(length(chars) == 1){
+            if(!any(c("M", "F") %in% chars))
+                stop(paste0("Male and female individuals have to be represented",
+                            " by 'M' and 'F', respectively!"))
+        }
+        if(length(chars[!is.na(chars)]) > 2)
+            warning(paste0("All characters in column sex other than M and F",
+                           " (or male, female etc) are set to NA!"))
+        news <- rep(NA, length(x))
+        news[which(x == "M")] <- "M"
+        news[which(x == "F")] <- "F"
+        return(factor(news, levels=c("M", "F")))
+    }
+}
+
+
 
 ## remove non-connected individuals. We're assuming that ped is the pedigree
 ## of a SINGLE family, as we expect to get ONE graph. in case we've got 2, we're

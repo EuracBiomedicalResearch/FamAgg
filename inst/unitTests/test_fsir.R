@@ -10,7 +10,6 @@ tcancer <- mbsub$cancer
 names(tcancer) <- mbsub$id
 trait(fad) <- tcancer
 
-
 test_fsir <- function(){
     do.plot <- FALSE
     ## eventually remove that...

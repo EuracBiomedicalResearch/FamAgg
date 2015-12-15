@@ -33,6 +33,10 @@ setGeneric("countGenerations", function(object, id=NULL, ...)
 setGeneric("estimateGenerations", function(object, family=NULL, ...)
     standardGeneric("estimateGenerations"))
 
+if(!isGeneric("export"))
+    setGeneric("export", function(object, con, format, ...)
+               standardGeneric("export"))
+
 setGeneric("familialIncidenceRate", function(object, trait=NULL, timeAtRisk=NULL,
                                              prune=TRUE, ...)
     standardGeneric("familialIncidenceRate"))

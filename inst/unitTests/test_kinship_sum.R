@@ -12,6 +12,7 @@ names(tcancer) <- mbsub$id
 ## OK, 0.0.6
 ## testing the kinship sum test.
 test_kinship_sum <- function(){
+    do.plot <- FALSE
 
     ## perform the test:
     set.seed(18011977)
@@ -24,8 +25,13 @@ test_kinship_sum <- function(){
     ## use the family method to extract the pedigree of that family.
     GotFam <- family(far, id=Result[1, "affected_id"])
     AffFam <- PedDf[PedDf$family == PedDf[Result[1, "affected_id"], "family"], ]
+    AffFam <- FamAgg:::sanitizePed(AffFam)
     AffFam <- cbind(AffFam, affected=tcancer[AffFam$id])
     checkEquals(GotFam, AffFam)
+
+    if(do.plot){
+        plotPed(far, id=Result[1, "affected_id"])
+    }
 
     ## now replacing the trait and re-running.
     tpreg <- mbsub$everpreg

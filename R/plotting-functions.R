@@ -131,8 +131,8 @@ ks2paint <- function(family=NULL, individual=NULL, father=NULL, mother=NULL,
         ## append a dummy individual...
         affected <- c(affected, 0, 1)
         individual <- c(individual, "removeme1", "removeme2")
-        father <- c(father, 0, 0)
-        mother <- c(mother, 0, 0)
+        father <- c(father, NA, NA)
+        mother <- c(mother, NA, NA)
         gender <- c(gender, NA, NA)
         is.deceased <- c(is.deceased, 0, 0)
         ## have to add 2 elements to each other vector too.
@@ -316,6 +316,9 @@ buildHaplopaintDataframe <- function(family=NULL, individual=NULL, father=NULL,
     ninds <- length(individual)
     if(is.null(family))
         family <- rep(1, ninds)
+    ## Fixing father & mother: Haplopaint requires 0
+    father[is.na(father)] <- 0
+    mother[is.na(mother)] <- 0
     ## now going through all arguments and, if present, adding them to the argList
     argList <- list(family=family,
                     individual=as.character(individual),

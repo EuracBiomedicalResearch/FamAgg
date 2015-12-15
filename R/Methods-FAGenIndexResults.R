@@ -71,7 +71,10 @@ setMethod("result", "FAGenIndexResults", function(object, method="BH"){
                             padj=NA,
                             check.names=FALSE, stringsAsFactors=FALSE
                             )
-        warning("No simulation data available! This means that either no simulation was run yet (using the genealogicalIndex function or runSimulation method) or that the simulation returned no result (i.e. too few affected individuals in the trait).")
+        warning(paste0("No simulation data available! This means that either no simulation was",
+                       " run yet (using the genealogicalIndex function or runSimulation method)",
+                       " or that the simulation returned no result (i.e. too few affected",
+                       " individuals in the trait)."))
         return(MyRes)
     }
     ## otherwise compile the result...

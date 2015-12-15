@@ -1,7 +1,7 @@
 Package: FamAgg
 Type: Package
 Title: Pedigree Analysis and Familial Aggregation
-Version: 0.99.7
+Version: 0.99.8
 Author: J. Rainer, D. Taliun, C.X. Weichenberger
 Maintainer: Johannes Rainer <johannes.rainer@eurac.edu>
 URL: https://github.com/jotsetung/FamAgg
@@ -19,7 +19,7 @@ Collate: Classes.R Generics.R Constructors.R Methods-FAData.R
 	 Methods-FAGenIndexResults.R Methods-FAIncidenceRateResults.R
 	 Methods-FAStdIncidenceRateResults.R
 	 utils.R matched-controls.R Methods.R plotting-functions.R
-	 zzz.R
+	 import-export.R zzz.R
 biocViews: Genetics
 License: MIT + file LICENSE
 Copyright: Haplopainter1.043.pl (http://haplopainter.sourceforge.net) Copyright (c) 2004-2008 Holger Thiele

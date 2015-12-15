@@ -15,6 +15,8 @@
 \alias{age<-,FAData-method}
 \alias{buildPed}
 \alias{buildPed,FAData-method}
+\alias{export}
+\alias{export,FAData-method}
 \alias{family}
 \alias{family,FAData-method}
 \alias{kinship}
@@ -46,11 +48,16 @@
   described on this page and on the \code{\link{PedigreeUtils}} help
   page, familial aggregation analysis methods on the
   \code{\link{PedigreeAnalysis}} help page.
+
+  See the section about the \code{pedigree} \code{data.frame} below for
+  a detailed description of the encoding of missing trait data or
+  founder individuals in \code{FamAgg}.
 }
 
 \section{Objects from the Class}{
   \code{FAData} objects are created by the constructor function
-  \code{FAData}.
+  \code{FAData} and should not be directly created by a call to
+  \code{new}.
 }
 \usage{
 
@@ -62,6 +69,8 @@
 
 \S4method{buildPed}{FAData}(object, id=NULL, max.generations.up=3,
                             max.generations.down=16, prune=FALSE, ...)
+
+\S4method{export}{FAData}(object, con, format="ped", ...)
 
 FAData(pedigree, age, trait, traitName, header=FALSE, sep="\t", id.col="id",
        family.col="family", father.col="father", mother.col="mother",
@@ -105,6 +114,11 @@ FAData(pedigree, age, trait, traitName, header=FALSE, sep="\t", id.col="id",
     pedigree.
   }
 
+  \item{con}{
+    For \code{export}: the file name or connection to a file to which
+    the pedigree information should be exported.
+  }
+
   \item{device}{
     For \code{plotPed}: the device of file format in which the plot
     should be saved. See details for allowed values.
@@ -135,6 +149,13 @@ FAData(pedigree, age, trait, traitName, header=FALSE, sep="\t", id.col="id",
     For \code{plotPed}: a character string specifying the name of the
     file to which the plot should be saved. If none is submitted, the
     plot is saved to a temporary file.
+  }
+
+  \item{format}{
+    For \code{export}: the format in which the pedigree should be
+    exported. At present only \code{"ped"} and \code{"fam"} are
+    exported, i.e. the file formats from plink
+    (\url{http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml}).
   }
 
   \item{header}{
@@ -343,14 +364,18 @@ FAData(pedigree, age, trait, traitName, header=FALSE, sep="\t", id.col="id",
   }
 }
 
-\section{Constructors}{
+\section{Constructors, importing and exporting data}{
   \describe{
     \item{FAData}{
       Constructor function to create a new \code{FAData} instance. In
       addition to submitting the pedigree information as
       \code{data.frame}, \code{pedigree} or \code{pedigreeLinst} it is
       possible to specify the name of the file from which the pedigree
-      information should be read. For the latter, arguments
+      information should be read.
+      The recognizes and imports plink \emph{ped} and \code{fam} files
+      (\url{http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml}) or from
+      generic text files.
+      For the latter, arguments
       \code{header}, \code{sep}, \code{family.col}, \code{id.col},
       \code{father.col}, \code{mother.col} and \code{sex.col} allow to
       further specify which columns of the file contain what information
@@ -365,6 +390,10 @@ FAData(pedigree, age, trait, traitName, header=FALSE, sep="\t", id.col="id",
       unknown, or as a character vector or factor with \code{"M"},
       \code{"m"}, \code{"Male"} or \code{"male"} for male and \code{"F"},
       \code{"f"}, \code{"Female"} or \code{"female"} for female.
+    }
+
+    \item{export}{
+      Export pedigree data to a file.
     }
   }
 }
@@ -404,6 +433,25 @@ FAData(pedigree, age, trait, traitName, header=FALSE, sep="\t", id.col="id",
       that inherits from that object), the
       \code{\link[kinship2]{pedigree}} method from the
       \code{kinship2} package is called.
+
+      For the default return type (i.e. \code{return.type="data.frame"})
+      a \code{data.frame} is returned with the following columns:
+      \code{"family"}: the ID of the family,
+      \code{"id"}: the ID of the individual,
+      \code{"father"}: the ID of the individual's father. Founder
+      individuals, i.e. individuals for whom the father and mother is
+      not known in the data set, contain a \code{NA} in this column.
+      \code{"mother"}: the ID of the individual's father. Founder
+      individuals, i.e. individuals for whom the father and mother is
+      not known in the data set, contain a \code{NA} in this column.
+      \code{"sex"}: the sex of the individuals encoded as a
+      \code{factor} with levels \code{"M"} and \code{"F"} for male and
+      female, or \code{NA} for not known.
+      If trait information is available in the object the returned
+      \code{data.frame} will also contain a column named \code{affected}
+      with the information whether the individual is affected
+      (\code{1}), not affected (\code{0}) or was not tested/phenotyped
+      \code{NA}.
     }
 
     \item{pedigree<-}{
@@ -420,6 +468,9 @@ FAData(pedigree, age, trait, traitName, header=FALSE, sep="\t", id.col="id",
       the latter, the elements have to be the ids of the individuals
       (i.e. rownames of \code{pedigree(object)}). Returns the sub-setted
       object.
+      Note that subsetting other than by family might result in a
+      non-valid pedigree (e.g. if mother or father ID are not available
+      in the sub-setted pedigree).
     }
 
     \item{trait}{
@@ -574,39 +625,47 @@ FAData(pedigree, age, trait, traitName, header=FALSE, sep="\t", id.col="id",
 ##
 ##  Create a new FAData object
 ##
-## load the Minnesota Breast Cancer record and subset to the
+## Load the Minnesota Breast Cancer record and subset to the
 ## first families.
 data(minnbreast)
 mbsub <- minnbreast[minnbreast$famid==4 | minnbreast$famid==5, ]
 mbped <- mbsub[, c("famid", "id", "fatherid", "motherid", "sex")]
-## renaming column names
+## Renaming column names
 colnames(mbped) <- c("family", "id", "father", "mother", "sex")
-## defining the optional argument age.
+## Defining the optional argument age.
 Age <- mbsub$endage
 names(Age) <- mbsub$id
-## create the object
+## Create the object
 fad <- FAData(pedigree=mbped, age=Age)
 
 fad
 
-## extract the ids directly...
+## Extract the ids directly...
 head(fad$id)
 
-## extract the kinship matrix
+## Extract the kinship matrix
 dim(kinship(fad))
 
-## what's the size of the pedigree?
+## What's the size of the pedigree?
 pedigreeSize(fad)
 
-## creating the FAData reading data from a txt file.
+## Importing a "ped" file.
+pedFile <- system.file("txt/minnbreastsub.ped.gz", package="FamAgg")
+## Quick glance at the file.
+readLines(pedFile, n=1)
+fad <- FAData(pedFile)
+
+head(pedigree(fad))
+
+## Creating the FAData reading data from a txt file.
 pedFile <- system.file("txt/minnbreastsub.txt", package="FamAgg")
 fad <- FAData(pedigree=pedFile, header=TRUE, id.col="id",
               family.col="famid", father.col="fatherid",
               mother.col="motherid")
-## adding the age
+## Adding the age
 age(fad) <- Age
 fad
-## list all families in the pedigree along with the number of
+## List all families in the pedigree along with the number of
 ## individuals
 table(fad$family)
 
@@ -614,38 +673,43 @@ table(fad$family)
 ##
 ##  Basic usage
 ##
-## extracting the pedigree information
+## Extracting the pedigree information
 ped <- pedigree(fad)
-## by default the pedigree is returned as a data.frame.
+## By default the pedigree is returned as a data.frame.
 class(ped)
 head(ped)
 
-## in addition, we can extract the pedigree as a pedigreeList
+## In addition, we can extract the pedigree as a pedigreeList
 pedigree(fad, return.type="pedigree")
 
-## return the ids of all ancestors of individual 6
+## Return the ids of all ancestors of individual 6
 ## up to 3 generations
 getAncestors(fad, id="6")
 
-## build the pedigree for individual 6: this includes all of its
+## Build the pedigree for individual 6: this includes all of its
 ## children and all of its ancestors up to the maximal number of
 ## specified generations.
 buildPed(fad, id=6)
-## which is a sub-pedigree of the complete family:
+## Which is a sub-pedigree of the complete family:
 family(fad, id=6)
 
-## in addition we can specify manually some ids in the pedigree and
+## In addition we can specify manually some ids in the pedigree and
 ## generate the smallest possible pedigree containing all ids:
 buildPed(fad, id=c(6, 23, 28), prune=TRUE)
 
-## get the list of all ids sharing kinship with individuals
+## Get the list of all ids sharing kinship with individuals
 ## 5 and 9
 shareKinship(fad, id=c("5", "9"))
 
-## subset the fad to family "4"
+## Subset the fad to family "4"
 subFad <- fad[fad$family == "4", ]
 subFad
 
+## Export the pedigree from this family to a ped file
+tmpFile <- tempfile()
+export(subFad, con=tmpFile, format="ped")
+
+head(read.table(tmpFile, sep="\t"))
 
 ##########################
 ##
@@ -658,7 +722,7 @@ plotPed(fad, id=6)
 pfile <- plotPed(fad, id=6, device="pdf")
 pfile
 
-## highlighting some of the individuals:
+## Highlighting some of the individuals:
 ## first get to know which other individuals are in the pedigree
 plotPed(fad, id=6, highlight.ids=list(hello=c(1, 2, 4)))
 
@@ -671,7 +735,7 @@ fad <- FAData(pedigree=mbped, age=Age)
 tcancer <- mbsub$cancer
 names(tcancer) <- mbsub$id
 trait(fad) <- tcancer
-## now we can plot the pedigree also showing the affected status.
+## Now we can plot the pedigree also showing the affected status.
 plotPed(fad, id=6)
 
 

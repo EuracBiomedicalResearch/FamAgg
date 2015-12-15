@@ -1,5 +1,3 @@
-## functions related to FunSim.
-
 ##********************************************************
 ##
 ##   FAData
@@ -18,31 +16,36 @@ FAData <- function(pedigree, age, trait, traitName, header=FALSE, sep="\t", id.c
         stop("Argument pedigree has to be specified!")
     }
     FSD <- new("FAData")
-######################
     ## processing pedigree
     if(is.character(pedigree)){
         ## means, we're loading the data.frame ourselfs.
         message(paste("Reading pedigree information from file ", pedigree, "..."),
                 appendLF=FALSE)
-        pedigree <- read.table(pedigree, header=header, sep=sep)
-        ## if I've got a header, check and subset to columns...
-        if(header){
-            ## check if I have all required column names...
-            if(!all(c( id.col, family.col, father.col, mother.col, sex.col) %in%
-                    colnames(pedigree)))
-                stop(paste0("One or more required column names not found! Expect: ",
-                            family.col, ", ", id.col, ", ", father.col, ", ", mother.col, ", ",
-                            sex.col, "!"))
-            pedigree <- pedigree[, c(family.col, id.col, father.col, mother.col, sex.col)]
-            colnames(pedigree) <- .PEDCN
+        pedigree <- doImport(pedigree, header=header, sep=sep, id.col=id.col, family.col=family.col,
+                             father.col=father.col, mother.col=mother.col, sex.col=sex.col)
+        ## Check if we've got eventually also the trait (i.e. from a ped or fam file).
+        if(missing(trait) & any(colnames(pedigree) == "trait")){
+            trait <- pedigree[, "trait"]
+            pedigree <- pedigree[, colnames(pedigree) != "trait"]
         }
+        ## pedigree <- read.table(pedigree, header=header, sep=sep)
+        ## ## if I've got a header, check and subset to columns...
+        ## if(header){
+        ##     ## check if I have all required column names...
+        ##     if(!all(c( id.col, family.col, father.col, mother.col, sex.col) %in%
+        ##             colnames(pedigree)))
+        ##         stop(paste0("One or more required column names not found! Expect: ",
+        ##                     family.col, ", ", id.col, ", ", father.col, ", ", mother.col, ", ",
+        ##                     sex.col, "!"))
+        ##     pedigree <- pedigree[, c(family.col, id.col, father.col, mother.col, sex.col)]
+        ##     colnames(pedigree) <- .PEDCN
+        ## }
         message("OK\n")
     }
     if(is.matrix(pedigree)){
         ## transform to data.frame
         pedigree <- as.data.frame(pedigree, stringsAsFactors=FALSE)
     }
-    ##    if(!(class(pedigree) %in% c("data.frame", "pedigree", "pedigreeList"))){
     if(!(is.data.frame(pedigree) | is(pedigree, "pedigree") | is(pedigree, "pedigreeList"))){
         stop(paste0("Argument pedigree has to be a data.frame, a character string specifying the",
                     " file containing the pedigree, a pedigree object or a pedigreeList object!"))
@@ -57,13 +60,26 @@ FAData <- function(pedigree, age, trait, traitName, header=FALSE, sep="\t", id.c
                 pedigree <- pedigree[, CN]
             }else{
                 if(ncol(pedigree)!=length(CN))
-                    stop("pedigree is expected to have ", length(CN), " columns but I got",
+                    stop("pedigree is expected to have ", length(CN), " columns but I got ",
                          ncol(pedigree), "!")
                 warning("Forcing column names ", paste(CN, collapse=";"), " on pedigree.")
                 colnames(pedigree) <- CN
             }
         }
     }
+    ## Fixing the founders:
+    if(is.factor(pedigree$father))
+        pedigree$father <- as.character(pedigree$father)
+    if(is.factor(pedigree$mother))
+        pedigree$mother <- as.character(pedigree$mother)
+    if(is.character(pedigree$father))
+        pedigree$father[pedigree$father == ""] <- NA
+    if(is.numeric(pedigree$father))
+        pedigree$father[pedigree$father == 0] <- NA
+    if(is.character(pedigree$mother))
+        pedigree$mother[pedigree$mother == ""] <- NA
+    if(is.numeric(pedigree$mother))
+        pedigree$mother[pedigree$mother == 0] <- NA
     pedigree(FSD) <- pedigree
     ## processing age
     if(!missing(age)){
@@ -83,7 +99,7 @@ FAData <- function(pedigree, age, trait, traitName, header=FALSE, sep="\t", id.c
         }
         age(FSD) <- age
     }
-    validateFAData(FSD)
+    validObject(FSD)
     if(!missing(traitName))
         FSD@traitname <- traitName
     if(!missing(trait)){

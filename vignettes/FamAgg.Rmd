@@ -25,7 +25,7 @@ references:
 
 **Package**: `r Biocpkg("FamAgg")`<br />
 **Authors**: `r packageDescription("FamAgg")[["Author"]] `<br />
-**Modified**: 2 December, 2015<br />
+**Modified**: 15 December, 2015<br />
 **Compiled**: `r date()`
 
 # Introduction
@@ -36,6 +36,9 @@ trait. Identification of families or groups of individuals within families with
 significant aggregation of cases can aid also in the selection of interesting
 and promising individuals for whole genome or exome sequencing projects.
 
+For kinship coefficient calculations and pedigree plotting the package relies
+and extends the functionality of the `kinship2` package REF.
+
 # Basic pedigree operations
 
 In the examples below we perform some simple pedigree operations, such as
@@ -44,7 +47,13 @@ ancestor for a set of individuals in a pedigree or retrieving the identifiers
 (IDs) of all ancestors for an individual.
 Basic pedigree information is stored in `FAData` objects, thus we first generate
 such an object from a subset of the Minnesota Breast Cancer Study provided by
-the `kinship2` package.
+the `kinship2` package. In the example below we generate the `FAData` providing
+a `data.frame` with the pedigree data, alternatively, the pedigree information
+could be imported from a file (see Section [3](#orgtarget1)).
+Upon data set creation the kinship matrix (i.e. a matrix containing the kinship
+coefficient between each pair of individuals in the whole pedigree) is
+internally calculated using appropriate functionality from the `kinship2`
+package.
 
 ```{r warning=FALSE, message=FALSE}
 library(FamAgg)
@@ -428,6 +437,47 @@ plot(subgr)
 plotPed(fad, id=c("7", "8", "17", "27"), prune=TRUE)
 ```
 
+# Importing and exporting pedigree data<a id="orgtarget1"></a>
+
+Besides providing the pedigree data as a `data.frame`, the `FAData` constructor
+can also read pedigree data from various file formats, such as plink
+[@Purcell:2007dg] *ped* or *fam* files
+(<http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml>) or generic text files.
+
+```{r }
+## Importing a "ped" file.
+pedFile <- system.file("txt/minnbreastsub.ped.gz", package="FamAgg")
+## Quick glance at the file.
+readLines(pedFile, n=1)
+fad <- FAData(pedFile)
+
+head(pedigree(fad))
+```
+
+Alternatively we can import pedigree data from generic input files.
+
+```{r }
+## Creating the FAData reading data from a txt file.
+pedFile <- system.file("txt/minnbreastsub.txt", package="FamAgg")
+fad <- FAData(pedigree=pedFile, header=TRUE, id.col="id",
+	      family.col="famid", father.col="fatherid",
+	      mother.col="motherid")
+```
+
+And we can export pedigree data again using the `export` method. In the example
+below we subset the whole pedigree to the pedigree of family 4 and export this
+as a *ped* file.
+
+```{r }
+tmpF <- tempfile()
+
+## Subset the pedigree to family 4
+fam4 <- fad[fad$family == 4, ]
+
+## Export the data
+export(fam4, tmpF, format="ped")
+```
+
 # Testing for familial aggregation
 
 Familial aggregation aims to identify families within large ancestral
@@ -547,7 +597,7 @@ table(gi$sex[affectedIndividuals(gi)])
 ## We can use the gender information to perform stratified sampling, i.e.
 ## in each permutation a random set of 3 male and 15 females will be selected.
 giStrata <- genealogicalIndexTest(fad, trait=tcancer, traitName="cancer", nsim=nsim,
-			      strata=fad$sex)
+				  strata=fad$sex)
 
 result(giStrata)
 ```
@@ -617,7 +667,7 @@ proportions in the *real*, observed, affected.
 ```{r }
 ## Perform the kinship sum test.
 kinSum <- kinshipSumTest(fad, trait=tcancer, traitName="cancer",
-			   nsim=nsim, strata=fad$sex)
+			 nsim=nsim, strata=fad$sex)
 head(result(kinSum))
 ```
 

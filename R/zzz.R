@@ -13,7 +13,7 @@
     colnames(PedDf) <- .PEDCN
     PedDf$sex <- sanitizeSex(PedDf$sex)
     suppressMessages(
-        fad <- new("FAData", pedigree=PedDf)
+        fad <- FAData(PedDf)
     )
     ped <- buildPed(fad, id=6)
     pedDf <- buildHaplopaintDataframe(individual=ped$id, father=ped$father, mother=ped$mother, gender=ped$sex)

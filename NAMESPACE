@@ -26,7 +26,7 @@ exportClasses("FAData", "FAProbResults", "FAKinGroupResults",
               "FAStdIncidenceRateResults")
 ## exported methods
 exportMethods("$", "[", "affectedIndividuals", "affectedKinshipGroups", "age", "age<-",
-              "buildPed", "cliques", "cliques<-", "cliqueAndTrait", "family",
+              "buildPed", "cliques", "cliques<-", "cliqueAndTrait", "export", "family",
               "kinship", "lambda", "pedigree", "pedigree<-",
               "pedigreeSize", "phenotypedIndividuals",
               "plotPed", "plotRes", "resultForId", "shareKinship", "result", "trait", "trait<-",
