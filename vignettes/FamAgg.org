@@ -45,7 +45,7 @@ references:
 
 **Package**: `r Biocpkg("FamAgg")`<br />
 **Authors**: `r packageDescription("FamAgg")[["Author"]] `<br />
-**Modified**: 15 December, 2015<br />
+**Modified**: 22 December, 2015<br />
 **Compiled**: `r date()`
 
 #+END_HTML
@@ -56,26 +56,33 @@ references:
 
 * How to export this to a =Rmd= vignette			   :noexport:
 
-Use =ox-ravel= to export this file as an R markdown file (=C-c C-e m
-r=). That way we don't need to edit the resulting =Rmd= file.
+Use =ox-ravel= to export this file as an R markdown file (=C-c C-e m r=). That
+way we don't need to edit the resulting =Rmd= file.
 
 * How to export this to a =Rnw= vignette 			   :noexport:
 
 *Note*: this is deprecated! Use the =Rmd= export instead!
 
-Use =ox-ravel= from the =orgmode-accessories= package to export this file to a =Rnw= file. After export edit the generated =Rnw= in the following way:
+Use =ox-ravel= from the =orgmode-accessories= package to export this file to a
+=Rnw= file. After export edit the generated =Rnw= in the following way:
 
 1) Delete all =\usepackage= commands.
-2) Move the =<<style>>= code chunk before the =\begin{document}= and before =\author=.
-3) Move all =%\Vignette...= lines at the start of the file (even before =\documentclass=).
+2) Move the =<<style>>= code chunk before the =\begin{document}= and before
+   =\author=.
+3) Move all =%\Vignette...= lines at the start of the file (even before
+   =\documentclass=).
 4) Replace =\date= with =\date{Modified: 21 October, 2013. Compiled: \today}=
-5) Eventually search for all problems with =texttt=, i.e. search for pattern ="==.
+5) Eventually search for all problems with =texttt=, i.e. search for pattern
+   ="==.
 
-Note: use =:ravel= followed by the properties for the code chunk headers, e.g. =:ravel results='hide'=. Other options for knitr style options are:
-+ =results=: ='hide'= (hides all output, not warnings or messages), ='asis'=, ='markup'= (the default).
+Note: use =:ravel= followed by the properties for the code chunk headers,
+e.g. =:ravel results='hide'=. Other options for knitr style options are:
++ =results=: ='hide'= (hides all output, not warnings or messages), ='asis'=,
+  ='markup'= (the default).
 + =warning=: =TRUE= or =FALSE= whether warnings should be displayed.
 + =message=: =TRUE= or =FALSE=, same as above.
-+ =include=: =TRUE= or =FALSE=, whether the output should be included into the final document (code is still evaluated).
++ =include=: =TRUE= or =FALSE=, whether the output should be included into the
+  final document (code is still evaluated).
 
 * Introduction
 
@@ -86,7 +93,7 @@ significant aggregation of cases can aid also in the selection of interesting
 and promising individuals for whole genome or exome sequencing projects.
 
 For kinship coefficient calculations and pedigree plotting the package relies
-and extends the functionality of the =kinship2= package REF.
+and extends the functionality of the =kinship2= package \cite{Sinnwell:2014kd}.
 
 
 * Basic pedigree operations
@@ -94,16 +101,15 @@ and extends the functionality of the =kinship2= package REF.
 In the examples below we perform some simple pedigree operations, such as
 plotting the pedigree for an individual or family, finding the closest common
 ancestor for a set of individuals in a pedigree or retrieving the identifiers
-(IDs) of all ancestors for an individual.
-Basic pedigree information is stored in =FAData= objects, thus we first generate
-such an object from a subset of the Minnesota Breast Cancer Study provided by
-the =kinship2= package. In the example below we generate the =FAData= providing
-a =data.frame= with the pedigree data, alternatively, the pedigree information
-could be imported from a file (see Section [[import.export]]).
-Upon data set creation the kinship matrix (i.e. a matrix containing the kinship
-coefficient between each pair of individuals in the whole pedigree) is
-internally calculated using appropriate functionality from the =kinship2=
-package.
+(IDs) of all ancestors for an individual. Basic pedigree information is stored
+in =FAData= objects, thus we first generate such an object from a subset of the
+Minnesota Breast Cancer Study provided by the =kinship2= package. In the example
+below, we generate the =FAData= providing a =data.frame= with the pedigree data,
+alternatively, the pedigree information could be imported from a file (see
+Section [[import.export]]).  Upon data set creation the kinship matrix (i.e. a
+matrix containing the kinship coefficient between each pair of individuals in
+the whole pedigree) is internally calculated using the functionality from the
+=kinship2= package \cite{Sinnwell:2014kd}.
 
 
 #+BEGIN_SRC R :ravel warning=FALSE, message=FALSE
@@ -176,10 +182,10 @@ capabilities of the =kinship2= package are used to plot pedigrees, but
 alternatively, if all required dependencies are available, the =HaploPainter=
 \cite{Thiele:2005} perl script (http://haplopainter.sourceforge.net/) can be
 used instead. The =switchPlotfun= function can be used to switch the plotting
-back-end. Available arguments are =ks2paint= and =haplopaint= for =kinship2=
-and =HaploPainter= plotting, respectively. Note however, that =HaploPainter=
-only allows to export plots to a file, while =kinship2= plotting allows, in
-addition to export the plot, also to show it as a /standard/ =R= plot.
+back-end. Available arguments are =ks2paint= and =haplopaint= for =kinship2= and
+=HaploPainter= plotting, respectively. Note however, that =HaploPainter= only
+allows to export plots to a file, while =kinship2= plotting allows, in addition
+to export the plot, also to show it as a /standard/ =R= plot.
 
 Below we use the =switchPlotfun= to ensure the use of =kinship2= plotting
 (usually not required) and plot the full available pedigree of individual =3=.
@@ -226,10 +232,9 @@ be different than the pedigree of a whole family. The pedigree returned by
 =buildPed= contains only individuals that share kinship with the specified
 individual. To exemplify this, we plot the pedigree for the family =14= in the
 Minnesota Breast Cancer data set. Note that the individuals in the pedigree plot
-depicted as diamonds are individuals with unknown gender. (The message
-"Did not plot..." is issued by the =kinship2= plotting function and indicates
-singletons that are assigned to the family but do neither have parents nor
-children.)
+depicted as diamonds are individuals with unknown gender. (The message "Did not
+plot..." is issued by the =kinship2= plotting function and indicates singletons
+that are assigned to the family but do neither have parents nor children.)
 
 #+BEGIN_SRC R :ravel pedigree-family-14, message=FALSE, fig.align='center'
   plotPed(fad, family="14", cex=0.4)
@@ -249,7 +254,6 @@ she shares kinship with them (/via/ her mother =441=).
   ## What for the pedigree of 447?
   any(buildPed(fad, id="447")$id == "26064")
 #+END_SRC
-
 
 A family pedigree may consist of many founder couples (i.e. individuals for
 which neither father nor mother is defined in the pedigree). To identify the
@@ -282,7 +286,7 @@ respectively.
   ## Get the children of ID 4.
   getChildren(fad, id="4", max.generations=1)
 
-  ## Get the offspring.
+  ## Get the offsprings.
   getChildren(fad, id="4")
 
   ## Get all ancestors.
@@ -294,8 +298,8 @@ respectively.
 
 In the whole Minnesota Breast Cancer data set there are 426 families
 corresponding to 426 founders that had cancer during the screening phase between
-1944 and 1952.
-In the code block below we identify the affected founders per family.
+1944 and 1952. In the code block below we identify the affected founders per
+family.
 
 #+BEGIN_SRC R
   ## Add the trait information to the FAData object.
@@ -303,16 +307,16 @@ In the code block below we identify the affected founders per family.
   names(cancer) <- as.character(mbsub$id)
   trait(fad) <- cancer
 
-  ## Identify the affected founders:
-  ## First all affected individuals:
+  ## Identify the affected founders.
+  ## First all affected individuals.
   affIds <- affectedIndividuals(fad)
-  ## Identify founders for each family:
+  ## Identify founders for each family.
   founders <- lapply(unique(fad$family), function(z){
       return(findFounders(fad, family=z))
   })
   names(founders) <- unique(fad$family)
 
-  ## Track the affected founder:
+  ## Track the affected founder.
   affFounders <- lapply(founders, function(z){
       return(z[z %in% affIds])
   })
@@ -321,10 +325,10 @@ In the code block below we identify the affected founders per family.
   ## been included.
   affFounders <- affFounders[unlist(lapply(affFounders, length)) > 0]
 
-  ## The number of families analyzed:
+  ## The number of families analyzed.
   length(founders)
 
-  ## The number of families with affected founder:
+  ## The number of families with affected founder.
   length(affFounders)
 
 #+END_SRC
@@ -349,16 +353,15 @@ affected founders.
 
 ** Pedigree analysis methods
 
-In this section we perform some more advanced pedigree operations.
-First we identify all individuals in the pedigree that share kinship with
-individual =4=.
+In this section we perform some more advanced pedigree operations. First, we
+identify all individuals in the pedigree that share kinship with individual =4=.
 
 #+BEGIN_SRC R
   ## Get all individuals sharing kinship with individual 4.
   shareKinship(fad, id="4")
 #+END_SRC
 
-Next we determine generations within the pedigree. Generations can only be
+Next, we determine generations within the pedigree. Generations can only be
 estimated for a single family, since in most instances e.g. the year of birth is
 not available. Thus, generations are estimated considering the relation between
 individuals, starting from the founder couple, i.e. generation 0, assigning
@@ -366,8 +369,8 @@ generation 1 to their children and all the mates of their children and so
 on. The =estimateGenerations= method calculates such generation numbers for each
 family defined in the object (or for a single family, if the family ID is
 provided). The result is returned as a list with the list names corresponding to
-the family ID and the list elements being the estimated generation numbers
-(with names corresponding to the ID of the respective individual).
+the family ID and the list elements being the estimated generation numbers (with
+names corresponding to the ID of the respective individual).
 
 #+BEGIN_SRC R
   ## Estimate generation levels for all families.
@@ -385,12 +388,11 @@ In addition, it is also possible to calculate generation levels relative to a
   gens <- generationsFrom(fad, id="4")
 #+END_SRC
 
-We can draw these generation numbers into the pedigree:
+We can render these generation numbers into the pedigree:
 
 #+BEGIN_SRC R :ravel family-four-gens-rel-to-four, message=FALSE, fig.align='center'
   plotPed(fad, family=4, label2=gens)
 #+END_SRC
-
 
 
 ** Additional plotting options
@@ -398,7 +400,7 @@ We can draw these generation numbers into the pedigree:
 If a trait information is available it might be of interest to highlight
 affected individuals in the pedigree. Trait information should always be coded
 as =0= (or =FALSE=) for unaffected and =1= (or =TRUE=) for affected. In the
-example below we use the /cancer/ information from the Minnesota Breast Cancer
+example below, we use the /cancer/ information from the Minnesota Breast Cancer
 Study.
 
 #+BEGIN_SRC R :results silent :ravel results='hide', message=FALSE
@@ -434,7 +436,7 @@ symbols and symbols with a question mark inside, respectively).
   plotPed(fad, family="9")
 #+END_SRC
 
-In addition we can manually highlight individuals using the =highlight.ids=
+In addition, we can manually highlight individuals using the =highlight.ids=
 argument. For =kinship2= pedigree plotting, a list of length 2 is supported as
 argument =highlight.ids=, with the first element being plotted on the top left
 corner of the symbol and the second element on the top right corner.
@@ -459,7 +461,7 @@ applied to pedigrees.
   ## Transform the full pedigree to a graph.
   fullGraph <- ped2graph(pedigree(fad))
 
-  ## In addition build the graph for a single family.
+  ## In addition, build the graph for a single family.
   singleFam <- ped2graph(family(fad, family=4))
 #+END_SRC
 
@@ -472,7 +474,6 @@ methods provided in the =igraph= package.
   lay <- layout_(singleFam, on_grid())
   plot(singleFam, layout=lay)
 #+END_SRC
-
 
 The =connectedSubgraph= function implemented in the =FamAgg= package provides
 additional functionality to find the smallest connected subgraph of a list of
@@ -504,8 +505,8 @@ can also read pedigree data from various file formats, such as plink
 \cite{Purcell:2007dg} /ped/ or /fam/ files
 (http://pngu.mgh.harvard.edu/~purcell/plink/data.shtml) or generic text files.
 
-#+BEGIN_SRC R
-  ## Importing a "ped" file.
+#+BEGIN_SRC R :ravel message=FALSE
+  ## Import a "ped" file.
   pedFile <- system.file("txt/minnbreastsub.ped.gz", package="FamAgg")
   ## Quick glance at the file.
   readLines(pedFile, n=1)
@@ -515,10 +516,10 @@ can also read pedigree data from various file formats, such as plink
 
 #+END_SRC
 
-Alternatively we can import pedigree data from generic input files.
+Alternatively, we can import pedigree data from generic input files.
 
-#+BEGIN_SRC R
-  ## Creating the FAData reading data from a txt file.
+#+BEGIN_SRC R :ravel message=FALSE
+  ## Create the FAData by reading data from a txt file.
   pedFile <- system.file("txt/minnbreastsub.txt", package="FamAgg")
   fad <- FAData(pedigree=pedFile, header=TRUE, id.col="id",
 		family.col="famid", father.col="fatherid",
@@ -527,7 +528,7 @@ Alternatively we can import pedigree data from generic input files.
 #+END_SRC
 
 And we can export pedigree data again using the =export= method. In the example
-below we subset the whole pedigree to the pedigree of family 4 and export this
+below, we subset the whole pedigree to the pedigree of family 4 and export this
 as a /ped/ file.
 
 #+BEGIN_SRC R
@@ -536,28 +537,19 @@ as a /ped/ file.
   ## Subset the pedigree to family 4
   fam4 <- fad[fad$family == 4, ]
 
-  ## Export the data
+  ## Export data in ped format.
   export(fam4, tmpF, format="ped")
 #+END_SRC
 
 
 
-
 * Testing for familial aggregation
 
-Familial aggregation aims to identify families within large ancestral
-pedigrees that show a non-random aggregation of traits.  One such method to
-test if a disease is clustered in families is the /genealogical index/
-\cite{Hill:1980tz}. For a given trait (e.g. whether or not an individual was
-diagnosed with a certain type of cancer), the method computes the mean kinship
-between affected individuals (cases) in the whole pedigree along with mean
-kinship values of randomly drawn sets of individuals. The distribution of
-average kinship values among the control sets is then used to estimate the
-probability that the observed level of kinship among the cases is due to
-chance.
+Familial aggregation aims to identify families within large ancestral pedigrees
+that show a non-random aggregation of traits.
 
-As an example we analyze here data from the Minnesota Breast Cancer Record which
-is provided by the =kinship2= package. In brief, this data set consists of
+As an example, we analyze here data from the Minnesota Breast Cancer Record,
+which is provided by the =kinship2= package. In brief, this data set consists of
 genealogical information from 426 unrelated founders diagnosed with breast
 cancer whose families entered a longitudinal study on cancer in the state of
 Minnesota (USA) in 1944. Cancer cases are encoded with a =1= in column =cancer=
@@ -570,30 +562,25 @@ caution. Another important information is provided in column =endage=, which
 represents either the age of cancer onset, the age at the end of the study or
 the age at death of the participant.
 
-We next calculate the genealogical index for cancer occurrence in a subset of
-the Minnesota Breast Cancer Record data set. We first generate the appropriate
-=FAData= object containing the pedigree and perform the analysis using the
-=genealogicalIndexTest= method on the =cancer= trait. In its default setting the
-=genealogicalIndexTest= function uses all phenotyped individuals in the pedigree
-as control population from which sets of random samples equal in size to the
-number of affected are drawn.
-
 Note that, to reduce computation time, we perform the analysis only on a subset
 of families from the Minnesota Breast Cancer record and reduce the number of
 simulation runs. We specifically selected some families with a high percentage
-of cancer cases, thus, the analysis presented here is biased.
+of cancer cases, thus, the analysis presented here is biased. Also, in a real
+analysis you should increase the =nsim= argument.
 
 
 #+BEGIN_SRC R :ravel warning=TRUE, message=FALSE
+  library(FamAgg)
+  set.seed(18011977)
   data(minnbreast)
   ## Subset the dataset to reduce processing time.
   mbsub <- minnbreast[minnbreast$famid %in% c(4:60, 432), ]
-  ## Use the whole dataset instead:
+  ## Uncomment the line below to use the whole dataset instead.
   ## mbsub <- minnbreast
 
   ## Define the number of simulations we perform.
-  ## nsim <- 50000
-  nsim <- 400
+  ## nsim <- 10000
+  nsim <- 1000
 
   mbped <- mbsub[, c("famid", "id", "fatherid", "motherid", "sex")]
   ## Renaming column names.
@@ -604,32 +591,80 @@ of cancer cases, thus, the analysis presented here is biased.
   ## Define the trait.
   tcancer <- mbsub$cancer
   names(tcancer) <- as.character(mbsub$id)
-  ## Calculate the genealogical index:
+#+END_SRC
+
+In the following section we analyze the data set first using the /genealogical
+index/ method \cite{Hill:1980tz} (Section [[section.gi]]), then we estimate the
+per-individual risk of disease using the /familial incidence rate/ (FIR, also
+abbreviated as /FR/ in the original work) \cite{Kerber:1995cx} (Section
+[[section.fr]]) and apply our /kinship sum test/ to identify affected individuals
+exhibiting a higher relationship to other affected individuals than what would
+be expected by chance (Section [[section.kinsum]]). Subsequently, we apply our
+/kinship group test/ (Section [[section.kingroup]]) that allows to identify highly
+clustered affected individuals within families.
+
+In Section [[section.prob]] we apply the /probability test/ based on the method from
+Yu et al \cite{Yu:2002vu} for inference on family disease clusters. We use the
+corresponding implementation in the =gap= package, that, due to an
+implementation specific limitation, can however not be directly applied to large
+pedigrees as the present, but requires definitions of smaller pedigree sub-sets
+(cliques).
+
+The /genealogical index of familiality/, the /familial incidence rate/ and the
+/probability test/ are well established methods while the /kinship sum test/ and
+the /kinship group test/ are novel approaches presented here for the first time.
+
+** /Genealogical index of familiality/ <<section.gi>>
+
+We next calculate the /genealogical index of familiality/ (GIF)
+\cite{Hill:1980tz} (referred to as the /genealogical index/ in the original
+work) for cancer occurrence in a subset of the Minnesota Breast Cancer Record
+data set. For a given trait (e.g. whether or not an individual was diagnosed
+with a certain type of cancer), the method computes the mean kinship between
+affected individuals (cases) in the whole pedigree along with mean kinship
+values of randomly drawn sets of individuals. The distribution of average
+kinship values among the control sets is then used to estimate the probability
+that the observed level of kinship among the cases is due to chance.
+
+Below, we perform the analysis using the =genealogicalIndexTest= method on the
+=cancer= trait. In its default setting, the =genealogicalIndexTest= function
+uses all phenotyped individuals in the pedigree as control population from which
+sets of random samples equal in size to the number of affected are drawn.
+
+Note that by default the function excludes all singletons (i.e. unconnected
+individuals in the pedigree) from the analysis. Changing the argument
+=rm.singletons= to =FALSE= will estimate the GIF on the full data set.
+
+#+BEGIN_SRC R :ravel warning=FALSE, message=TRUE
+  ## Calculate the genealogical index of familiality.
   gi <- genealogicalIndexTest(fad, trait=tcancer, traitName="cancer",
                               nsim=nsim)
 
-  ## Display the result:
+  ## Display the result.
   result(gi)
 #+END_SRC
 
-Thus, according to the genealogical index test, a clustering of cancer cases is
-present in the analyzed pedigree. The warning messages just indicate that some
-individuals have been excluded from the test since they were either not phenotyped
-in the trait (i.e. have a missing value in trait), or are not /connected/ in the
-family pedigree (do not share kinship with any other individual in the pedigree
-after removing non-phenotyped individuals).
+The column /genealogical index/ of the result =data.frame= shown above
+represents the mean kinship between all pairs of affected individuals in the
+pedigree multiplied by =100000= for easier interpretation.  Thus, according to
+the GIF test, a clustering of cancer cases is present in the analyzed
+pedigree. The output messages from the method call indicate that some
+individuals have been excluded from the test since they were either not
+phenotyped in the trait (i.e. have a missing value in trait), or are not
+/connected/ in the family pedigree (do not share kinship with any other
+individual in the pedigree after removing non-phenotyped individuals).
 
-The genealogical index implementation in this package adds some more flexibility
-to the original approach. The definition of the appropriate set of control
-individuals from which random samples are drawn can be specified with the
-=controlSetMethod= argument. Also, it is possible to perform a stratified
-sampling, e.g. if the group of affected cases in a pedigree consists of 5
-female and 3 male individuals, submitting the sex of each individual in the
-pedigree with the argument =strata= (i.e. =strata=fad$sex=, with =fad= being the
-=FAData= object on which the analysis is performed) allows the function to
-define random control sets with the same proportion of male/female individuals.
+The genealogical index of familiality implementation in this package adds some
+more flexibility to the original approach. The definition of the appropriate set
+of control individuals from which random samples are drawn can be specified with
+the =controlSetMethod= argument. Also, it is possible to perform a stratified
+sampling, e.g. if the group of affected cases in a pedigree consists of 5 female
+and 3 male individuals, submitting the sex of each individual in the pedigree
+with the argument =strata= (i.e. =strata=fad$sex=, with =fad= being the =FAData=
+object on which the analysis is performed) allows the function to define random
+control sets with the same proportion of male/female individuals.
 
-In the next example we use the =getSexMatched= function to define the set of
+In the next example, we use the =getSexMatched= function to define the set of
 control individuals and also the =getExternalMatched= submitting the gender
 information of each individual. The results from both approaches are essentially
 identical, and in the present data set not that useful, as the Minnesota Breast
@@ -638,11 +673,13 @@ Cancer data set lists both, breast cancer and prostate cancer in column
 known sex.
 
 #+BEGIN_SRC R :ravel warning=FALSE, eval=FALSE
-  ## Calculate the genealogical index using random sampling from a sex matched control set.
+  ## Calculate the genealogical index of familiality using random sampling from
+  ## a sex matched control set.
   giSexMatch <- genealogicalIndexTest(fad, trait=tcancer, traitName="cancer", nsim=nsim,
                                   controlSetMethod="getSexMatched")
 
-  ## Use an external vector to perform the matching. The results are essentially identical.
+  ## Use an external vector to perform the matching.
+  ## The results are essentially identical.
   giExtMatch <- genealogicalIndexTest(fad, trait=tcancer, traitName="cancer", nsim=nsim,
                                   controlSetMethod="getExternalMatched", match.using=fad$sex)
 #+END_SRC
@@ -652,11 +689,11 @@ individuals with missing values in either the matching criteria or the strata.
 
 In the Minnesota Breast Cancer data set, the number of prostate cancer cases is
 much lower than the number of breast cancer cases, thus, simple random sampling
-might result in an biased genealogical index estimate since about the same
-proportion of male and female individuals will be sampled. To account for such
-cases a stratified sampling, as performed below, can be used instead.
+might result in an biased genealogical index of familiality estimate since about
+the same proportion of male and female individuals will be sampled. To account
+for such cases a stratified sampling, as performed below, can be used instead.
 
-#+BEGIN_SRC R :ravel warning=FALSE
+#+BEGIN_SRC R :ravel message=FALSE
   ## Evaluate the proportion of male and femal cases.
   table(gi$sex[affectedIndividuals(gi)])
 
@@ -668,56 +705,110 @@ cases a stratified sampling, as performed below, can be used instead.
   result(giStrata)
 #+END_SRC
 
-At last we plot the result from the simulation. The blue vertical line in the
-plot below represents the mean kinship value between all affected in the
-pedigree. The distribution of mean kinship values from the 1000 randomly drawn
-sets are shown in grey color.
+Finally, we plot the result from the simulation. The blue vertical line in the
+plot below represents the mean kinship value between all affected individuals in
+the pedigree. The distribution of mean kinship values from the 1000 randomly
+drawn sets are shown in grey color.
 
 #+BEGIN_SRC R :ravel mbreast-genealogical-index-result, message=FALSE, warning=FALSE, fig.align='center'
   ## Plot the result.
   plotRes(giStrata)
 #+END_SRC
 
-In the example above we tested for an enrichment of cancer cases in the full
-data set, i.e. across all families. In addition we could however also perform
-the test individually for each family, by setting the =perFamilyTest= parameter
-of the =genealogicalIndexTest= to =TRUE=, and thus test for a clustering of
-cancer cases within each family.
+The genealogical index of familiality can also be estimated by the =gif=
+function from the =gap= R-package. Below we calculate the estimate using both
+methods and compare the resulting estimate. Note that the =gif= method reports
+only the genealogical index of familiality estimate but does not estimate
+significance.
 
+#+BEGIN_SRC R :ravel message=FALSE
+  library(gap)
+
+  ## Adding the trait information, so the extracted pedigree data.frame will
+  ## also contain a column "affected" with that information.
+  trait(fad) <- tcancer
+
+  ## Extract the pedigree and re-format it for the gif function.
+  pedi <- pedigree(fad)
+  ## Remove singletons.
+  pedi <- removeSingletons(pedi)
+  pedi[is.na(pedi$father), "father"] <- 0
+  pedi[is.na(pedi$mother), "mother"] <- 0
+
+  ## Identify the affected individuals.
+  affIds <- as.numeric(pedi$id[which(pedi$affected == 1)])
+
+  ## Execute the gif method contained in the gap package.
+  gifRes <- gif(pedi[, c("id", "father", "mother")], affIds)
+
+  ## Calculate the GIF using FamAgg's genealogicalIndexTest.
+  gifT <- genealogicalIndexTest(fad, trait=tcancer, nsim=100)
+
+  ## Comparing the results:
+  gifRes[[1]] == result(gifT)$genealogical_index
+#+END_SRC
+
+In the examples above, we tested for an enrichment of cancer cases in the full
+data set, i.e. across all families. In addition, we can perform the test
+individually for each family, by setting the =perFamilyTest= parameter of the
+=genealogicalIndexTest= to =TRUE=, and thus test for a clustering of cancer
+cases within each family.
+
+#+BEGIN_SRC R :ravel message=FALSE, warning=FALSE
+  ## Perform the analysis (no strata etc) separately for each family.
+  giFam <- genealogicalIndexTest(fad, trait=tcancer, nsim=nsim,
+				 perFamilyTest=TRUE, traitName="Cancer")
+
+  ## Display the result from the analysis.
+  head(result(giFam))
+#+END_SRC
+
+** /Familial incidence rate/ (FIR)<<section.fr>>
 
 # The FR from Kerber
 A per-individual risk of e.g. disease can be calculated using the /familial
-incidence rate/ (FR) \cite{Kerber:1995cx}. This measure considers the kinship of each
-individual with any affected in a given trait in the pedigree and the time at
-risk for each individual. Thus, the FR is an estimate for the risk per gene-time
-for each individual given the disease-experience in the cohort.
+incidence rate/ (FIR, abbreviated as /FR/ in the original work)
+\cite{Kerber:1995cx}. This measure considers the kinship of each individual with
+any affected in a given trait in the pedigree and the time at risk for each
+individual. Thus, the FIR is an estimate for the risk per gene-time for each
+individual given the disease-experience in the cohort.
 
 As /time at risk/ for each individual we use the =endage= column in the
-Minnesota Breast Cancer data set, that represents the participant's age at the
+Minnesota Breast Cancer data set, which represents the participant's age at the
 last follow-up or at cancer incidence. This estimate of time at risk is rather
-crude and in a real life situation a better, more accurate, estimate that bases
-e.g. on the birth dates and dates of last follow up or incidence might be used
-instead. See the help of functions =estimateTimeAtRisk= and =sliceAge= for
+crude and in a real life situation a better, more accurate, estimate that is
+based e.g. on the birth dates and dates of last follow up or incidence might be
+used instead. See the help of functions =estimateTimeAtRisk= and =sliceAge= for
 details and options related to /time at risk/.
 
 #+BEGIN_SRC R :ravel warning=FALSE
   ## Estimate the risk for each individual using the familial incidence rate method.
-  ## We use the endage provided in the minnesota breast cancer record as
+  ## We use the endage provided in the Minnesota Breast Cancer Record as
   ## a measure for time at risk.
   fr <- familialIncidenceRate(fad, trait=tcancer, timeAtRisk=mbsub$endage)
 
 #+END_SRC
 
-Next we calculate the mean FR within each family and plot this information.
+A note on singletons: for all per-individual measures unconnected individuals
+within the pedigree are automatically excluded from the calculations as no
+kinship-based statistics can be estimated for them (they do, by definition, not
+share kinship with any other individual in the pedigree, thus their kinship
+coefficient with any other individual in the pedigree will be =0=). Note also
+that the removal of e.g. not phenotyped individuals prior to the calculation can
+also /generate/ singletons, that additionally become removed. This removal
+results in an estimate with the value =NA= for all singletons as well as not
+phenotyped individuals.
+
+Next, we calculate the mean FIR within each family and plot this information.
 
 #+BEGIN_SRC R :ravel mbreast-mean-fr-per-family, message=FALSE, warning=FALSE, fig.align='center'
-  ## Split the FR by family and average the values within each.
+  ## Split the FIR by family and average the values within each.
   frFam <- split(fr, f=fad$family)
   frFamAvg <- lapply(frFam, mean, na.rm=TRUE)
 
   ## Sort and plot the averages.
   frFamAvg <- sort(unlist(frFamAvg), decreasing=TRUE)
-  plot(frFamAvg, type="h", xaxt="n", xlab="", ylab="mean FR",
+  plot(frFamAvg, type="h", xaxt="n", xlab="", ylab="mean FIR",
        main="Per family averaged familial incidence rate")
   axis(side=1, las=2, at=1:length(frFamAvg), label=names(frFamAvg))
 
@@ -726,13 +817,73 @@ Next we calculate the mean FR within each family and plot this information.
 Not unexpectedly, individuals in some families have on average a higher familial
 incidence rate, and thus a higher risk of cancer than others.
 
-# The kinship sum test; compare significant individuals to high FR.
-Next we use the /kinship sum test/ that evaluates familial aggregation based
-on the sum of kinship values between affected cases. The test identifies
-affected individuals exhibiting a higher relationship to other affected
-individuals than would be expected by chance. By specifying the =strata= we
-perform sex-stratified random sampling, i.e. ensure that the proportion of male
-and female individuals in each randomly sampled group matches the corresponding
+In the next example, we calculate the familial incidence rate assessing in
+addition the significance of each estimate using Monte Carlo simulations. This
+extension to the original approach from Kerber \cite{Kerber:1995cx} does also
+allow stratified sampling.
+
+#+BEGIN_SRC R :ravel warning=FALSE, message=FALSE
+  ## Estimate the risk for each individual using the familial incidence rate method.
+  ## We use the endage provided in the Minnesota Breast Cancer Record as
+  ## a measure for time at risk.
+  frTest <- familialIncidenceRateTest(fad, trait=tcancer, traitName="cancer",
+                                      timeAtRisk=mbsub$endage, nsim=nsim)
+
+#+END_SRC
+
+The familial incidence rate can be extracted easily from the result object using
+the =familialIncidenceRate= method or using =$fir=. Also, the empirical p-value
+from the simulation analysis and the time at risk can be accessed using the =$=
+operator (i.e. using =$pvalue=, =$tar= or =$timeAtRisk=, respectively).
+
+#+BEGIN_SRC R
+  head(familialIncidenceRate(frTest))
+  head(frTest$fir)
+
+#+END_SRC
+
+Finally, we inspect the results from the analysis.
+
+#+BEGIN_SRC R
+  head(result(frTest))
+
+#+END_SRC
+
+We can also identify the families containing individuals with a significant FIR.
+
+#+BEGIN_SRC R
+  frRes <- result(frTest)
+  frSig <- frRes[which(frRes$padj < 0.05), ]
+
+  ## Split by family.
+  frFam <- split(frSig, frSig$family)
+  frRes <- data.frame(family=names(frFam), no_sign_fir=unlist(lapply(frFam, nrow)))
+  ## Determine the number of phenotyped and affected individuals per family.
+  noPheNAff <- sapply(names(frFam), function(z){
+      fam <- family(frTest, family=z)
+      return(c(no_pheno=sum(!is.na(fam$affected)),
+               no_aff=length(which(fam$affected == 1))
+               ))
+  })
+  frRes <- cbind(frRes, t(noPheNAff))
+
+  ## Display the number of phenotyped and affected individuals as well as
+  ## the number of individuals within the families with a significant FIR.
+  frRes[order(frRes[, "no_sign_fir"], decreasing=TRUE), ]
+#+END_SRC
+
+Again, we can see that we have an enrichment of affected cases in families 432
+and 13.
+
+** /Kinship sum test/ <<section.kinsum>>
+
+# The kinship sum test; compare significant individuals to high FIR.
+Next, we use the /kinship sum test/ that evaluates familial aggregation based on
+the sum of kinship values between affected cases. The test identifies affected
+individuals exhibiting a higher relationship to other affected individuals than
+would be expected by chance. By specifying the =strata= we perform
+sex-stratified random sampling, i.e. ensure that the proportion of male and
+female individuals in each randomly sampled group matches the corresponding
 proportions in the /real/, observed, affected.
 
 #+BEGIN_SRC R
@@ -743,16 +894,13 @@ proportions in the /real/, observed, affected.
 
 #+END_SRC
 
-The warning messages above indicate that for some individuals in the pedigree no
-gender information is provided. These individuals have to be excluded from the
-stratified random sampling.
-
-Next we identify those individuals that have a significant kinship sum accepting
-a 10% false discovery rate (FDR).
+Next, we identify those individuals that have a significant kinship sum
+accepting a 10% false discovery rate (FDR).
 
 #+BEGIN_SRC R
-  ## Extract the IDs of the individuals with significant kinship. By default, the raw p-values
-  ## are adjusted for multiple hypothesis testing using the method from Benjamini and Hochberg
+  ## Extract the IDs of the individuals with significant kinship. By default, the raw
+  ## p-values are adjusted for multiple hypothesis testing using the method from
+  ## Benjamini and Hochberg.
   kinSumRes <- result(kinSum)
   kinSumIds <- as.character(kinSumRes[kinSumRes$padj < 0.1, "affected_id"])
 
@@ -760,20 +908,20 @@ a 10% false discovery rate (FDR).
   table(kinSumRes[kinSumIds, "family"])
 #+END_SRC
 
-Thus, most of the identified significant individuals are from one family.
-Next we compare the above calculated FR scores of affected or unaffected (but
-phenotyped) individuals in this family to the FR scores of affected or
-unaffected individuals of all other families.
+Thus, most of the identified significant individuals are from one family.  Next,
+we compare the FIR scores of affected or unaffected (but phenotyped) individuals
+in this family to the FIR scores of affected or unaffected individuals of all
+other families.
 
-#+BEGIN_SRC R :ravel mbreast-family-432-FR-compared-to-others, message=FALSE, warning=FALSE, fig.align='center'
+#+BEGIN_SRC R :ravel mbreast-family-432-FIR-compared-to-others, message=FALSE, warning=FALSE, fig.align='center'
   ## Get the familial ratio of the significant in this family, of all in this family,
   ## and of all others.
   famId <- kinSumRes[1, "family"]
 
-  ## Extract the family:
+  ## Extract the family.
   fam <- family(kinSum, family=famId)
 
-  ## Stratify individuals in affected/unaffected
+  ## Stratify individuals in affected/unaffected.
   strat <- rep("All, unaff.", length(kinSum$id))
   strat[which(kinSum$affected > 0)] <- "All, aff."
   strat[kinSum$id %in% fam$id] <- paste0("Fam ", famId, ", unaff.")
@@ -782,7 +930,7 @@ unaffected individuals of all other families.
                                                                   ", aff.")
 
   famData <- data.frame(fr=fr, group=strat)
-  boxplot(fr~group, data=famData, na.rm=TRUE, ylab="FR",
+  boxplot(fr~group, data=famData, na.rm=TRUE, ylab="FIR",
           col=rep(c("#FBB4AE", "#B3CDE3"), 2))
 
 #+END_SRC
@@ -792,7 +940,7 @@ risk of individuals to get cancer, given their kinship to other cancer cases)
 for individuals (whether affected or yet unaffected) in this family is higher
 than in the data set analyzed here.
 
-Next we plot the pedigree of this family.
+Next, we plot the pedigree of this family.
 
 #+BEGIN_SRC R :ravel mbreast-family-432-affected, message=FALSE, warning=FALSE, fig.align='center'
   ## Plot the pedigree for the family of the selected individual removing
@@ -802,28 +950,31 @@ Next we plot the pedigree of this family.
 
 #+END_SRC
 
-And, at last also the kinship sum for the individuals with the largest kinship
-sum in relation to the /expected/ kinship sums from the Monte Carlo simulations.
+And finally, also plot the kinship sum for the individuals with the largest
+kinship sum in relation to the /expected/ kinship sums from the Monte Carlo
+simulations.
 
 #+BEGIN_SRC R :ravel mbreast-family-432-affecte-res, message=FALSE, warning=FALSE, fig.align='center'
   plotRes(kinSum, id=kinSumIds[1])
 #+END_SRC
 
+
+** /Kinship group test/ <<section.kingroup>>
+
 # The kinship group test (Daniel).
-Another test to identify familial aggregation is the /kinship group test/. This
-test first defines for each affected a group of individuals considering only
-individuals that are as closely related as the most distant affected individual.
-For each of these kinship groups two tests are then performed, one by comparing
-the mean kinship among affected in the group with the mean kinship from Monte
-Carlo simulations (ratio test) and one evaluating the largest observed kinship
-value between affected individuals with those of random samples from the
-simulation (kinship group test).
+Here we apply the /kinship group test/ to the data set. This test first defines
+for each affected individual a group of individuals considering only individuals
+that are as closely related as the most distant affected individual.  For each
+of these kinship groups two tests are then performed, one by comparing the mean
+kinship among affected in the group with the mean kinship from Monte Carlo
+simulations (ratio test) and one evaluating the largest observed kinship value
+between affected individuals with those of random samples from the simulation
+(kinship group test).
 
-Below we perform the kinship group test for the Minnesota Breast Cancer data
-set. Again we specify the =strata= argument and thus perform sex-stratified
-random sampling.
+In the example below we specify again the =strata= argument and thus perform
+sex-stratified random sampling.
 
-#+BEGIN_SRC R
+#+BEGIN_SRC R :ravel message=FALSE
   ## Calculate the kinship test.
   kinGroup <- kinshipGroupTest(fad, trait=tcancer, traitName="cancer",
                                nsim=nsim, strata=fad$sex)
@@ -831,17 +982,17 @@ random sampling.
 
 #+END_SRC
 
-Also the kinship group test finds a significant aggregation of cases in
+The kinship group test finds a significant aggregation of cases in
 family 432. In fact, as we see further below, the test identified a subgroup in
 this family with an exceptional high proportion of cases.
 
-Below we summarize the results further by listing the total number of families
+Below, we summarize the results further by listing the total number of families
 in the pedigree and the number of families in which kinship groups with
 significant kinship p-value and significant ratio p-value (both at a 5% FDR).
 
 #+BEGIN_SRC R
   kinGroupRes <- result(kinGroup)
-  ## Creating a data.frame with the summarized results.
+  ## Create a data.frame with the summarized results.
   resTab <- data.frame(total_families=length(unique(kinGroup$family)),
                        ratio_sign=length(unique(
                            kinGroupRes[kinGroupRes$ratio_padj < 0.05, "family"]
@@ -853,11 +1004,13 @@ significant kinship p-value and significant ratio p-value (both at a 5% FDR).
   resTab
 #+END_SRC
 
-The most significant kinship group which was identified by the kinship group
-test is shown in the figure below. The mother (individual =17609=) in this group
-and all her daughters have cancer, the mother is however not directly related to
-the affected founder of this family (individual =17517= of family =432=, see
-figure above for the full pedigree of this family).
+The most significant kinship group identified by the kinship group test is shown
+in the figure below. The mother (individual =17609=) of the nuclear family
+representing this group and all her daughters have cancer (see figure
+below). This mother is however not directly related to the affected founder of
+this family, individual =17517=, but did marry her son (id =17530=; see figure
+above for the full pedigree of this family =432=).
+
 We are also submitting the familial incidence rate values calculated above with
 argument =label1= which are then displayed below the ID of each individual in
 the plot.
@@ -867,10 +1020,61 @@ the plot.
           prune=TRUE, label1=fr)
 #+END_SRC
 
+** Exact inference for family disease clusters (/probability test/)<<section.prob>>
+
+In this section, we apply the /probability test/ that is based on the method
+from Yu et al \cite{Yu:2002vu} for inference on family disease clusters. We use
+the corresponding implementation in the =gap= package, that, due to an
+implementation specific limitation, can however not be directly applied to large
+pedigrees as the present, but requires definitions of smaller pedigree sub-sets
+(cliques).
+
+We will thus restrict the analysis to families with fewer than 22 individuals
+and provide this information with the argument =cliques=. Unfortunately, this
+excludes most families in the present pedigree that exhibit significant familial
+aggregation of cancer.
+
+#+BEGIN_SRC R :ravel message=FALSE
+  ## First we load the trait/affected information into the FAData object.
+  trait(fad) <- tcancer
+
+  ## Next we determine the number of phenotyped individuals per family.
+  famAff <- pedigree(fad)[, c("family", "affected")]
+  ## Exclude individuals that were not phenotyped.
+  famAff <- famAff[!is.na(famAff$affected), ]
+  ## Calculate the number of phenotyped per family.
+  famSize <- table(famAff$family)
+
+  keepFams <- names(famSize)[famSize < 22]
+
+  ## Extract the family and restrict to those on which we can perform the analysis.
+  famCliq <- fad$family
+  famCliq <- famCliq[famCliq %in% keepFams]
+
+#+END_SRC
+
+Now we can run the analysis.
+
+#+BEGIN_SRC R :ravel message=FALSE
+  probRes <- probabilityTest(fad, trait=tcancer, traitName="Cancer",
+                             cliques=famCliq, nsim=nsim)
+  probResTab <- result(probRes)
+  head(probResTab)
+#+END_SRC
+
+We plot the pedigree for the most significant clique. Notice however, that there
+are no significant results, as it can be seen from the =pvalue= and =padj=
+columns in the result table above.
+
+#+BEGIN_SRC R :ravel mbreast-prob-clique-1, message=FALSE, warning=FALSE, fig.align='center'
+  plotPed(probRes, id=probResTab[1, "group_id"])
+#+END_SRC
+
+
 ** Familial standardized incidence rate 			   :noexport:
 
-The familial standardized incidence rate (FSIR) \cite{Kerber:1995cx} weights
-the disease status of relatives based on their degree of relatedness with the
+The familial standardized incidence rate (FSIR) \cite{Kerber:1995cx} weights the
+disease status of relatives based on their degree of relatedness with the
 proband. Formally, the FSIR is defined as the standardized incidence rate (SIR)
 or standardized mortality rate \cite{Breslow:1987wc} in epidemiology, i.e. as
 the ratio between /observed/ and /expected/ number of cases, only that both are
@@ -897,22 +1101,6 @@ stratified sampling.
 
 #+END_SRC
 
-The familial incidence rate can be extracted easily from the result object using
-the =familialIncidenceRate= method or using =$fir=. Also, the p-value from the
-simulation analysis and the time at risk can be accessed using the =$= operator.
-
-#+BEGIN_SRC R
-  head(familialIncidenceRate(fir))
-  head(fir$fir)
-
-  ## Time at risk.
-  head(fir$tar)
-  head(fir$timeAtRisk)
-
-  ## p-value
-  head(fir$pvalue)
-
-#+END_SRC
 
 Next we calculate the familial standardized incidence rate, using population
 incidence rates for breast and prostate cancer from Cancer Research UK. The
@@ -948,13 +1136,11 @@ considered within each family. Thus, the results from the FSIR might be biased.
 + [X] Check what we can use from that script and whether it might not be better
   to re-implement it!
 
-
 ** CANCELED Include the plotting script. [1/1]
    CLOSED: [2015-09-16 Wed 11:01]
    - State "CANCELED"   from "TODO"       [2015-09-16 Wed 11:01] \\
      In the meantime we excluded it again...
 + [X] Locate the script and include it into the package.
-
 
 ** DONE Generate unit tests: [5/5]
    CLOSED: [2015-09-16 Wed 11:00]
@@ -1009,7 +1195,6 @@ considered within each family. Thus, the results from the FSIR might be biased.
 + [X] =FAKinshipResult=.
 + [X] =FAProbResult=.
 
-
 ** DONE Documentation [6/6]:
    CLOSED: [2015-08-17 Mon 11:47]
    - State "DONE"       from "TODO"       [2015-08-17 Mon 11:47]
@@ -1029,7 +1214,6 @@ considered within each family. Thus, the results from the FSIR might be biased.
 + [X] Second affected.
 
 
-
 ** DONE Clean the test cases from any code referring to CHRIS data
    CLOSED: [2015-09-16 Wed 11:01]
    - State "DONE"       from "TODO"       [2015-09-16 Wed 11:01]
@@ -1044,7 +1228,6 @@ considered within each family. Thus, the results from the FSIR might be biased.
    - State "DONE"       from "TODO"       [2015-08-24 Mon 08:18]
 - =ks2paint=: affected being NA are replaced by 0! FIXED!
 - haplopaint?
-
 
 
 ** DONE Implement the Hill method significant over-representation of a disease in a family
@@ -1064,7 +1247,6 @@ considered within each family. Thus, the results from the FSIR might be biased.
     of IDs of suitable controls, matching them by generation,
   - [X] Method: =sampleMatchedControls=: randomly samples IDs from the matched
     controls, considering also the probability for sex.
-
 
 ** CANCELED Implement the Kerber method.
    CLOSED: [2015-11-13 Fri 07:31]
@@ -1093,7 +1275,6 @@ considered within each family. Thus, the results from the FSIR might be biased.
 ** DONE Remove the obsolete =FAResult= object.
    CLOSED: [2015-09-22 Tue 15:20]
    - State "DONE"       from "TODO"       [2015-09-22 Tue 15:20]
-
 
 ** DONE Rename =FAKinshipResult= into =FAKinGroup=
    CLOSED: [2015-09-23 Wed 07:20]
@@ -1133,13 +1314,13 @@ considered within each family. Thus, the results from the FSIR might be biased.
 + [X] Documentation.
 + [ ] Vignette.
 
-
-** TODO Check and eventually implement some more =$= methods for the results objects.
+** TODO Check and eventually implement some more =$= methods for the results objects. [/]
 
 We've got already some nice =$= methods for =FAIncidenceRateResults= and
 =FAStdIncidenceRateResults=, would be nice to have some similar ones for the
 other methods (e.g. to directly access estimates or the p-value).
 
++ [ ] =$gif=: genealogical index of familiarity.
 
 ** DONE Merge the git and svn FamAgg version [40/40]
    CLOSED: [2015-12-02 Wed 08:47]
@@ -1194,33 +1375,7 @@ Bioconductor was changed).
 
 + [X] vignettes/FamAgg.org
 
-
-** TODO 1a: Perform a comparison of the results.
-
-Could mean:
-+ perform a comparison of the results of the individual algorithms within the
-  same data.
-+ perform a comparison of the results with other tools (that's most likely what
-  he means).
-
-** TODO 2a: Provide a more detailed description of the random sampling for the kinship sum test.
-
-** TODO 2b: Add a description/reference to the Yu and Zelterman method in the supplement/vignette.
-
-** TODO 3a: Kinship coefficient calculated in =FamAgg= or elsewhere?
-
-It is calculated in the =kinship2= package, clearly state that in the manuscript
-and make a reference to the package.
-
-We added a sentence to the vignette.
-
-** DONE 3b: Add a vignette describing how to load plink files [2/2]
-   CLOSED: [2015-12-15 Tue 14:43]
-   - State "DONE"       from "TODO"       [2015-12-15 Tue 14:43]
-+ [X] Implement pedigree import function for a variety of input formats.
-+ [X] Implement export method to export pedigrees in different formats.
-
-** DONE FAM format [/]
+** DONE Import/export /FAM/ format [/]
    CLOSED: [2015-12-15 Tue 14:43]
    - State "DONE"       from "TODO"       [2015-12-15 Tue 14:43]
 FAM files are from plink. Description:
@@ -1238,7 +1393,7 @@ Fields:
 For values other than {1,2,0,-9} it is assumed not to be case-control but numeric;
 we're not going to support that!
 
-** DONE PED format [/]
+** DONE Import/export /PED/ format [/]
    CLOSED: [2015-12-15 Tue 14:44]
    - State "DONE"       from "TODO"       [2015-12-15 Tue 14:44]
 PED files are from plink. Description: http://www.gwaspi.org/?page_id=145.
@@ -1254,7 +1409,22 @@ Fields:
 + Genotypes (space or tab separated, 2 for each marker. 0=missing)
 
 
-** TODO 3c: Clearly state which methods are established and which are new.
+** DONE Include an argument =rm.singletons= allowing to keep/remove not connected individuals [6/6]
+   CLOSED: [2015-12-18 Fri 13:27]
+   - State "DONE"       from "TODO"       [2015-12-18 Fri 13:27]
++ [X] Implement a /generic/ method to do that: =removeSingletons=, had also
+  =doPrunePed=, but that used graphs and was kinda slower.
++ *Note*: this has mainly an impact on the genealogical index, all other methods
+  are not affected, i.e. return =NA= for such cases. Should I always make sure
+  that these have =0= instead of =NA=.
+
+Apply that as *first* task in any of the below methods.
+
++ [X] GI/GIF
++ [X] FIR
++ [X] FSIR
++ [X] KS
++ [X] KG
 
 
 

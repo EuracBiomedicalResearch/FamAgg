@@ -426,7 +426,7 @@ setMethod("buildPed", "FAData",
               ## set all mothers and fathers that are not in id to 0
               ped[!(ped$mother %in% ped$id), "mother"] <- NA
               ped[!(ped$father %in% ped$id), "father"] <- NA
-              ped <- doRemoveChildlessFounders(ped)
+              ped <- removeSingletons(ped)
               return(ped)
           })
 
@@ -462,7 +462,9 @@ setMethod("buildPed", "FAData",
     ## subsetting trait...
     if(length(x@.trait) > 0){
         subTrait <- trait(x)[i]
-        trait(newX) <- subTrait
+        suppressWarnings(
+            trait(newX) <- subTrait
+        )
         newX@traitname <- x@traitname
     }
     validObject(newX)
@@ -543,7 +545,9 @@ setMethod("probabilityTest", "FAData",
               ## building the result data object
               ## object <- as(object, "FATrait")
               object <- as(object, "FAProbResults")
-              trait(object) <- trait
+              suppressMessages(
+                  trait(object) <- trait
+              )
               cliques(object) <- cliques
               if(!missing(traitName))
                   object@traitname <- traitName
@@ -565,7 +569,9 @@ setMethod("kinshipGroupTest", "FAData",
               ## building the result data object
               ## object <- as(object, "FATrait")
               object <- as(object, "FAKinGroupResults")
-              trait(object) <- trait
+              suppressMessages(
+                  trait(object) <- trait
+              )
               if(!missing(traitName))
                   object@traitname <- traitName
               ## run the simulation: calls the runSimulation method for the FAKinshipResult class.
@@ -583,7 +589,9 @@ setMethod("kinshipSumTest", "FAData",
               }
               ## object <- as(object, "FAResult")
               object <- as(object, "FAKinSumResults")
-              trait(object) <- trait
+              suppressMessages(
+                  trait(object) <- trait
+              )
               if(!missing(traitName))
                   object@traitname <- traitName
               ## run the simulation.
@@ -595,7 +603,7 @@ setMethod("kinshipSumTest", "FAData",
 setMethod("genealogicalIndexTest", "FAData",
           function(object, trait, nsim=50000, traitName,
                    perFamilyTest=FALSE, controlSetMethod="getAll",
-                   prune=TRUE, strata=NULL, ...){
+                   rm.singletons=TRUE, strata=NULL, ...){
               if(missing(trait)){
                   if(length(object@.trait) == 0)
                       stop("trait is missing!")
@@ -604,13 +612,15 @@ setMethod("genealogicalIndexTest", "FAData",
               ## building the result data object
               ## object <- as(object, "FAResult")
               object <- as(object, "FAGenIndexResults")
-              trait(object) <- trait
+              suppressMessages(
+                  trait(object) <- trait
+              )
               if(!missing(traitName))
                   object@traitname <- traitName
               ## run the simulation: calls the runSimulation method for the FAProbResult cla ss.
               object <- runSimulation(object, nsim=nsim, perFamilyTest=perFamilyTest,
                                       controlSetMethod=controlSetMethod,
-                                      prune=prune, strata=strata, ...)
+                                      rm.singletons=rm.singletons, strata=strata, ...)
               return(object)
           })
 
@@ -621,11 +631,15 @@ setMethod("genealogicalIndexTest", "FAData",
 ##
 ##
 setMethod("familialIncidenceRate", "FAData",
-          function(object, trait=NULL, timeAtRisk=NULL, prune=TRUE){
+          function(object, trait=NULL, timeAtRisk=NULL){
               ## .FR is defined in Methods-FAIncidenceRatio.R
               FR <- .FR(ped=pedigree(object), kin=kinship(object), trait=trait,
-                        timeAtRisk=timeAtRisk, prune=prune, perFamilyTest=FALSE)
-              return(FR[[1]])
+                        timeAtRisk=timeAtRisk, perFamilyTest=FALSE)
+              Res <- rep(NA, length(object$id))
+              names(Res) <- object$id
+              FR <- FR[[1]]
+              Res[names(FR)] <- FR
+              return(Res)
           })
 
 ##****************************************************************************
@@ -634,19 +648,21 @@ setMethod("familialIncidenceRate", "FAData",
 ##
 setMethod("familialIncidenceRateTest", "FAData",
           function(object, trait=NULL, nsim=50000, traitName=NULL, timeAtRisk=NULL,
-                   prune=TRUE, strata=NULL, ...){
+                   strata=NULL, ...){
               if(is.null(trait)){
                   if(length(object@.trait) == 0)
                       stop("trait is missing!")
                   trait <- trait(object)
               }
               object <- as(object, "FAIncidenceRateResults")
-              trait(object) <- trait
+              suppressMessages(
+                  trait(object) <- trait
+              )
               if(!is.null(traitName))
                   object@traitname <- traitName
               ## run the simulation
               object <- runSimulation(object, nsim=nsim, timeAtRisk=timeAtRisk,
-                                      strata=strata, prune=prune, ...)
+                                      strata=strata, ...)
               return(object)
           })
 
@@ -656,8 +672,7 @@ setMethod("familialIncidenceRateTest", "FAData",
 ##  fsir method.
 ##  familial standardized incidence rate as described in Kerber
 ##
-setMethod("fsir", "FAData", function(object, trait=NULL, lambda=NULL, timeInStrata=NULL,
-                                     prune=TRUE){
+setMethod("fsir", "FAData", function(object, trait=NULL, lambda=NULL, timeInStrata=NULL){
     ## First we need to do a lot of checking and testing.
     if(is.null(trait)){
         ## check internal trait...
@@ -685,45 +700,61 @@ setMethod("fsir", "FAData", function(object, trait=NULL, lambda=NULL, timeInStra
         stop("Names of lambda does not match the colnames of timeInStrata!")
     lambda <- lambda[colnames(timeInStrata)]
     ## Done.
-    trait(object) <- trait
+    suppressMessages(
+        trait(object) <- trait
+    )
     trait <- trait(object)   # that way we ensure that we have the same ordering.
     kin <- kinship(object)
     ## Just to be on the save side... ensure that the ordering of id/Trait matches the kin
     kin <- kin[names(trait), names(trait)]
     diag(kin) <- 0
     ## Now start subsetting the data:
+    message("Cleaning data set (got in total ", nrow(kin), " individuals):")
+    message(" * not phenotyped individuals...", appendLF=FALSE)
     ## * NA in trait
     nas <- is.na(trait)
     if(any(nas)){
-        warning(paste0("Excluding ", sum(nas),
-                       " individuals because of a missing value in the trait."))
+        ## warning(paste0("Excluding ", sum(nas),
+        ##                " individuals because of a missing value in the trait."))
         trait <- trait[!nas]
         kin <- kin[!nas, !nas]
         timeInStrata <- timeInStrata[!nas, , drop=FALSE]
+        message(" ", sum(nas), " removed.")
+    }else{
+        message(" none present.")
     }
     ## * NA in timeInStrata.
     nas <- apply(timeInStrata, MARGIN=1, function(z){
         any(is.na(z))
     })
+    message(" * individuals with missing time in strata...", appendLF=FALSE)
     if(any(nas)){
-        warning(paste0("Excluding ", sum(nas),
-                       " individuals because of a missing value in timeInStrata."))
+        ## warning(paste0("Excluding ", sum(nas),
+        ##                " individuals because of a missing value in timeInStrata."))
         trait <- trait[!nas]
         kin <- kin[!nas, !nas]
         timeInStrata <- timeInStrata[!nas, , drop=FALSE]
+        message(" ", sum(nas), " removed.")
+    }else{
+        message(" none present.")
     }
-    if(prune){
-        ## * Not related, i.e. individuals with a kinship sum of 0
-        nas <- colSums(kin) == 0
-        if(any(nas)){
-            warning(paste0("Excluding ", sum(nas),
-                           " individuals because they do not share kinship",
-                           " with any individual in the pedigree."))
-            trait <- trait[!nas]
-            kin <- kin[!nas, !nas]
-            timeInStrata <- timeInStrata[!nas, , drop=FALSE]
-        }
+    ## Anyway removing singletons here, since they result in NA values!
+    message(" * singletons (also caused by previous subsetting)...", appendLF=FALSE)
+    ## * Not related, i.e. individuals with a kinship sum of 0
+    nas <- colSums(kin) == 0
+    if(any(nas)){
+        ## warning(paste0("Excluding ", sum(nas),
+        ##                " individuals because they do not share kinship",
+        ##                " with any individual in the pedigree."))
+        trait <- trait[!nas]
+        kin <- kin[!nas, !nas]
+        timeInStrata <- timeInStrata[!nas, , drop=FALSE]
+        message(" ", sum(nas), " removed.")
+    }else{
+        message(" none present.")
     }
+    message("Done")
+
     ## Well done. Now let's do the test:
     fsirs <- doFsir(affected=trait, kin=kin, lambda=lambda, timeInStrata=timeInStrata)
     ## Prepare the results vector.
@@ -740,20 +771,22 @@ setMethod("fsir", "FAData", function(object, trait=NULL, lambda=NULL, timeInStra
 ##
 setMethod("fsirTest", "FAData",
           function(object, trait=NULL, nsim=50000, traitName=NULL, lambda=NULL,
-                   timeInStrata=NULL, prune=TRUE, strata=NULL, ...){
+                   timeInStrata=NULL, strata=NULL, ...){
               if(is.null(trait)){
                   if(length(object@.trait) == 0)
                       stop("trait is missing!")
                   trait <- trait(object)
               }
               object <- as(object, "FAStdIncidenceRateResults")
-              trait(object) <- trait
+              suppressMessages(
+                  trait(object) <- trait
+              )
               if(!is.null(traitName))
                   object@traitname <- traitName
               ## run the simulation
               object <- runSimulation(object, nsim=nsim, lambda=lambda,
                                       timeInStrata=timeInStrata,
-                                      strata=strata, prune=prune, ...)
+                                      strata=strata, ...)
               return(object)
           })
 
@@ -1051,6 +1084,25 @@ setMethod("export", "FAData", function(object, con, format="ped", ...){
         write.table(ped, file=con, quote=FALSE, sep="\t", row.names=FALSE,
                     col.names=FALSE)
     }
+})
+
+
+####============================================================
+##  getFounders
+##
+##  return the ids of the founders in the pedigree
+####------------------------------------------------------------
+setMethod("getFounders", "FAData", function(object, ...){
+    return(doGetFounders(pedigree(object)))
+})
+
+####============================================================
+##  getSingletons
+##
+##  return the id of the childless founders.
+####------------------------------------------------------------
+setMethod("getSingletons", "FAData", function(object, ...){
+    return(doGetSingletons(pedigree(object)))
 })
 
 

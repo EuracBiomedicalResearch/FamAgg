@@ -329,3 +329,19 @@ setMethod("getSexMatched", "pedigree",
               return(doGetSexMatched(ped=object, id=id, ...))
           })
 
+## getFounders
+setMethod("getFounders", "data.frame",
+          function(object, ...){
+              object <- checkPedCol(object)
+              object <- sanitizePed(object)
+              return(doGetFounders(object, ...))
+          })
+
+## getSingletons
+setMethod("getSingletons", "data.frame",
+          function(object, ...){
+              object <- checkPedCol(object)
+              object <- sanitizePed(object)
+              return(doGetSingletons(object, ...))
+          })
+

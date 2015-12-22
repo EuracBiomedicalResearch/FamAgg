@@ -527,7 +527,7 @@ FAData(pedigree, age, trait, traitName, header=FALSE, sep="\t", id.col="id",
       Extracts the pre-calculated kinship matrix, i.e. a symmetric
       matrix with the kinship between all individuals in the
       pedigree. The matrix is calculated using the \code{kinship} method
-      provided by the \code{kinship2} package.
+      provided by the \code{kinship2} package [Sinwell (2014)].
       The function returns a \code{dsCMatrix} from the \code{Matrix}
       package.
     }
@@ -608,6 +608,10 @@ FAData(pedigree, age, trait, traitName, header=FALSE, sep="\t", id.col="id",
 }
 \author{
   Johannes Rainer.
+}
+\references{
+  Sinwell JP, Therneau TM & Schaid DJ (2014) The kinship2 R package for
+  pedigree data. \emph{Human heredity} 78:91-93.
 }
 \seealso{
   \code{\link[kinship2]{pedigree}},

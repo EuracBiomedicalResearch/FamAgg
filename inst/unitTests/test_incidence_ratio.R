@@ -9,7 +9,6 @@ fad <- FAData(pedigree=PedDf)
 ## specify the trait.
 tcancer <- mbsub$cancer
 names(tcancer) <- mbsub$id
-
 ## the time at risk...
 tar <- mbsub$endage
 
@@ -21,6 +20,16 @@ test_incidence_ratio <- function(){
     ## the same but per family
     frFam <- FamAgg:::.FR(ped=pedigree(fad), kin=kinship(fad), trait=tcancer,
                           timeAtRisk=tar, perFamilyTest=TRUE)
+    fr3 <- familialIncidenceRate(fad, trait=tcancer, timeAtRisk=tar)
+    checkEquals(fr[[1]], fr3)
+    ## The argument rm.singletons has been removed, so no need for the test below.
+    ## Using the method: check if rm.singletons has an effect.
+    ## fr <- familialIncidenceRate(fad, trait=tcancer, timeAtRisk=tar, rm.singletons=FALSE)
+    ## fr2 <- familialIncidenceRate(fad, trait=tcancer, timeAtRisk=tar, rm.singletons=TRUE)
+    ## checkEquals(sum(fr, na.rm=TRUE)==sum(fr2, na.rm=TRUE), TRUE)
+    ## Note: we're getting the same results here as we are summing kinship coefs. singletons have
+    ## a kinship of 0 with any other, thus they don't add to the value anyway.
+
     ## So, it's not the same if we run this within family or for the whole pedigree...
     ## frVals <- unlist(fr, use.names=FALSE)
     ## frFamVals <- unlist(frFam, use.names=FALSE)
@@ -51,22 +60,25 @@ test_fr_simulation <- function(){
     fr <- fr[[1]]
     fr2 <- familialIncidenceRate(fad, trait=tcancer,
                                  timeAtRisk=tar)
-    checkEquals(fr, fr2)
+    checkEquals(fr, fr2[names(fr)])
     ## Use the familialIncidenceRateTest
     set.seed(18011977)
-    frRes <- FamAgg:::familialIncidenceRateTest(fad, trait=tcancer,
-                                                timeAtRisk=tar, nsim=1000)
-    checkEquals(frRes@sim$fir, fr)
+    Test <- FamAgg:::.FRSimulation(ped=pedigree(fad), kin=kinship(fad), trait=tcancer,
+                                   timeAtRisk=tar, prune=TRUE, nsim=1000)
+    set.seed(18011977)
+    frRes <- familialIncidenceRateTest(fad, trait=tcancer,
+                                       timeAtRisk=tar, nsim=1000)
+    checkEquals(frRes@sim$fir, fr2)
     ## Do the simulation using dummy strata.
     set.seed(18011977)
-    frStrat <- FamAgg:::familialIncidenceRateTest(fad, trait=tcancer,
+    frStrat <- familialIncidenceRateTest(fad, trait=tcancer,
                                                   timeAtRisk=tar, nsim=1000,
                                                   strata=rep(1, length(fad$id)))
     checkEquals(frRes@sim$fir, frStrat@sim$fir)
     checkEquals(frRes@sim$pvalue, frStrat@sim$pvalue)
     ## Repeat using the low mem version.
     set.seed(18011977)
-    frLM <- FamAgg:::familialIncidenceRateTest(fad, trait=tcancer,
+    frLM <- familialIncidenceRateTest(fad, trait=tcancer,
                                                timeAtRisk=tar, nsim=1000,
                                                lowMem=TRUE)
     checkEquals(frRes@sim$fir, frLM@sim$fir)
@@ -87,6 +99,12 @@ test_fr_simulation <- function(){
     checkEquals(frRes$fir, frRes@sim$fir)
     checkEquals(frRes$tar, FamAgg:::timeAtRisk(frRes))
 
+    ## Testing with and without rm.singletons.
+    fr <- familialIncidenceRateTest(fad, trait=tcancer, nsim=400,
+                                    timeAtRisk=tar, rm.singletons=TRUE)
+    fr2 <- familialIncidenceRateTest(fad, trait=tcancer, nsim=400,
+                                     timeAtRisk=tar, rm.singletons=FALSE)
+    checkEquals(fr$fir, fr2$fir)
 }
 
 

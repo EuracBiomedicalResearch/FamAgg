@@ -16,8 +16,10 @@
 \title{Genealogical Index}
 
 \description{
-  The genealogical index (Hill, 1980) is a method to identify
-  familial clustering of diseases or other traits. For a given trait,
+  The genealogical index [Hill, 1980], also referred to as the
+  \emph{genealogical index of familiality} (GIF) in the literature, is a
+  method to identify familial clustering of diseases or other traits.
+  For a given trait,
   the method computes the mean kinship between affected in the
   whole pedigree along with mean kinships of randomly drawn sets of
   individuals. The distribution of average kinship values among the
@@ -44,6 +46,11 @@
   Note that, if \code{strata} is specified, all individuals with a
   missing value in \code{strata} (also affected individuals) are
   excluded from the analysis.
+
+  Note that by default singletons (i.e. unconnected individuals in
+  the pedigree) are removed from the pedigree prior the
+  analysis. Set \code{rm.singletons=FALSE} if you do not want them
+  to be removed.
 
   By default, the genealogical index is calculated on the whole
   pedigree, but it is also possible to evaluate within-family clustering
@@ -76,7 +83,7 @@
 \S4method{runSimulation}{FAGenIndexResults}(object, nsim=50000,
                                            perFamilyTest=FALSE,
                                            controlSetMethod="getAll",
-                                           prune=TRUE, strata=NULL, ...)
+                                           rm.singletons=TRUE, strata=NULL, ...)
 
 \S4method{trait}{FAGenIndexResults}(object) <- value
 
@@ -144,9 +151,9 @@
     clustered affected individuals within each family.
   }
 
-  \item{prune}{
+  \item{rm.singletons}{
     For \code{runSimulation}: whether unconnected individuals in the
-    pedigree should be removed.
+    pedigree (i.e. singletons) should be removed.
   }
 
   \item{object}{
@@ -241,8 +248,11 @@
       the entity. This number can differ from the number of affected, if
       \code{strata} was specified and some of the affected have a
       missing value in \code{strata}.
-      \code{"mean_kinship"}: the mean kinship value between all affected
-      in the entity.
+      \code{"genealogical_index"}: the genealogical index of familiality
+      (gif), i.e. the mean kinship value between all affected in the
+      entity (pedigree or family). To be consistent with the original
+      implementations, the genealogical index is the mean kinship
+      multiplied with 100000.
       \code{"pvalue"}: the p-value for the significance of the mean
       kinship.
       \code{"padj"}: the p-value adjusted for multiple hypothesis

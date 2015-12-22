@@ -50,6 +50,7 @@ test_probability <- function(){
 
 
 test_plot_probability <- function(){
+    do.plot <- FALSE
     ## pedFile <- system.file("txt/Large.ped", package="FamAgg")
     ## cliqFile <- system.file("txt/Large-cliques.txt", package="FamAgg")
     ## ped <- read.table(pedFile, sep=";")
@@ -74,14 +75,15 @@ test_plot_probability <- function(){
     switchPlotfun("ks2paint")
     plotPed(far, id=id, prune=TRUE, device="plot")
     ## the large huge busy pedigree.
-    plotPed(far, id=id, prune=FALSE, device="plot")
-
+    if(do.plot){
+        plotPed(far, id=id, prune=FALSE, device="plot")
+    }
     id <- res[2, "group_id"]
     ped <- buildPed(far, id=id, prune=TRUE)
     clique <- names(allCliqs)[which(allCliqs == as.character(id))]
     all(clique %in% ped$id)
     plotPed(far, id=id, prune=TRUE, device="plot")
-    switchPlotfun()
+    ##switchPlotfun()
 
     return(TRUE)
 }

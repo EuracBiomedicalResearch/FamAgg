@@ -5,15 +5,21 @@ NEW FEATURES
     o FAData constructor recognizes *.ped and *.fam files and imports their
       pedigree information correctly.
     o export method to export pedigree information from a FAData to a ped or fam file.
+    o Add methods getFounders and getSingletons.
 
 SIGNIFICANT USER-VISIBLE CHANGES
     o Founders are now represented by NA in columns 'father' and 'mother'. This fixed
       potential problems when IDs are character strings and not numeric.
+    o Added column 'family' to the results of the probability test.
+    o genealogicalIndexTest: renamed argument prune into rm.singletons.
+    o Removed prune argument for methods calculating per-individual statistics.
+    o Re-formated and re-structured the vignette.
 
 BUG FIXES
     o Validation of pedigree information in FAData improved.
     o [ subsetting now ensures that father or mother IDs which are not available
       in column 'id' are set to NA.
+    o clique names are no longer dropped when setting cliques(object) <- value.
 
 
 CHANGES IN VERSION 0.99.6

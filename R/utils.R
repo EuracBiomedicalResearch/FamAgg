@@ -179,24 +179,32 @@ doShareKinship <- function(ped, kin, id){
     return(related)
 }
 
-
-## a childless founder is an individual which id is not present in the
-## father or mother column of the pedigree and which has 0 in mother and father
-doRemoveChildlessFounders <- function(ped){
-    ## founders <- ped[ped$mother == 0 & ped$father == 0, , drop=FALSE]
-    founders <- ped[is.na(ped$mother) & is.na(ped$father), , drop=FALSE]
-    if(nrow(founders) > 0){
-        torem <- !((founders$id %in% ped$father) | (founders$id %in% ped$mother))
-        if(any(torem)){
-            torem <- founders$id[torem]
-            ped <- ped[!(ped$id %in% torem), , drop=FALSE]
-        }
-    }
-    return(ped)
+####============================================================
+##  doGetFounders
+##
+##  Returns the ids of the founders in the specified pedigree.
+####------------------------------------------------------------
+doGetFounders <- function(ped){
+    founders <- ped[is.na(ped$mother) & is.na(ped$father), "id"]
+    return(founders)
 }
 
-
-
+####============================================================
+##  doGetSingletons
+##
+##  Return the ids of those founders that have no child in the
+##  pedigree.
+####------------------------------------------------------------
+doGetSingletons <- function(ped){
+    founders <- ped[is.na(ped$mother) & is.na(ped$father), , drop=FALSE]
+    if(nrow(founders) > 0){
+        childl <- !((founders$id %in% ped$father) | (founders$id %in% ped$mother))
+        if(any(childl)){
+            return(founders[childl, "id"])
+        }
+    }
+    return(character())
+}
 
 
 ## gets all parents.
@@ -277,7 +285,7 @@ subPedigree <- function(ped, id=NULL, all=TRUE){
     ## get missing mates:
     inds <- unique(c(inds, doGetMissingMate(ped, id=inds)))
     subped <- ped[inds, ]
-    subped <- doRemoveChildlessFounders(subped)
+    subped <- removeSingletons(subped)
     ## fix founders.
     subped[!(subped$father %in% subped$id), "father"] <- NA
     subped[!(subped$mother %in% subped$id), "mother"] <- NA
@@ -391,7 +399,8 @@ doGetCommonAncestor <- function(ped, id, method="min.dist"){
     ## check if the ids are in the same family
     if(any(colnames(ped)=="family")){
         if(length(unique(ped[id, "family"])) > 1){
-            warning("The provided ids are from different families; still trying to find a common ancestor but I'll probably fail.")
+            warning("The provided ids are from different families; still",
+                    " trying to find a common ancestor but I'll probably fail.")
         }else{
             ## subset the pedigree to this family...
             ped <- ped[ped$family == ped[id, "family"][1], , drop=FALSE]
@@ -563,8 +572,8 @@ doGetGenerationFrom2 <- function(ped, id, generation=0){
     pedg <- ped2graph(ped)
     if(clusters(pedg)$no > 1){
         Cl <- clusters(pedg)
-        warning(paste0("Found ", Cl$no, " connected sub-graphs in the pedigree for family ", famid,
-                       "! Will restrict the analysis to the subgraph containing individual ", id, "."))
+        warning("Found ", Cl$no, " connected sub-graphs in the pedigree for family ", famid,
+                "! Will restrict the analysis to the subgraph containing individual ", id, ".")
         vertices <- names(Cl$membership)[Cl$membership == Cl$membership[id]]
         pedg <- induced_subgraph(pedg, vids=vertices)
     }
@@ -666,7 +675,11 @@ sanitizeSex <- function(x){
 }
 
 
-
+#####
+#### NOTE:
+##   isn't that the same as removeSingletons???
+##
+####
 ## remove non-connected individuals. We're assuming that ped is the pedigree
 ## of a SINGLE family, as we expect to get ONE graph. in case we've got 2, we're
 ## using the largest connected one.
@@ -674,14 +687,16 @@ sanitizeSex <- function(x){
 ##    + use.all: just use all, i.e. return vertix names of all.
 ##    + use.largest: just return vertices of the largest connected sub-graph.
 doPrunePed <- function(ped, addMissingMates=FALSE, solveMultiGraph="use.all"){
+    .Deprecated("removeSingletons")
     solveMultiGraph <- match.arg(solveMultiGraph, c("use.all", "use.largest"))
     pedg <- ped2graph(ped)
     if(solveMultiGraph == "use.largest"){
         if(clusters(pedg)$no > 1){
             Cl <- clusters(pedg)
-            warning(paste0("Found ", Cl$no,
-                           " connected sub-graphs in the pedigree!",
-                           " Will restrict the analysis to the largest connected pedigree in that family."))
+            warning("Found ", Cl$no,
+                    " connected sub-graphs in the pedigree!",
+                    " Will restrict the analysis to the largest connected pedigree",
+                    " in that family.")
             vertices <- names(Cl$membership)[Cl$membership == as.numeric(sort(table(Cl$membership),
                                                                               decreasing=TRUE))[1]]
             pedg <- induced_subgraph(pedg, vids=vertices)
@@ -695,9 +710,25 @@ doPrunePed <- function(ped, addMissingMates=FALSE, solveMultiGraph="use.all"){
     notThere <- !(as.character(ped$id) %in% keepIds)
     ped <- ped[!notThere, , drop=FALSE]
     if(any(notThere))
-        warning(paste0("Had to remove ", sum(notThere),
-                       " un-connected individuals from the pedigree."))
+        warning("Had to remove ", sum(notThere),
+                " un-connected individuals from the pedigree.")
     return(ped)
 }
 
+
+## a singleton a.k.a childless founder is an individual which id is not present in the
+## father or mother column of the pedigree and which has 0 in mother and father
+removeSingletons <- function(ped){
+    message("Removing singletons...", appendLF=FALSE)
+    ped <- checkPedCol(ped)
+    ped <- sanitizePed(ped)
+    childlF <- doGetSingletons(ped)
+    if(length(childlF) > 0){
+        ped <- ped[!(ped$id %in% childlF), ]
+        message(" ", length(childlF), " removed.")
+    }else{
+        message(" none present.")
+    }
+    return(ped)
+}
 

@@ -221,6 +221,7 @@
       \code{affected}: the number of affected individuals in
       all group (i.e. cliques specified by the \code{clique} parameter).
       \code{group_id}: the id of the group (clique).
+      \code{family}: the id of the family in which the clique was defined.
       \code{group_phenotyped}: the number of phenotyped individuals in the
       current group.
       \code{group_affected}: the number of affected individuals in the current

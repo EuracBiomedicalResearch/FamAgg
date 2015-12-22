@@ -1,35 +1,21 @@
-## pedFile <- system.file("txt/Large.ped", package="FamAgg")
-## ped <- read.table(pedFile, sep=";")[, 1:5]
-## colnames(ped) <- c("family", "id", "father", "mother", "sex")
-## rownames(ped) <- as.character(ped$id)
-## allped <- ped
-## fad <- FAData(pedigree=ped)
+pedFile <- system.file("txt/Large.ped", package="FamAgg")
+largePed <- read.table(pedFile, sep=";")[, 1:5]
+colnames(largePed) <- c("family", "id", "father", "mother", "sex")
+rownames(largePed) <- as.character(largePed$id)
+largeFad <- FAData(pedigree=largePed)
 
-
-## OK, 0.0.6
-## Testing some of the utilities...
-## test_growPed <- function(){
-##     pedFile <- system.file("txt/Large.ped", package="FamAgg")
-##     ped <- read.table(pedFile, sep=";")[, 1:5]
-##     colnames(ped) <- c("family", "id", "father", "mother", "sex")
-##     ##testids <- c("3511", "3225", "3508")  ## no common graph
-##     testids <- c("3511", "3225", "3508", "3550", "3507", "3510", "3224")
-##     cliqPed <- growPed(ped, testids)
-
-##     plot(pedigree(id=cliqPed$id, dadid=cliqPed$father,
-##                   momid=cliqPed$mother, sex=cliqPed$sex))
-## }
+data(minnbreast)
+## head(minnbreast)
+minPed <- minnbreast[, c("famid", "id", "fatherid", "motherid", "sex")]
+colnames(minPed) <- c("family", "id", "father", "mother", "sex")
+minFad <- FAData(pedigree=minPed[minPed$family %in% 4:10, ])
 
 test_ped2graph <- function(){
-    pedFile <- system.file("txt/Large.ped", package="FamAgg")
-    ped <- read.table(pedFile, sep=";")[, 1:5]
-    colnames(ped) <- c("family", "id", "father", "mother", "sex")
-    rownames(ped) <- as.character(ped$id)
-    allped <- ped
+    allped <- largePed
 
     pedids <- c("3511", "3225", "3508", "3550", "3507", "3510", "3224",
                 "3052", "3250", "2969", "3407")
-    ped <- ped[pedids, ]
+    ped <- largePed[pedids, ]
     ped[!(ped$father %in% ped$id), "father"] <- 0
     ped[!(ped$mother %in% ped$id), "mother"] <- 0
     plot(pedigree(id=ped$id, dadid=ped$father, momid=ped$mother, sex=ped$sex))
@@ -61,10 +47,7 @@ test_ped2graph <- function(){
 }
 
 test_subPedigree <- function(){
-    pedFile <- system.file("txt/Large.ped", package="FamAgg")
-    ped <- read.table(pedFile, sep=";")[, 1:5]
-    colnames(ped) <- c("family", "id", "father", "mother", "sex")
-    ##testids <- c("3511", "3225", "3508")  ## no common graph
+    ped <- largePed
     testids <- c("3511", "3225", "3508", "3550", "3507", "3510", "3224")
     ## get the subPedigree for these
     subped <- subPedigree(ped, id=testids)
@@ -77,10 +60,8 @@ test_subPedigree <- function(){
 
 test_getCommonAncestor <- function(){
     do.plot <- FALSE
-    pedFile <- system.file("txt/Large.ped", package="FamAgg")
-    ped <- read.table(pedFile, sep=";")[, 1:5]
-    colnames(ped) <- c("family", "id", "father", "mother", "sex")
-    fad <- FAData(pedigree=ped)
+    ped <- largePed
+    fad <- largeFad
     ##testids <- c("3511", "3225", "3508")  ## no common graph
     testids <- c("3511", "3225", "3508", "3550", "3507", "3510", "3224")
     ancs <- c("3052", "2969")
@@ -152,13 +133,10 @@ test_getCommonAncestor <- function(){
     ##*
     ##* test it with the minnesota breast cancer set:
     ##*
-    data(minnbreast)
-    ## head(minnbreast)
-    ped <- minnbreast[, c("famid", "id", "fatherid", "motherid", "sex")]
-    colnames(ped) <- c("family", "id", "father", "mother", "sex")
-    fad <- FAData(pedigree=ped[ped$family %in% 4:10, ])
-    ped <- pedigree(fad)
     ##table(fad$family)
+    fad <- minFad
+    ped <- pedigree(fad)
+
     if(do.plot)
         plotPed(fad, family="6", device="plot")
     testids <- c("103", "104", "95", "99")
@@ -183,9 +161,7 @@ test_getCommonAncestor <- function(){
 }
 
 test_count_generations <- function(){
-    data(minnbreast)
-    ped <- minnbreast[, c("famid", "id", "fatherid", "motherid", "sex")]
-    colnames(ped) <- c("family", "id", "father", "mother", "sex")
+    ped <- minPed
     expect <- 3
     names(expect) <- "2"
     checkEquals(countFenerations(ped=ped, id=2), expect)
@@ -196,10 +172,7 @@ test_count_generations <- function(){
 }
 
 test_find_founders <- function(){
-    data(minnbreast)
-    ped <- minnbreast[, c("famid", "id", "fatherid", "motherid", "sex")]
-    colnames(ped) <- c("family", "id", "father", "mother", "sex")
-    fad <- FAData(pedigree=ped[ped$family %in% c("4", "5"), ])
+    fad <- minFad
     ped <- pedigree(fad)
     family <- "4"
     checkEquals(findFounders(ped, family=family), c("1", "2"))
@@ -211,9 +184,7 @@ test_find_founders <- function(){
 }
 
 test_find_siblings <- function(){
-    data(minnbreast)
-    ped <- minnbreast[, c("famid", "id", "fatherid", "motherid", "sex")]
-    colnames(ped) <- c("family", "id", "father", "mother", "sex")
+    ped <- minPed
     checkEquals(getSiblings(ped, id="11"), c("11", "12", "13"))
     ## for FAData
     fad <- FAData(ped[ped$family=="4", ])
@@ -223,9 +194,7 @@ test_find_siblings <- function(){
 }
 
 test_do_get_ancestors <- function(){
-    data(minnbreast)
-    ped <- minnbreast[, c("famid", "id", "fatherid", "motherid", "sex")]
-    colnames(ped) <- c("family", "id", "father", "mother", "sex")
+    ped <- minPed
     checkEquals(getAncestors(ped, id="11"), c("5", "26", "1", "2"))
     ## for FAData
     fad <- FAData(ped[ped$family=="4", ])
@@ -237,9 +206,7 @@ test_do_get_ancestors <- function(){
 }
 
 test_do_get_children <- function(){
-    data(minnbreast)
-    ped <- minnbreast[, c("famid", "id", "fatherid", "motherid", "sex")]
-    colnames(ped) <- c("family", "id", "father", "mother", "sex")
+    ped <- minPed
     checkEquals(getChildren(ped, id="3"), c("21", "22", "23"))
     ## for FAData
     fad <- FAData(ped[ped$family=="4", ])
@@ -250,9 +217,7 @@ test_do_get_children <- function(){
 }
 
 test_count_generations <- function(){
-    data(minnbreast)
-    ped <- minnbreast[, c("famid", "id", "fatherid", "motherid", "sex")]
-    colnames(ped) <- c("family", "id", "father", "mother", "sex")
+    ped <- minPed
     expect <- 1
     names(expect) <- "28"
     checkEquals(countGenerations(ped, id="28"), expect)
@@ -264,9 +229,7 @@ test_count_generations <- function(){
 }
 
 test_estimate_generations <- function(){
-    data(minnbreast)
-    ped <- minnbreast[, c("famid", "id", "fatherid", "motherid", "sex")]
-    colnames(ped) <- c("family", "id", "father", "mother", "sex")
+    ped <- minPed
     fam4 <- ped[ped$family == "4", ]
     fad <- FAData(ped[ped$family %in% c(4:20), ])
 
@@ -325,5 +288,45 @@ test_estimate_generations <- function(){
     Gens <- estimateGenerations(fam4mod2)[[1]]
     checkEquals(Gens[names(fam4mod2from6)], fam4mod2from6+1)
 }
+
+## getFounders, getSingletons
+test_getFounders_getSingletons <- function(){
+    ped <- minPed
+    fad <- FAData(ped)
+    checkEquals(getFounders(fad), getFounders(ped))
+    checkEquals(getSingletons(fad), getSingletons(ped))
+    ## Now check if they are really childless...
+    FounderPed <- ped[ped$id %in% getFounders(ped), ]
+    checkEquals(sum(FounderPed[, c("father", "mother")]), 0)
+    ## Check if childless founders really have no children.
+    clf <- getSingletons(fad)
+    checkEquals(any(ped$father %in% clf), FALSE)
+    checkEquals(any(ped$mother %in% clf), FALSE)
+}
+
+## Test the difference between removeSingletons and doPrunePed
+test_singletons_vs_prune <- function(){
+    ped <- minPed
+    ## using prune
+    system.time(
+        pedPruned <- FamAgg:::doPrunePed(ped)
+    )
+    system.time(
+        pedRemSin <- removeSingletons(ped)
+    )
+    pedPruned <- FamAgg:::sanitizePed(pedPruned)
+    rownames(pedRemSin) <- pedRemSin$id
+    rownames(pedPruned) <- pedPruned$id
+    checkEquals(pedPruned, pedRemSin)
+    ## OK, it's the same; now let's check what happens if we want to add missing
+    ## mates on them.
+    system.time(
+        pedPruned <- FamAgg:::doPrunePed(ped, addMissingMates=TRUE)
+    )
+    checkEquals(nrow(pedPruned), nrow(pedRemSin))
+    ## Eventually I might want to use the removeSingletons instead of the prune.
+}
+
+
 
 

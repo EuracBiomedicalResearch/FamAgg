@@ -41,16 +41,16 @@ doFsir <- function(affected, kin, lambda, timeInStrata){
     if(missing(timeInStrata))
         stop("timeInStrata missing!")
     if(length(unique(c(length(affected), nrow(kin), ncol(kin), nrow(timeInStrata)))) != 1)
-        stop(paste0("Length of affected has to match the number of rows and cols of",
-                    " kin and the number of rows of timeInStrata!"))
+        stop("Length of affected has to match the number of rows and cols of",
+             " kin and the number of rows of timeInStrata!")
 
     ## match names of lambda with colnames of timeInStrata:
     if(is.null(names(lambda)))
-        stop(paste0("lambda has to be a named numeric vector with the names corresponding",
-                    " to the colnames of timeInStrata!"))
+        stop("lambda has to be a named numeric vector with the names corresponding",
+             " to the colnames of timeInStrata!")
     if(is.null(colnames(timeInStrata)))
-        stop(paste0("timeInStrata has to be a matrix with column names corresponding to",
-                    " the names of argument lambda!"))
+        stop("timeInStrata has to be a matrix with column names corresponding to",
+             " the names of argument lambda!")
     if(length(lambda) != ncol(timeInStrata))
         stop("length of lambda does not match number of columns of timeInStrata!")
     if(!all(names(lambda) %in% colnames(timeInStrata)))
@@ -85,7 +85,7 @@ doFsir <- function(affected, kin, lambda, timeInStrata){
 ##
 setMethod("runSimulation", "FAStdIncidenceRateResults",
           function(object, nsim=50000, lambda=NULL, timeInStrata=NULL,
-                   strata=NULL, prune=TRUE, ...){
+                   strata=NULL, ...){
               if(length(trait(object)) == 0)
                   stop("No trait information available!")
               ## Check input parameter:
@@ -104,22 +104,22 @@ setMethod("runSimulation", "FAStdIncidenceRateResults",
               kin <- kinship(object)
               ## Check correct dimensions etc.
               if(nrow(timeInStrata) != length(affected))
-                  stop(paste0("Number of rows of 'timeInStrata' (",
-                              nrow(timeInStrata), ") has to match the number ",
-                              "of individuals in the pedigree (",
-                              length(affected), ")!"))
+                  stop("Number of rows of 'timeInStrata' (",
+                       nrow(timeInStrata), ") has to match the number ",
+                       "of individuals in the pedigree (",
+                       length(affected), ")!")
               if(ncol(timeInStrata) != length(lambda))
-                  stop(paste0("Number of columns of 'timeInStrata' (",
-                              ncol(timeInStrata), ") has to match the length ",
-                              "of 'lambda' (", length(lambda), ")!"))
+                  stop("Number of columns of 'timeInStrata' (",
+                       ncol(timeInStrata), ") has to match the length ",
+                       "of 'lambda' (", length(lambda), ")!")
               if(any(colnames(timeInStrata) != names(lambda)))
-                  stop(paste0("Column names of 'timeInStrata' have to match ",
-                              "names of lambda!"))
+                  stop("Column names of 'timeInStrata' have to match ",
+                       "names of lambda!")
               if(!is.null(strata)){
                   if(length(strata) != length(affected))
-                      stop(paste0("Length of 'strata' (", length(strata), ") ",
-                                  "has to match the number of individuals in ",
-                                  "the pedigree (", length(affected), ")!"))
+                      stop("Length of 'strata' (", length(strata), ") ",
+                           "has to match the number of individuals in ",
+                           "the pedigree (", length(affected), ")!")
               }
               object@timeInStrata <- timeInStrata
               object@lambda <- lambda
@@ -132,56 +132,74 @@ setMethod("runSimulation", "FAStdIncidenceRateResults",
               kin <- kin[names(trait), names(trait)]
               diag(kin) <- 0
               ## Now start subsetting the data:
+              message("Cleaning data set (got in total ", nrow(kin), " individuals):")
+              message(" * not phenotyped individuals...", appendLF=FALSE)
               ## * NA in trait
               nas <- is.na(trait)
               if(any(nas)){
-                  warning(paste0("Excluding ", sum(nas),
-                                 " individuals because of a missing value in the trait."))
+                  ## warning(paste0("Excluding ", sum(nas),
+                  ##                " individuals because of a missing value in the trait."))
                   trait <- trait[!nas]
                   kin <- kin[!nas, !nas]
                   timeInStrata <- timeInStrata[!nas, , drop=FALSE]
                   if(!is.null(strata))
                       strata <- strata[!nas]
+                  message(" ", sum(nas), " removed.")
+              }else{
+                  message(" none present.")
               }
               ## * NA in timeInStrata.
               nas <- apply(timeInStrata, MARGIN=1, function(z){
                   any(is.na(z))
               })
+              message(" * individuals with missing time in strata...", appendLF=FALSE)
               if(any(nas)){
-                  warning(paste0("Excluding ", sum(nas),
-                                 " individuals because of a missing value in timeInStrata."))
+                  ## warning(paste0("Excluding ", sum(nas),
+                  ##                " individuals because of a missing value in timeInStrata."))
                   trait <- trait[!nas]
                   kin <- kin[!nas, !nas]
                   timeInStrata <- timeInStrata[!nas, , drop=FALSE]
                   if(!is.null(strata))
                       strata <- strata[!nas]
-              }
-              ## * Not related, i.e. individuals with a kinship sum of 0
-              if(prune){
-                  nas <- colSums(kin) == 0
-                  if(any(nas)){
-                      warning(paste0("Excluding ", sum(nas),
-                                     " individuals because they do not share kinship with",
-                                     " any individual in the pedigree."))
-                      trait <- trait[!nas]
-                      kin <- kin[!nas, !nas]
-                      timeInStrata <- timeInStrata[!nas, , drop=FALSE]
-                      if(!is.null(strata))
-                          strata <- strata[!nas]
-                  }
+                  message(" ", sum(nas), " removed.")
+              }else{
+                  message(" none present.")
               }
               ## * NA in strata
               if(!is.null(strata)){
                   nas <- is.na(strata)
+                  message(" * individuals without valid strata values...", appendLF=FALSE)
                   if(any(nas)){
-                      warning(paste0("Excluding ", sum(nas),
-                                     " individuals because of a missing value in strata."))
+                      ## warning(paste0("Excluding ", sum(nas),
+                      ##                " individuals because of a missing value in strata."))
                       trait <- trait[!nas]
                       kin <- kin[!nas, !nas]
                       timeInStrata <- timeInStrata[!nas, , drop=FALSE]
                       strata <- strata[!nas]
+                      message(" ", sum(nas), " removed.")
+                  }else{
+                      message(" none present.")
                   }
               }
+              ## Anyway removing singletons here, since they result in NA values!
+              message(" * singletons (also caused by previous subsetting)...", appendLF=FALSE)
+              ## * Not related, i.e. individuals with a kinship sum of 0
+              nas <- colSums(kin) == 0
+              if(any(nas)){
+                  ## warning(paste0("Excluding ", sum(nas),
+                  ##                " individuals because they do not share kinship with",
+                  ##                " any individual in the pedigree."))
+                  trait <- trait[!nas]
+                  kin <- kin[!nas, !nas]
+                  timeInStrata <- timeInStrata[!nas, , drop=FALSE]
+                  if(!is.null(strata))
+                      strata <- strata[!nas]
+                  message(" ", sum(nas), " removed.")
+              }else{
+                  message(" none present.")
+              }
+              message("Done")
+
               ## OK, now run the test...
               Sim <- doFsirSimulation(affected=trait, kin=kin, lambda=lambda,
                                       timeInStrata=timeInStrata,
@@ -230,19 +248,19 @@ doFsirSimulation <- function(affected, kin, lambda, timeInStrata,
     if(missing(timeInStrata))
         stop("timeInStrata missing!")
     if(length(unique(c(length(affected), nrow(kin), ncol(kin), nrow(timeInStrata)))) != 1)
-        stop(paste0("Length of affected has to match the number of rows ",
-                    "and cols of kin and the number of rows of timeInStrata!"))
+        stop("Length of affected has to match the number of rows ",
+             "and cols of kin and the number of rows of timeInStrata!")
     if(!is.null(strata)){
         if(length(strata) != length(affected))
             stop("Length of arguments 'strata' and 'affected' have to match!")
     }
     ## match names of lambda with colnames of timeInStrata:
     if(is.null(names(lambda)))
-        stop(paste0("lambda has to be a named numeric vector with the names",
-                    " corresponding to the colnames of timeInStrata!"))
+        stop("lambda has to be a named numeric vector with the names",
+             " corresponding to the colnames of timeInStrata!")
     if(is.null(colnames(timeInStrata)))
-        stop(paste0("timeInStrata has to be a matrix with column names",
-                    " corresponding to the names of argument lambda!"))
+        stop("timeInStrata has to be a matrix with column names",
+             " corresponding to the names of argument lambda!")
     if(length(lambda) != ncol(timeInStrata))
         stop("length of lambda does not match number of columns of timeInStrata!")
     if(!all(names(lambda) %in% colnames(timeInStrata)))
@@ -370,7 +388,7 @@ setMethod("plotRes", "FAStdIncidenceRateResults",
                    type="density", ...){
               type <- match.arg(type, c("density", "hist"))
               if(type == "hist")
-                  stop(paste0("Type 'hist' is not supported (yet)."))
+                  stop("Type 'hist' is not supported (yet).")
               if(length(object@sim) == 0)
                   stop("No analysis performed yet!")
               if(is.null(id))
@@ -381,20 +399,20 @@ setMethod("plotRes", "FAStdIncidenceRateResults",
               ## check if id is valid
               fsirs <- object$fsir
               if(!any(names(fsirs) == id))
-                  stop(paste0("Individual with id ", id, " not found ",
-                              "in the pedigree."))
+                  stop("Individual with id ", id, " not found ",
+                       "in the pedigree.")
               obsFsir <- fsirs[id]
               if(is.na(obsFsir))
-                  stop(paste0("No Familial Standardized Incidence Rate (FSIR) ",
-                              "calculated for individual ", id, "."))
+                  stop("No Familial Standardized Incidence Rate (FSIR) ",
+                       "calculated for individual ", id, ".")
               fam <- family(object, id=id)[1, "family"]
               if(type == "density"){
                   ## Let's see whether we have the required information available.
                   if(!any(names(object@sim) == "expDensity"))
-                      stop(paste0("Distribution of familial standardiced incidence rates ",
-                                  "from the simulation runs not available. You need to",
-                                  " run 'runSimulation' without optional argument",
-                                  " 'lowMem=TRUE'."))
+                      stop("Distribution of familial standardiced incidence rates ",
+                           "from the simulation runs not available. You need to",
+                           " run 'runSimulation' without optional argument",
+                           " 'lowMem=TRUE'.")
                   dens <- object@sim$expDensity[[id]]
                   XL <- range(c(range(dens$x, na.rm=TRUE), obsFsir), na.rm=TRUE)
                   plot(dens, main=paste0("Individual: ", id, ", family: ",
@@ -543,9 +561,9 @@ setMethod("timeInStrata", "FAStdIncidenceRateResults",
               if(nrow(object@timeInStrata)==0)
                   return(object@timeInStrata)
               if(nrow(object@timeInStrata) != length(object$id))
-                  stop(paste0("Length of 'timeInStrata' does not match the ",
-                              "number of individuals in ",
-                              "the pedigree!"))
+                  stop("Length of 'timeInStrata' does not match the ",
+                       "number of individuals in ",
+                       "the pedigree!")
               return(object@timeInStrata)
           })
 ## setReplaceMethod("timeAtRisk", "FAIncidenceRateResults", function(object, value){
@@ -573,7 +591,7 @@ setMethod("resultForId", "FAStdIncidenceRateResults",
                   stop("'id' has to be provided!")
               ## check if id is there.
               if(!any(object$id == id))
-                  stop(paste0("Individual with id ", id, " not in the pedigree."))
+                  stop("Individual with id ", id, " not in the pedigree.")
               ## check if we have any results:
               if(length(object@sim) == 0)
                   stop("No simulation results available. Please run 'runSimulation' first.")
