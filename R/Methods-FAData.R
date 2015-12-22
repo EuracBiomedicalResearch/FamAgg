@@ -426,11 +426,8 @@ setMethod("buildPed", "FAData",
               ## set all mothers and fathers that are not in id to 0
               ped[!(ped$mother %in% ped$id), "mother"] <- NA
               ped[!(ped$father %in% ped$id), "father"] <- NA
-<<<<<<< HEAD
-              ped <- doRemoveChildlessFounders(ped)
-=======
+              ## ped <- doRemoveChildlessFounders(ped)
               ped <- removeSingletons(ped)
->>>>>>> master
               return(ped)
           })
 
@@ -1089,8 +1086,6 @@ setMethod("export", "FAData", function(object, con, format="ped", ...){
                     col.names=FALSE)
     }
 })
-<<<<<<< HEAD
-=======
 
 
 ####============================================================
@@ -1110,6 +1105,5 @@ setMethod("getFounders", "FAData", function(object, ...){
 setMethod("getSingletons", "FAData", function(object, ...){
     return(doGetSingletons(pedigree(object)))
 })
->>>>>>> master
 
 
