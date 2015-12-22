@@ -24,7 +24,7 @@ references:
 ---
 
 **Package**: `r Biocpkg("FamAgg")`<br />
-**Authors**: `r packageDescription("FamAgg")[["Author"]] `<br />
+**Authors**: `r packageDescription("FamAgg")[["Author"]]`<br />
 **Modified**: 22 December, 2015<br />
 **Compiled**: `r date()`
 
@@ -536,10 +536,9 @@ clustered affected individuals within families.
 
 In Section [4.5](#orgtarget6) we apply the *probability test* based on the method from
 Yu et al [@Yu:2002vu] for inference on family disease clusters. We use the
-corresponding implementation in the `gap` package, that, due to an
-implementation specific limitation, can however not be directly applied to large
-pedigrees as the present, but requires definitions of smaller pedigree sub-sets
-(cliques).
+corresponding implementation in the `gap` package. However, currently gap cannot
+be directly applied to large pedigrees due to a specific limitation in the
+implementation.
 
 The *genealogical index of familiality*, the *familial incidence rate* and the
 *probability test* are well established methods while the *kinship sum test* and
@@ -568,8 +567,7 @@ individuals in the pedigree) from the analysis. Changing the argument
 
 ```{r warning=FALSE, message=TRUE}
 ## Calculate the genealogical index of familiality.
-gi <- genealogicalIndexTest(fad, trait=tcancer, traitName="cancer",
-			    nsim=nsim)
+gi <- genealogicalIndexTest(fad, trait=tcancer, traitName="cancer", nsim=nsim)
 
 ## Display the result.
 result(gi)
@@ -678,6 +676,9 @@ gifT <- genealogicalIndexTest(fad, trait=tcancer, nsim=100)
 ## Comparing the results:
 gifRes[[1]] == result(gifT)$genealogical_index
 ```
+
+Thus, the GIF estimate from the `gap` package is identical to the one from the
+`FamAgg` package.
 
 In the examples above, we tested for an enrichment of cancer cases in the full
 data set, i.e. across all families. In addition, we can perform the test
@@ -848,9 +849,7 @@ fam <- family(kinSum, family=famId)
 strat <- rep("All, unaff.", length(kinSum$id))
 strat[which(kinSum$affected > 0)] <- "All, aff."
 strat[kinSum$id %in% fam$id] <- paste0("Fam ", famId, ", unaff.")
-strat[kinSum$id %in% fam$id[which(fam$affected > 0)]] <- paste0("Fam ",
-								famId,
-								", aff.")
+strat[kinSum$id %in% fam$id[which(fam$affected > 0)]] <- paste0("Fam ",famId,", aff.")
 
 famData <- data.frame(fr=fr, group=strat)
 boxplot(fr~group, data=famData, na.rm=TRUE, ylab="FIR",
