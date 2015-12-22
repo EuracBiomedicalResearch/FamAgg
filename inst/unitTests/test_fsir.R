@@ -185,6 +185,21 @@ test_fsir <- function(){
     ## ## stratify in < 40 > 40
 }
 
+test_fsir_sim <- function(){
+    stratMat <- FamAgg:::factor2matrix(fad$sex)
+    stratMat <- stratMat * mbsub$endage
+    lambda <- c(M=(1.1+134.4)/100000, F=155.3/100000)
+    set.seed(18011977)
+    fsirRes <- fsirTest(fad, trait=trait(fad), lambda=lambda, timeInStrata=stratMat,
+                        nsim=400, lowMem=FALSE)
+    set.seed(18011977)
+    fsirRes2 <- fsirTest(fad, trait=trait(fad), lambda=lambda, timeInStrata=stratMat,
+                        nsim=400)
+    set.seed(18011977)
+    fsirRes2 <- fsirTest(fad, trait=trait(fad), lambda=lambda, timeInStrata=stratMat,
+                        nsim=400, lowMem=TRUE)
+    checkEquals(fsirRes$fsir, fsirRes2$fsir)
+}
 
 ## calculate person-time at risk:
 test_slice_age <- function(){

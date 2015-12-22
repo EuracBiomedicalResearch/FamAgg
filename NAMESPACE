@@ -19,7 +19,7 @@ importFrom(survey, stratsample)
 
 ## exported functions
 export("FAData", "connectedSubgraph", "doPlotPed", "estimateTimeAtRisk", "factor2matrix",
-       "ped2graph", "sliceAge", "subPedigree", "switchPlotfun")
+       "ped2graph", "sliceAge", "subPedigree", "switchPlotfun", "removeSingletons")
 ## exported classes
 exportClasses("FAData", "FAProbResults", "FAKinGroupResults",
               "FAKinSumResults", "FAGenIndexResults", "FAIncidenceRateResults",
@@ -35,7 +35,7 @@ exportMethods("$", "[", "affectedIndividuals", "affectedKinshipGroups", "age", "
 ## basic pedigree utils
 exportMethods("countGenerations", "estimateGenerations", "generationsFrom", "getAncestors",
               "getChildren", "getSiblings", "getMissingMate", "getCommonAncestor",
-              "findFounders")
+              "findFounders", "getFounders", "getSingletons")
 ## matched control methods
 exportMethods("getAll", "getExternalMatched", "getGenerationMatched",
               "getGenerationSexMatched", "getSexMatched")

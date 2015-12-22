@@ -35,7 +35,7 @@ setReplaceMethod("trait", "FAGenIndexResults", function(object, value){
 ## the analysis method.
 setMethod("runSimulation", "FAGenIndexResults",
           function(object, nsim=50000, perFamilyTest=FALSE, controlSetMethod="getAll",
-                   prune=TRUE, strata=NULL, ...){
+                   rm.singletons=TRUE, strata=NULL, ...){
               if(length(trait(object)) == 0)
                   stop("No trait information available!")
               ## extracting all the required information from the FAData/FAResult...
@@ -44,7 +44,7 @@ setMethod("runSimulation", "FAGenIndexResults",
               ResList <- .genIndex(ped=pedigree(object), kin=kinship(object),
                                    trait=trait(object), perFamilyTest=perFamilyTest,
                                    controlSetMethod=controlSetMethod, nsim=nsim,
-                                   prune=prune, strata=strata, ...)
+                                   prune=rm.singletons, strata=strata, ...)
               object@nsim <- nsim
               object@controlSetMethod <- controlSetMethod
               object@perFamilyTest <- perFamilyTest
@@ -66,7 +66,7 @@ setMethod("result", "FAGenIndexResults", function(object, method="BH"){
                             entity_id=NA,
                             entity_ctrls=NA,
                             entity_affected=NA,
-                            mean_kinship=NA,
+                            genealogical_index=NA,
                             pvalue=NA,
                             padj=NA,
                             check.names=FALSE, stringsAsFactors=FALSE
@@ -81,7 +81,7 @@ setMethod("result", "FAGenIndexResults", function(object, method="BH"){
     MyRes <- do.call(rbind, lapply(object@sim, function(z){
         return(c(entity_ctrls=length(z$ctrls),
                  entity_affected=length(z$affected),
-                 mean_kinship=z$meanKinship,
+                 genealogical_index=z$meanKinship * 100000,
                  pvalue=z$pvalueKinship))
     }))
     MyRes <- data.frame(trait_name=rep(TraitName, nrow(MyRes)),
@@ -142,10 +142,10 @@ setMethod("result", "FAGenIndexResults", function(object, method="BH"){
     if(!perFamilyTest){
         ## don't allow some matched control methods.
         if((controlSetMethod == "getGenerationMatched") | (controlSetMethod == "getGenerationSexMatched")){
-            stop(paste0("Can not use 'getGenerationMatched' or 'getGenerationSexMatched' functions",
-                        " for 'perFamilyTest=FALSE' since the generation estimation procedure only",
-                        " allows to define within-family generations, not generations across families",
-                        " in a full pedigree."))
+            stop("Can not use 'getGenerationMatched' or 'getGenerationSexMatched' functions",
+                 " for 'perFamilyTest=FALSE' since the generation estimation procedure only",
+                 " allows to define within-family generations, not generations across families",
+                 " in a full pedigree.")
         }
         entityIs <- "pedigree"
         ## replace the family id with 1 for all... thus performing the test for the whole
@@ -163,7 +163,8 @@ setMethod("result", "FAGenIndexResults", function(object, method="BH"){
         stop("No kinship matrix submitted!")
     ## add the trait information to the pedigree data.frame
     if(length(trait) != nrow(ped))
-        stop("Argument 'trait' has to have the same length then there are rows (individuals) in the pedigree 'ped'!")
+        stop("Argument 'trait' has to have the same length then there are",
+             " rows (individuals) in the pedigree 'ped'!")
     ped <- cbind(ped, AFF=trait)
     ## after all we shouldn't need this; just in case. it's for prune=TRUE to add
     ## eventually removed mates of a childless couple; but in the end we don't want
@@ -178,30 +179,37 @@ setMethod("result", "FAGenIndexResults", function(object, method="BH"){
     haveStrata <- FALSE
     if(!is.null(strata)){
         if(length(strata)!=nrow(ped))
-            stop("Argument 'strata' has to have the same length than there are rows (individuals) in the pedigree 'ped'!")
+            stop("Argument 'strata' has to have the same length than there",
+                 " are rows (individuals) in the pedigree 'ped'!")
         ## add strata.
         ped <- cbind(ped, STRATA=strata)
         haveStrata <- TRUE
     }
+    ## First remove singletons
+    if(prune){
+        ped <- removeSingletons(ped)
+    }
     ## OK, now we can go on: lapply on the splitted ped by family
     pedL <- split(ped, ped$family)
     Res <- lapply(pedL, function(z){
-        ## remove un-connected individuals.
-        if(prune)
-            z <- doPrunePed(z, addMissingMates=addMisMate)
         ## Now get the controls and the affected ids. We have to eventually further subset
         ## these if we have non-phenotyped controls etc.
         affIds <- as.character(z[which(z$AFF > 0), "id"])
         ## Eventually remove affected without a value in strata:
+        message("Cleaning data set (got in total ", nrow(z), " individuals):")
         if(haveStrata){
+            message(" * affected individuals without valid strata values...", appendLF=FALSE)
             nas <- is.na(z[affIds, "STRATA"])
             if(any(nas)){
-                warning(paste0("Removed ", sum(nas),
-                               " affected individuals for ",
-                               entityIs, " ",
-                               z[1, "family"],
-                               " as they have a missing value in the specified strata."))
+                ## warning(paste0("Removed ", sum(nas),
+                ##                " affected individuals for ",
+                ##                entityIs, " ",
+                ##                z[1, "family"],
+                ##                " as they have a missing value in the specified strata."))
                 affIds <- affIds[!nas]
+                message(" ", sum(nas), " removed.")
+            }else{
+                message(" none present.")
             }
         }
         ## Return if there are not enough affected.
@@ -220,28 +228,38 @@ setMethod("result", "FAGenIndexResults", function(object, method="BH"){
             unlist(do.call(what=controlSetMethod, args=list(object=z, id=affIds, ...)),
                    use.names=FALSE)
             )
-        ## Subset to phenotyped individuals, i.e. those that a valid value in "affected"
+        ## Subset to phenotyped individuals, i.e. those with a valid value in "affected"
         nas <- is.na(z[ctrls, "affected"])
+        message(" * not phenotyped individuals among selected controls...", appendLF=FALSE)
         if(any(nas)){
-            warning(paste0("Removed ", sum(nas),
-                           " not phenotyped individuals from ", entityIs, " ",
-                           z[1, "family"], "."))
+            ## warning(paste0("Removed ", sum(nas),
+            ##                " not phenotyped individuals from ", entityIs, " ",
+            ##                z[1, "family"], "."))
             ctrls <- ctrls[!nas]
+            message(" ", sum(nas), " removed.")
+        }else{
+            message(" none present.")
         }
         if(haveStrata){
             ## Subsetting the data.frame to elements that have a non-NA value in strata.
             nas <- is.na(z[ctrls, "STRATA"])
+            message(" * control individuals without valid strata values...", appendLF=FALSE)
             if(any(nas)){
-                warning(paste0("Removed ", sum(nas),
-                               " control individuals from ", entityIs, " ",
-                               z[1, "family"],
-                               " as they have a missing value in the specified strata."
-                               ))
+                ## warning(paste0("Removed ", sum(nas),
+                ##                " control individuals from ", entityIs, " ",
+                ##                z[1, "family"],
+                ##                " as they have a missing value in the specified strata."
+                ##                ))
                 ctrls <- ctrls[!nas]
+                message(" ", sum(nas), " removed.")
+            }else{
+                message(" none present.")
             }
         }
+        message("Done")
         if(length(ctrls) < 4*length(affIds))
-            warning("The proportion of affected individuals among the matched controls is > 25% in ",
+            warning("The proportion of affected individuals among the matched controls",
+                    " is > 25% in ",
                     entityIs, " ",
                     z[1, "family"], ".")
         ## Subset the kinship matrix and transform into a "normal" matrix,
@@ -300,8 +318,9 @@ setMethod("plotPed", "FAGenIndexResults",
               }
               if(length(object@sim) > 0){
                   if(!object@perFamilyTest){
-                      warning(paste0("The genealogical index test has been performed on the full pedigree,",
-                                     " but the plot was only generated for family ", family, "!"))
+                      warning("The genealogical index test has been performed on",
+                              " the full pedigree,",
+                              " but the plot was only generated for family ", family, "!")
                       ctrls <- object@sim[[1]]$ctrls
                   }else{
                       ctrls <- object@sim[[family]]$ctrls
@@ -374,10 +393,11 @@ setMethod("plotRes", "FAGenIndexResults",
               Blue <- "#377EB8"
               abline(v=meanKin, col=Blue)
               if(addLegend){
-                  legend("topright", legend=c(paste0("mean kinship: ", format(meanKin, digits=2)),
-                                             paste0("p-value     : ", format(pval, digits=3)),
-                                             paste0("affect count: ", affCount),
-                                             paste0("ctrls count : ", ctrlsCount)))
+                  legend("topright", legend=c(paste0("GIF: ", format(100000*meanKin, digits=4)),
+                                              paste0("mean kinship: ", format(meanKin, digits=2)),
+                                              paste0("p-value     : ", format(pval, digits=3)),
+                                              paste0("affect count: ", affCount),
+                                              paste0("ctrls count : ", ctrlsCount)))
               }
 })
 

@@ -135,3 +135,26 @@ test_gen_index_pedigree <- function(){
 }
 
 
+test_gen_index_with_gap <- function(){
+    library(gap)
+    gi <- genealogicalIndexTest(fad, trait=tcancer, nsim=100, rm.singletons=FALSE)
+
+    ## Now use gap:
+    gapPed <- pedigree(fad)
+    gapPed[is.na(gapPed$mother), "mother"] <- 0
+    gapPed[is.na(gapPed$father), "father"] <- 0
+    ## get the ids of the affected
+    affIds <- names(tcancer[which(tcancer == 1)])
+    giGap <- gif(gapPed[, c("id", "father", "mother")], as.numeric(affIds))
+    checkEquals(result(gi)$genealogical_index, giGap[[1]])
+    ## Doing the same with removal of singletons:
+    gi <- genealogicalIndexTest(fad, trait=tcancer, nsim=100, rm.singletons=TRUE)
+    gapPed <- pedigree(fad)
+    gapPed <- removeSingletons(gapPed)
+    gapPed[is.na(gapPed$mother), "mother"] <- 0
+    gapPed[is.na(gapPed$father), "father"] <- 0
+    affIds <- affIds[affIds %in% gapPed$id]
+    giGap <- gif(gapPed[, c("id", "father", "mother")], as.numeric(affIds))
+    checkEquals(result(gi)$genealogical_index, giGap[[1]])
+}
+

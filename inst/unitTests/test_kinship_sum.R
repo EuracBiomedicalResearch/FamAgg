@@ -99,7 +99,7 @@ test_plot_kinclust <- function(){
     ## kinship2 plotting
     switchPlotfun("ks2paint")
     plotPed(far, id=id, device="plot", col=cols)
-    switchPlotfun()
+    ##switchPlotfun()
 }
 
 

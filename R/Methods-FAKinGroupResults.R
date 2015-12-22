@@ -86,7 +86,14 @@ setMethod("runSimulation", "FAKinGroupResults", function(object, nsim=50000, str
                        ": only one or none affected individual!"))
         return(object)
     }
-
+    message("Cleaning data set (got in total ", nrow(kin), " individuals):")
+    ## Dummy for removing unaffected:
+    message(" * not phenotyped individuals...")
+    if(length(phenotypedIds) != nrow(kin)){
+        message(" ", nrow(kin)-length(phenotypedIds), " removed")
+    }else{
+        message(" none present.")
+    }
     ## Strata. First check that strata has the correct length, then ensure that all of
     ## the affected and phenotyped ids have a non-NA value in strata.
     if(!is.null(strata)){
@@ -95,20 +102,29 @@ setMethod("runSimulation", "FAKinGroupResults", function(object, nsim=50000, str
         nas <- is.na(strata)
         names(strata) <- object$id
         newAffIds <- affectedIds[affectedIds %in% names(strata)[!nas]]
+        message(" * affected individuals without valid strata values...", appendLF=FALSE)
         if(length(newAffIds) != length(affectedIds)){
-            warning(paste0("Removed ", length(affectedIds) - length(newAffIds),
-                           " affected individuls as they have a missing value in 'strata'."))
+            ## warning("Removed ", length(affectedIds) - length(newAffIds),
+            ##         " affected individuls as they have a missing value in 'strata'.")
+            message(" ", length(affectedIds)-length(newAffIds), " removed.")
             affectedIds <- newAffIds
+        }else{
+            message(" none present.")
         }
         newPheIds <- phenotypedIds[phenotypedIds %in% names(strata)[!nas]]
+        message(" * unaffected individuals without valid strata values...", appendLF=FALSE)
         if(length(newPheIds) != length(phenotypedIds)){
-            warning(paste0("Removed ", length(phenotypedIds) - length(newPheIds),
-                           " phenotyped individuls as they have a missing value in 'strata'."))
+            ## warning("Removed ", length(phenotypedIds) - length(newPheIds),
+            ##         " phenotyped individuls as they have a missing value in 'strata'.")
+            message(" ", length(phenotypedIds)-length(newPheIds), " removed.")
             phenotypedIds <- newPheIds
+        }else{
+            message(" none present.")
         }
         ## Subset strata and ensure same ordering than phenotypedIds
         strata <- strata[phenotypedIds]
     }
+    message("Done")
 
     ## Subset the kinship matrix
     ## Transform the Matrix into a matrix... needs more memory, but runs faster.

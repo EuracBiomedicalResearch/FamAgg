@@ -45,26 +45,19 @@ test_kinship_group <- function(){
 ## from the affectedKinshipGroups?
 ## plot the kinshipGroup.
 test_plot_kinship <- function(){
-    ## data(minnbreast)
-    ## mbsub <- minnbreast[minnbreast$famid %in% c(4, 42, 165, 432),]
-    ## PedDf <- mbsub[, c("famid", "id", "fatherid", "motherid", "sex")]
-    ## colnames(PedDf) <- FamAgg:::.PEDCN
-    ## PedDf$sex <- FamAgg:::sanitizeSex(PedDf$sex)
-    ## ## generate the FAData.
-    ## fad <- FAData(pedigree=PedDf)
-    ## ## specify the trait.
-    ## tcancer <- mbsub$cancer
-    ## names(tcancer) <- mbsub$id
+    do.plot <- FALSE
 
     set.seed(18011977)
     far <- kinshipGroupTest(fad, trait=tcancer, traitName="cancer", nsim=500)
     res <- result(far)
     res <- res[order(res$kinship_pvalue), ]
 
-    switchPlotfun("ks2paint")
-    plotPed(far, id="17517", prune=TRUE, device="plot", cex=0.4)
-    plotPed(far, id="17517", prune=FALSE, device="plot")
-    switchPlotfun()
+    if(do.plot){
+        switchPlotfun("ks2paint")
+        plotPed(far, id="17517", prune=TRUE, device="plot", cex=0.4)
+        plotPed(far, id="17517", prune=FALSE, device="plot")
+    }
+    ## switchPlotfun()
 }
 
 

@@ -179,7 +179,8 @@ setMethod("$", "FAIncidenceRateResults", function(x, name){
 ##  The second optional argument is 'prune' that removes unconnected
 ##  individuals from the pedigree prior testing.
 setMethod("runSimulation", "FAIncidenceRateResults",
-          function(object, nsim=50000, timeAtRisk=NULL, strata=NULL, ...){
+          function(object, nsim=50000, timeAtRisk=NULL,
+                   strata=NULL, ...){
               if(length(trait(object)) == 0)
                   stop("No trait information available!")
               SimRes <- .FRSimulation(ped=pedigree(object),
@@ -188,6 +189,7 @@ setMethod("runSimulation", "FAIncidenceRateResults",
                                       timeAtRisk=timeAtRisk,
                                       nsim=nsim,
                                       strata=strata,
+                                      prune=FALSE,
                                       ...)
               timeAtRisk(object) <- timeAtRisk
               object@nsim <- nsim
@@ -249,27 +251,63 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
                         " are individuals in the pedigree!"))
         ped <- cbind(ped, STRAT=strata)
     }
+    ## NOTE: We're not removing singletons here, as we are anyway removing them further down!
+    ## ## First thing ever: remove singletons, as they have anyway a kinship value of 0.
+    ## if(prune){
+    ##     ##ped <- doPrunePed(ped)    ## CHECK: Do I really have to do this?
+    ##     ped <- removeSingletons(ped)
+    ## }
     ## Subset the data set to individuals with valid values for trait, timeAtRisk
     ## and strata.
     nas <- is.na(ped$AFF)
-    if(any(nas))
-        warning(paste0("Removed ", sum(nas), " individuals from the pedigree ",
-                       "as they have missing values in the trait."))
-    ped <- ped[!nas, , drop=FALSE]
+    message("Cleaning data set (got in total ", nrow(ped), " individuals):")
+    message(" * not phenotyped individuals...", appendLF=FALSE)
+    if(any(nas)){
+        ## warning("Removed ", sum(nas), " individuals from the pedigree ",
+        ##         "as they have missing values in the trait.")
+        ped <- ped[!nas, , drop=FALSE]
+        message(" ", sum(nas), " removed.")
+    }else{
+        message(" none present.")
+    }
+    ## time at risk
     nas <- is.na(ped$TAR)
-    if(any(nas))
-        warning(paste0("Removed ", sum(nas), " individuals from the pedigree ",
-                       "as they have missing values for the time at risk."))
-    ped <- ped[!nas, , drop=FALSE]
+    message(" * individuals with unknown time at risk...", appendLF=FALSE)
+    if(any(nas)){
+        ## warning("Removed ", sum(nas), " individuals from the pedigree ",
+        ##         "as they have missing values for the time at risk.")
+        ped <- ped[!nas, , drop=FALSE]
+        message(" ", sum(nas), " removed.")
+    }else{
+        message(" none present.")
+    }
+    ## Strata
     if(!is.null(strata)){
         nas <- is.na(ped$STRAT)
-        if(any(nas))
-            warning(paste0("Removed ", sum(nas), " individuals from the pedigree ",
-                           "as they have missing values in 'strata'."))
-        ped <- ped[!nas, , drop=FALSE]
+        message(" * individuals without valid strata values...", appendLF=FALSE)
+        if(any(nas)){
+            ## warning("Removed ", sum(nas), " individuals from the pedigree ",
+            ##         "as they have missing values in 'strata'.")
+            ped <- ped[!nas, , drop=FALSE]
+            message(" ", sum(nas), " removed.")
+        }else{
+            message(" none present.")
+        }
+
     }
-    if(prune)
-        ped <- doPrunePed(ped)    ## CHECK: Do I really have to do this?
+    ## Anyway removing singletons here, since they result in NA values!
+    message(" * singletons (also caused by previous subsetting)...", appendLF=FALSE)
+    origSize <- nrow(ped)
+    suppressMessages(
+        ped <- removeSingletons(ped)
+    )
+    if(nrow(ped) != origSize){
+        message(" ", origSize-nrow(ped), " removed.")
+    }else{
+        message(" none present.")
+    }
+    message("Done")
+
     ## Calculate the kinship for the observed.
     idx <- match(as.character(ped$id), colnames(kin))
     if(any(is.na(idx)))
@@ -398,6 +436,13 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
         entityIs <- "pedigree"
         ped[, "family"] <- 1
     }
+    ## NOTE: don't do that here, since we're going to remove them anyway further below!
+    ## ## First thing: remove singletons; keep also the original IDs, so we can return a value for ALL
+    ## ## individuals.
+    ## originalIds <- as.character(ped$id)
+    ## if(prune){
+    ##     ped <- removeSingletons(ped)
+    ## }
     ## OK, now we can go on: lapply on the splitted ped by family
     pedL <- split(ped, ped$family)
     Res <- lapply(pedL, function(z){
@@ -405,23 +450,41 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
         ## remove NAs:
         ## NA in affected/trait
         nas <- is.na(z$AFF)
+        message("Cleaning data set (got in total ", nrow(z), " individuals):")
+        message(" * not phenotyped individuals...", appendLF=FALSE)
         if(any(nas)){
             z <- z[!nas, , drop=FALSE]
-            warning(paste0("Removed ", sum(nas), " individuals from ",
-                           entityIs, " ", z[1, "family"],
-                           " as they have missing values in the trait."))
+            ## warning(paste0("Removed ", sum(nas), " individuals from ",
+            ##                entityIs, " ", z[1, "family"],
+            ##                " as they have missing values in the trait."))
+            message(" ", sum(nas), " removed.")
+        }else{
+            message(" none present.")
         }
         ## NA in time at risk:
         nas <- is.na(z$TAR)
+        message(" * individuals with unknown time at risk...", appendLF=FALSE)
         if(any(nas)){
             z <- z[!nas, , drop=FALSE]
-            warning(paste0("Removed ", sum(nas), " individuals from ",
-                           entityIs, " ", z[1, "family"],
-                           " as they have missing values for the time at risk."))
+            ## warning(paste0("Removed ", sum(nas), " individuals from ",
+            ##                entityIs, " ", z[1, "family"],
+            ##                " as they have missing values for the time at risk."))
+            message(" ", sum(nas), " removed.")
+        }else{
+            message(" none present.")
         }
-        ## OK, now starting to reduce the data.
-        if(prune)
-            z <- doPrunePed(z)
+        message(" * singletons (also caused by previous subsetting)...", appendLF=FALSE)
+        origSize <- nrow(z)
+        suppressMessages(
+            z <- removeSingletons(z)
+        )
+        if(nrow(z) != origSize){
+            message(" ", origSize-nrow(z), " removed.")
+        }else{
+            message(" none present.")
+        }
+        message("Done")
+
         ## Subset the kinship matrix and ensure correct ordering.
         idx <- match(as.character(z$id), colnames(kin))
         if(any(is.na(idx)))

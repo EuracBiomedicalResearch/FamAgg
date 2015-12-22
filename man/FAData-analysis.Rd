@@ -39,25 +39,23 @@ estimateTimeAtRisk(startDate=NULL, startDateFormat="\%Y-\%m-\%d",
 factor2matrix(x)
 
 \S4method{familialIncidenceRate}{FAData}(object, trait=NULL,
-                                         timeAtRisk=NULL,
-                                         prune=TRUE)
+                                         timeAtRisk=NULL)
 
 \S4method{familialIncidenceRateTest}{FAData}(object, trait=NULL,
                                             nsim=50000, traitName=NULL,
-                                            timeAtRisk=NULL, prune=TRUE,
+                                            timeAtRisk=NULL,
                                             strata=NULL, ...)
 
-\S4method{fsir}{FAData}(object, trait=NULL, lambda=NULL, timeInStrata=NULL,
-                        prune=TRUE)
+\S4method{fsir}{FAData}(object, trait=NULL, lambda=NULL, timeInStrata=NULL)
 
 \S4method{fsirTest}{FAData}(object, trait=NULL, nsim=50000, traitName=NULL,
-                            lambda=NULL, timeInStrata=NULL, prune=TRUE,
+                            lambda=NULL, timeInStrata=NULL,
                             strata=NULL, ...)
 
 \S4method{genealogicalIndexTest}{FAData}(object, trait, nsim=50000,
                                          traitName, perFamilyTest=FALSE,
                                          controlSetMethod="getAll",
-                                         prune=TRUE, strata=NULL, ...)
+                                         rm.singletons=TRUE, strata=NULL, ...)
 
 \S4method{kinshipGroupTest}{FAData}(object, trait, nsim=50000,
                                     traitName, strata=NULL, ...)
@@ -171,10 +169,10 @@ sliceAge(x, slices=c(0, 40, Inf))
     clustered affected individuals within each family.
   }
 
-  \item{prune}{
-    For \code{familialIncidenceRate}, \code{familialIncidenceRateTest},
-    \code{fsir}, \code{fsirTest} and \code{genealogicalIndexTest}: whether unconnected
-    individuals in the pedigree should be removed.
+  \item{rm.singletons}{
+    For \code{genealogicalIndexTest}:
+    whether unconnected individuals in the pedigree (singletons) should
+    be removed from the pedigree prior to the analysis.
   }
 
   \item{slices}{
@@ -263,6 +261,12 @@ sliceAge(x, slices=c(0, 40, Inf))
   sex stratified sampling is performed, in each permuatation the same
   number of random samples in each group (i.e. 5 females and 2 males)
   are selected.
+
+  A note on singletons: for all per-individual measures, unconnected individuals
+  within the pedigree are automatically excluded from the calculations as no
+  kinship based statistic can be estimated for them since they do, by definition,
+  not share kinship with any other individual in the pedigree.
+
 }
 \section{Familial aggregation methods}{
 
@@ -270,7 +274,7 @@ sliceAge(x, slices=c(0, 40, Inf))
 
     \item{familialIncidenceRate}{
       Calculate the familial incidence rate (FIR, or FR) as defined in [Kerber
-      (1995)], formula (3). The FR is an estimate for the risk per
+      1995], formula (3). The FIR is an estimate for the risk per
       gene-time for each individual for a certain disease (trait) given
       the disease experience in the cohort. The measure considers the
       kinship of each individual with any affected individual in the
@@ -279,12 +283,13 @@ sliceAge(x, slices=c(0, 40, Inf))
       Internally, the function first excludes individuals from the test
       which have a missing value (\code{NA}) either in the argument
       \code{trait} or in the argument \code{timeAtRisk}. Next, the thus
-      reduced pedigree, is further cleaned by removing all individuals
-      that are not connected with any other in the pedigree.
+      reduced pedigree, is further cleaned by removing all resulting
+      singletons (i.e. individuals that do not share kinship with any
+      other individual in the above reduced data set).
 
       The method returns a vector with the FIR value for each
       individual. Individuals that were excluded from the test as
-      described above habe an FR of \code{NA}.
+      described above habe an FIR of \code{NA}.
     }
 
     \item{familialIncidenceRateTest}{
@@ -301,7 +306,7 @@ sliceAge(x, slices=c(0, 40, Inf))
       Calculate the familial standardized incidence rate (FSIR) as
       defined in [Kerber, 1995], formula (4). The FSIR weights the
       disease status of relatives based on their degree of relatedness
-      with the proband (Kerber, 1995). Formally, the FSIR is defined as
+      with the proband [Kerber, 1995]. Formally, the FSIR is defined as
       the standardized incidence ratio (SIR) or standardized morality
       ratio in epidemiology, i.e. as the ratio between the observed and
       expected number of cases, only that both are in addition also
@@ -330,9 +335,12 @@ sliceAge(x, slices=c(0, 40, Inf))
     }
 
     \item{genealogicalIndexTest}{
-      Performs the \emph{genealogical index} analysis from [Hill (1980)] to
-      identify familial clustering of traits (e.g. cancers etc). This
-      test calculates the mean kinship among affected individuals in a
+      Performs the \emph{genealogical index} analysis from [Hill
+      1980] (also known as the \emph{genealogical index of
+      familiality} or \code{genetic index of familiality}) to identify
+      familial clustering of traits (e.g. cancers etc).
+
+      This test calculates the mean kinship among affected individuals in a
       pedigree along with mean kinships of equal sized random control
       sets drawn form the pedigree. The distribution of average kinship
       values among these random sets is used to estimate the probability
@@ -341,6 +349,11 @@ sliceAge(x, slices=c(0, 40, Inf))
       The \code{controlSetMethod} argument allows to specify the method
       to define sets of matched control individuals in a pedigree or
       family.
+
+      Note that by default singletons (i.e. unconnected individuals in
+      the pedigree) are removed from the pedigree prior the
+      analysis. Set \code{rm.singletons=FALSE} if you do not want them
+      to be removed.
 
       The method can also be performed separately for each family within
       the larger pedigree (\code{perFamilyTest=TRUE} to evaluate the
