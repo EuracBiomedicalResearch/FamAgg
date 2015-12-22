@@ -38,14 +38,14 @@ if(!isGeneric("export"))
                standardGeneric("export"))
 
 setGeneric("familialIncidenceRate", function(object, trait=NULL, timeAtRisk=NULL,
-                                             prune=TRUE, ...)
+                                              ...)
     standardGeneric("familialIncidenceRate"))
 
 setGeneric("familialIncidenceRateTest", function(object, ...)
     standardGeneric("familialIncidenceRateTest"))
 
 setGeneric("fsir", function(object, trait=NULL, lambda=NULL, timeInStrata=NULL,
-                            prune=TRUE, ...)
+                            ...)
     standardGeneric("fsir"))
 
 setGeneric("fsirTest", function(object, ...)
@@ -53,7 +53,7 @@ setGeneric("fsirTest", function(object, ...)
 
 setGeneric("genealogicalIndexTest", function(object, trait, nsim=50000, traitName,
                                              perFamilyTest=FALSE, controlSetMethod="getAll",
-                                             prune=TRUE, strata=NULL, ...)
+                                             rm.singletons=TRUE, strata=NULL, ...)
     standardGeneric("genealogicalIndexTest"))
 
 setGeneric("findFounders", function(object, ...)
@@ -71,11 +71,17 @@ setGeneric("getChildren", function(object, id=NULL, ...)
 setGeneric("getCommonAncestor", function(object, id=NULL, ...)
     standardGeneric("getCommonAncestor"))
 
+setGeneric("getFounders", function(object, ...)
+    standardGeneric("getFounders"))
+
 setGeneric("getMissingMate", function(object, ...)
     standardGeneric("getMissingMate"))
 
 setGeneric("getSiblings", function(object, id=NULL, ...)
     standardGeneric("getSiblings"))
+
+setGeneric("getSingletons", function(object, ...)
+    standardGeneric("getSingletons"))
 
 setGeneric("kinship", function(id, ...)
     standardGeneric("kinship"))

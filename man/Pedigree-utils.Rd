@@ -43,6 +43,10 @@
 \alias{getCommonAncestor,data.frame-method}
 \alias{getCommonAncestor,pedigreeList-method}
 \alias{getCommonAncestor,pedigree-method}
+%% getFounders
+\alias{getFounders}
+\alias{getFounders,FAData-method}
+\alias{getFounders,data.frame-method}
 %% getMissingMate
 \alias{getMissingMate}
 \alias{getMissingMate,FAData-method}
@@ -55,6 +59,12 @@
 \alias{getSiblings,data.frame-method}
 \alias{getSiblings,pedigreeList-method}
 \alias{getSiblings,pedigree-method}
+%% getSingletons
+\alias{getSingletons}
+\alias{getSingletons,FAData-method}
+\alias{getSingletons,data.frame-method}
+%% removeSingletons
+\alias{removeSingletons}
 
 \alias{ped2graph}
 \alias{subPedigree}
@@ -62,6 +72,7 @@
 
 \alias{shareKinship}
 \alias{shareKinship,FAData-method}
+
 
 \title{Basic pedigree utilities}
 
@@ -91,11 +102,17 @@ connectedSubgraph(graph, nodes, mode="all", all.nodes=TRUE, ifnotfound)
 
 \S4method{getCommonAncestor}{FAData}(object, id, method="min.dist")
 
+\S4method{getFounders}{FAData}(object, ...)
+
 \S4method{getMissingMate}{FAData}(object, id=NULL, ...)
 
 \S4method{getSiblings}{FAData}(object, id=NULL, ...)
 
+\S4method{getSingletons}{FAData}(object, ...)
+
 ped2graph(ped)
+
+removeSingletons(ped)
 
 subPedigree(ped, id=NULL, all=TRUE)
 
@@ -187,6 +204,7 @@ subPedigree(ped, id=NULL, all=TRUE)
     the pedigree. If a \code{data.frame} is submitted, the columns
     \code{id}, \code{family}, \code{father}, \code{mother} and
     \code{sex} are required.
+    For \code{removeSingletons}: only a \code{data.frame} is supported.
   }
 
   \item{...}{
@@ -218,6 +236,18 @@ subPedigree(ped, id=NULL, all=TRUE)
       individuals.
     }
 
+    \item{getFounders}{
+      Returns the ids of all founders in the pedigree. A founder is an
+      individual from which neither father nor mother is known in the
+      pedigree.
+    }
+
+    \item{getSingletons}{
+      Returns the ids of all singletons, i.e. individuals in the
+      pedigree that are not connected to any other individual (have no
+      parents in the pedigree and no children).
+    }
+
     \item{getAncestors}{
       Identify and return the ids of ancestor generations (up to
       \code{max.generations}) for the specified individual(s).
@@ -244,6 +274,15 @@ subPedigree(ped, id=NULL, all=TRUE)
     \item{getSiblings}{
       Get siblings for the specified id(s). Returns their ids as
       character, or numeric vector.
+    }
+
+    \item{removeSingletons}{
+      Removes all unconnected individuals (i.e. singletons) from the
+      pedigree. Returns a \code{data.frame} with the pedigree cleaned
+      from all singletons. Note that, due to internal sanitizing,
+      columns \code{"father"} and \code{"mother"} in the resulting
+      \code{data.frame} have a \code{NA} for individuals for which the
+      father or mother is not known in the pedigree.
     }
 
     \item{subPedigree}{
@@ -364,40 +403,51 @@ doPlotPed(individual=fam4sub$id, father=fam4sub$father, mother=fam4sub$mother,
 ## Note: the same methods can be applied to a data.frame representing
 ## a pedigree, or a FAData, pedigree or pedigreeList object.
 
-## find the founder couple for family 4
+## Find the founder couple for family 4
 findFounders(fam4, family=4)
 
-## count the offspring generations for individual "4"
+## Return all founders in the pedigree.
+getFounders(fam4)
+
+## Get all founders without children (i.e. singletons).
+getSingletons(fam4)
+
+## Clean the pedigree from all singletons
+fam4noS <- removeSingletons(fam4)
+nrow(fam4)
+nrow(fam4noS)
+
+## Count the offspring generations for individual "4"
 countGenerations(fam4, id="4")
 
-## get the ids of all ancestors for that individual
+## Get the ids of all ancestors for that individual
 getAncestors(fam4, id="4")
 
-## get the ids of the children of this individual
+## Get the ids of the children of this individual
 getChildren(fam4, id="4", max.generations=1)
 
-## get the ids of the complete offspring for this individuals
+## Get the ids of the complete offspring for this individuals
 getChildren(fam4, id="4")
 
-## create a FAData object from the pedigree data.frame
+## Create a FAData object from the pedigree data.frame
 fad <- FAData(fam4)
 ## get the list of all ids sharing kinship with individuals
 ## 5 and 9
 shareKinship(fad, id=c("5", "9"))
 
-## count the numbers of generations of ancestors for individual 12
+## Count the numbers of generations of ancestors for individual 12
 countGenerations(fad, id="12", direction="up")
 
-## count the numbers of offspring generations for individuals 2 and 29
+## Count the numbers of offspring generations for individuals 2 and 29
 countGenerations(fad, id=c("2", "29"))
 
-## get all brothers/sisters for individual 9
+## Get all brothers/sisters for individual 9
 getSiblings(fad, id="9")
 
-## determine generation levels starting from individual "9"
+## Determine generation levels starting from individual "9"
 generationsFrom(fad, id="9")
 
-## estimate generations relative to the founder couple for each
+## Estimate generations relative to the founder couple for each
 ## family in the submitted object, a data.frame in the example below
 estimateGenerations(mbped)
 
@@ -406,11 +456,11 @@ estimateGenerations(mbped)
 ##
 ##  Graph utilities
 ##
-## convert the pedigree into a graph
+## Convert the pedigree into a graph
 pgraph <- ped2graph(fam4)
 plot(pgraph)
 
-## make a subgraph containing nodes 10, 22, 12 and 14
+## Make a subgraph containing nodes 10, 22, 12 and 14
 sgraph <- connectedSubgraph(pgraph, c("10", "22", "12", "14"))
 plot(sgraph)
 

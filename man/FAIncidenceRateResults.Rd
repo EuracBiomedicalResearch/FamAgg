@@ -45,7 +45,7 @@
 
 \S4method{familialIncidenceRate}{FAIncidenceRateResults}(object, trait=NULL,
                                                          timeAtRisk=NULL,
-                                                         prune=TRUE, ...)
+                                                         ...)
 
 \S4method{plotPed}{FAIncidenceRateResults}(object, id=NULL, family=NULL,
                                            filename=NULL, device="plot",
@@ -119,9 +119,14 @@
     the pedigree to be complete.
   }
 
-  \item{prune}{
-    For \code{familialIncidenceRate}: not used.
-  }
+  %% \item{rm.singletons}{
+  %%   For \code{familialIncidenceRate}: not used, for
+  %%   \code{familialIncidenceRateTest}: remove singletons from the data
+  %%   set prior to the analysis. This does however not have an impact on
+  %%   the results, as the FIR for singletons will anyway be \code{NA}
+  %%   because they do not share kinship with any other individual in the
+  %%   pedigree.
+  %% }
 
   \item{strata}{
     For \code{runSimulation}: a numeric, character of factor
@@ -208,7 +213,11 @@
       \code{FAIncidenceRateResults} object.
 
       The method returns a named numeric vector with the familial
-      incidence rates, the names being the ID of the individuals.
+      incidence rates for all individuals in the pedigree, the names
+      being the ID of the individuals. Singletons as well as individuals
+      that, after removing not phenotyped individuals or individuals
+      without time at risk, do not share kinship with any other
+      individual in the pedigree have a value of \code{NA}.
     }
 
     \item{plotPed}{
@@ -230,20 +239,34 @@
     \item{result}{
       Returns the result from the simulation as a \code{data.frame} with
       columns:
+
       \code{"trait_name"}: the name of the trait.
+
       \code{"total_phenotyped"}: total number of phenotyped individuals in
       the trait.
+
       \code{"total_affected"}: total number of affected individuals in the
       trait.
+
       \code{"total_tested"}: the number of individuals in the pedigree
       considered for the simulation. This corresponds to all individuals
       with valid, non-NA, values in trait, timeAtRisk and eventually
       strata.
+
       \code{"id"}: the id of the individual.
+
       \code{"family"}: the family id.
-      \code{"fir"}: the familial incidence rate.
+
+      \code{"fir"}: the familial incidence rate. Note that this will be
+
+      \code{NA} for all non-phenotyped individuals and singletons in the pedigree as well as for
+      individuals that do not share kinship with at least one other
+      phenotyped individual with valid time at risk (or valid value in
+      parameter \code{strata}).
+
       \code{"pvalue"}: the p-value for the significance of the familial
       incidence rate assessed by Monte Carlo simulations.
+
       \code{"padj"}: the p-value adjusted for multiple hypothesis
       testing (with the method specified with argument \code{method}).
 
@@ -307,6 +330,10 @@
   familial incidence rates from the simulation runs is no longer
   reported.
 
+  Note: the FIR for singletons and individuals that do not share kinship
+  with at least one other phenotyped individual that has also a valid
+  value in argument \code{timeAtRisk} (and eventually \code{strata})
+  will be \code{NA}.
 }
 \note{
   Subsetting (using the \code{[} operator) is not supported.

@@ -28,19 +28,21 @@ setMethod("cliques", "FAProbResults", function(object, na.rm=FALSE){
     return(cl)
 })
 setReplaceMethod("cliques", "FAProbResults", function(object, value){
-    if(is.character(value)){
-        value <- factor(value)
+    if(!(is.character(value) | is.numeric(value) | is.factor(value))){
+        stop("'cliques' should be a numeric or character vector or a factor!")
     }
-    if(is.numeric(value))
-        value <- factor(value)
-    if(!is.factor(value))
-        stop("cliques should be a numeric or character vector or a factor!")
     if(is.null(names(value)))
-        stop("cliques should be a named vector with the names corresponding to the ids of the individuals in the pedigree!")
+        stop("cliques should be a named vector with the names corresponding",
+             " to the ids of the individuals in the pedigree!")
+    ## Convert to character; for now
+    valNames <- names(value)
+    value <- as.character(value)
+    names(value) <- valNames
     Pedigree <- pedigree(object)
     cliqInPed <- names(value) %in% Pedigree$id
     if(!any(cliqInPed))
-        stop("None of the ids in cliques (i.e. names of the input argument cliques) can be matched to ids in the pedigree")
+        stop("None of the ids in cliques (i.e. names of the input argument",
+             " cliques) can be matched to ids in the pedigree")
     value <- value[cliqInPed]
     ## create a cliques vector
     cliques <- rep(NA, nrow(Pedigree))
@@ -49,9 +51,12 @@ setReplaceMethod("cliques", "FAProbResults", function(object, value){
     cliques[match(names(value), names(cliques))] <- value
     cliques <- factor(cliques)
     object@.cliques <- cliques
-    ## reset the result
-    object@sim <- list()
-    object@traitname <- character()
+    ## Reset results, if there are some...
+    if(length(object@sim) > 0){
+        message("Resetting results.")
+        object@sim <- list()
+    }
+    ## object@traitname <- character()
     return(object)
 })
 
@@ -106,6 +111,17 @@ setMethod("runSimulation", "FAProbResults", function(object, nsim=50000){
     ## no of affected per clique and sum of clique members:
     CliqueSummary <- traitByClique(object)
 
+    ## Dummy info...
+    message("Cleaning data set (got in total ", length(object$id), " individuals):")
+    message(" * not phenotyped individuals...", appendLF=FALSE)
+    notPhen <- sum(is.na(trait(object)))
+    if(notPhen > 0){
+        message(" ", notPhen, " removed.")
+    }else{
+        message(" none present.")
+    }
+    message("Done.")
+
     ## what is the frequency???
     l_freq <- aggregate(rep(1, nrow(CliqueSummary)),
                         by=list(CliqueSummary[, "size"], CliqueSummary[, "affected_count"]),
@@ -120,8 +136,9 @@ setMethod("runSimulation", "FAProbResults", function(object, nsim=50000){
     ## gap package
     TooLarge <- l_freq[, "n"] > GAP_MAX_CLIQUE_SIZE
     if(sum(TooLarge) > 0)
-        stop(paste0(sum(TooLarge),
-                       " cliques are larger than supported by the Monte Carlo simulation in the gap package! Consider defining smaller cliques!"))
+        stop(sum(TooLarge),
+             " cliques are larger than supported by the Monte Carlo simulation in",
+             " the gap package! Consider defining smaller cliques!")
 
     fc.sim <- pfc.sim(l_freq, n.sim=nsim)
     object@nsim <- nsim
@@ -152,12 +169,20 @@ setMethod("result", "FAProbResults", function(object, method="BH"){
     TraitName <- object@traitname
     if(length(TraitName)==0)
         TraitName <- NA
+    ## Get the ids and cliques
+    Cl <- cliques(object)
+    Cl <- Cl[!is.na(Cl)]
+    ClIds <- names(Cl)
+    names(ClIds) <- as.character(Cl)
+    ## Get one representative ID for each clique
+    ClIds <- ClIds[rownames(CliqSum)]
     MyRes <- data.frame(trait_name=TraitName,
                         total_phenotyped=length(Trait),
                         total_affected=sum(Trait!=0),
                         phenotyped=length(TraitNClique),
                         affected=sum(TraitNClique!=0),
                         group_id=rownames(CliqSum),
+                        family=pedigree(object)[ClIds, "family"],
                         group_phenotyped=CliqSum[, "size"],
                         group_affected=CliqSum[, "affected_count"],
                         pvalue=object@sim$tailpu,
@@ -167,40 +192,6 @@ setMethod("result", "FAProbResults", function(object, method="BH"){
     return(MyRes)
 })
 
-setMethod("oldResult", "FAProbResults", function(object){
-    if(length(object@sim)==0){
-        stop("No simulation performed yet! Please use the probabilityTest function or the runSimulation method to start the simulation.")
-    }
-    ## generate the result table...
-    ## get a data.frame with clique
-    cltr <- cliqueAndTrait(object, na.rm=TRUE)
-    ## get a summary matrix: size and affected per clique.
-    ## note: that's the clique summary data for all individuals per clique
-    ## for which we do have data in the trait!!! thus it's different from
-    ## the table(cliques(Test))
-    CliqSum <- traitByClique(object)
-    Trait <- trait(object, na.rm=TRUE)
-    ## Question: what is the Pedigree Size???
-    TraitName <- object@traitname
-    if(length(TraitName)==0)
-        TraitName <- NA
-    MyRes <- data.frame(Trait=TraitName,
-                        Phenotyped=length(Trait),
-                        Affected=sum(Trait!=0),
-                        `Phenotyped in Splits`=nrow(cltr),
-                        `Affected in Splits`=sum(cltr[, "trait"]!=0),
-                        Splits=nrow(CliqSum),
-                        `P-value`=object@sim$tailpu,
-                        Frequencies=NA,
-                        Split=rownames(CliqSum),
-                        `Phenotyped in Split`=CliqSum[, "size"],
-                        `Affected in Split`=CliqSum[, "affected_count"],
-                        `Pedigree Size`=NA,
-                        `Pedigree`=NA
-                      , check.names=FALSE, stringsAsFactors=FALSE)
-    warning("Don't know yet how the Pedigree Size is calculated!!!")
-    return(MyRes)
-})
 
 #############
 ## plotting method...
@@ -223,7 +214,7 @@ setMethod("plotPed", "FAProbResults",
                        highlight.ids <- list(`*`=clique)  ## alternatively, use id=clique!
                        callNextMethod(object=object, id=id, family=family,
                                       filename=filename, proband.id=clique,
-                                      device=device, ...)
+                                      device=device,...)
                    })
 
 ## this buildPed simply ensures that all phenotyped in the group will be included in the pedigree.

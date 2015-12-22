@@ -47,7 +47,7 @@
 
 \S4method{fsir}{FAStdIncidenceRateResults}(object, trait=NULL, lambda=NULL,
                                            timeInStrata=NULL,
-                                           prune=TRUE, ...)
+                                           ...)
 
 \S4method{lambda}{FAStdIncidenceRateResults}(object, ...)
 
@@ -66,7 +66,7 @@
                                                     lambda=NULL,
                                                     timeInStrata=NULL,
                                                     strata=NULL,
-                                                    prune=TRUE, ...)
+                                                    ...)
 
 \S4method{timeInStrata}{FAStdIncidenceRateResults}(object)
 
@@ -134,10 +134,6 @@
     trait information). If \code{TRUE}, the function removes all
     non-phenotyped individuals, keeping only those that are required for
     the pedigree to be complete.
-  }
-
-  \item{prune}{
-    For \code{fsir}: not used.
   }
 
   \item{strata}{
@@ -230,6 +226,10 @@
 
       The method returns a named numeric vector with the familial
       incidence rates, the names being the ID of the individuals.
+      Singletons as well as individuals
+      that, after removing not phenotyped individuals or individuals
+      without time at risk, do not share kinship with any other
+      individual in the pedigree have a value of \code{NA}.
     }
 
     \item{plotPed}{
@@ -250,20 +250,34 @@
     \item{result}{
       Returns the result from the simulation as a \code{data.frame} with
       columns:
+
       \code{"trait_name"}: the name of the trait.
+
       \code{"total_phenotyped"}: total number of phenotyped individuals in
       the trait.
+
       \code{"total_affected"}: total number of affected individuals in the
       trait.
+
       \code{"total_tested"}: the number of individuals in the pedigree
       considered for the simulation. This corresponds to all individuals
       with valid, non-NA, values in trait, timeAtRisk and eventually
       strata.
+
       \code{"id"}: the id of the individual.
+
       \code{"family"}: the family id.
-      \code{"fsir"}: the familial standardized incidence rate.
+
+      \code{"fsir"}: the familial standardized incidence rate. Note that this will be
+
+      \code{NA} for all non-phenotyped individuals and singletons in the pedigree as well as for
+      individuals that do not share kinship with at least one other
+      phenotyped individual with valid time at risk (or valid value in
+      parameter \code{strata}).
+
       \code{"pvalue"}: the p-value for the significance of the familial
       standardized incidence rate assessed by Monte Carlo simulations.
+
       \code{"padj"}: the p-value adjusted for multiple hypothesis
       testing (with the method specified with argument \code{method}).
 
@@ -330,6 +344,10 @@
   the resulting \code{FAStdIncidenceRateResults} as the distribution of
   FSIR from the simulation runs is no longer reported.
 
+  Note: the FIR for singletons and individuals that do not share kinship
+  with at least one other phenotyped individual that has also a valid
+  value in argument \code{timeAtRisk} (and eventually \code{strata})
+  will be \code{NA}.
 }
 \note{
   Subsetting (using the \code{[} operator) is not supported.

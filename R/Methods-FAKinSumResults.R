@@ -34,6 +34,14 @@ setMethod("runSimulation", "FAKinSumResults",
               ped <- pedigree(object)
               affectedIds <- as.character(ped[which(ped$affected > 0), "id"])
               phenotypedIds <-as.character(ped[!is.na(ped$affected), "id"])
+              message("Cleaning data set (got in total ", nrow(ped), " individuals):")
+              ## Dummy for removing unaffected:
+              message(" * not phenotyped individuals...")
+              if(length(phenotypedIds) != nrow(ped)){
+                  message(" ", nrow(ped)-length(phenotypedIds), " removed")
+              }else{
+                  message(" none present.")
+              }
               if(!is.null(strata)){
                   if(length(strata)!=nrow(ped))
                       stop("Argument 'strata' has to have the same length than there are individuals in the pedigree!")
@@ -46,19 +54,28 @@ setMethod("runSimulation", "FAKinSumResults",
                   names(strata) <- as.character(ped$id)
                   newAffIds <- as.character(ped[which(ped$affected > 0), "id"])
                   newPhenoIds <- as.character(ped[, "id"])
+                  message(" * unaffected individuals without valid strata values...", appendLF=FALSE)
                   if(length(newPhenoIds)!=length(phenotypedIds)){
-                      warning(paste0("Removed ", length(phenotypedIds) - length(newPhenoIds),
-                                     " phenotyped individuals, as they have",
-                                     " a missing value in strata."))
+                      ## warning(paste0("Removed ", length(phenotypedIds) - length(newPhenoIds),
+                      ##                " phenotyped individuals, as they have",
+                      ##                " a missing value in strata."))
+                      message(" ", length(phenotypedIds)-length(newPhenoIds), " removed.")
                       phenotypedIds <- newPhenoIds
+                  }else{
+                      message(" none present.")
                   }
+                  message(" * affected individuals without valid strata values...", appendLF=FALSE)
                   if(length(newAffIds)!=length(affectedIds)){
-                      warning(paste0("Removed ", length(affectedIds) - length(newAffIds),
-                                     " affected individuals, as they have",
-                                     " a missing value in strata."))
+                      ## warning(paste0("Removed ", length(affectedIds) - length(newAffIds),
+                      ##                " affected individuals, as they have",
+                      ##                " a missing value in strata."))
+                      message(" ", length(affectedIds)-length(newAffIds), " removed.")
                       affectedIds <- newAffIds
+                  }else{
+                      message(" none present.")
                   }
               }
+              message("Done")
               ## now forcing the kinship matrix to match ordering of phenotypedIds and
               ## eventually strata.
               kin <- kin[phenotypedIds, phenotypedIds]
@@ -104,7 +121,10 @@ setMethod("result", "FAKinSumResults", function(object, method="BH"){
                             pvalue=NA,
                             padj=NA,
                             check.names=FALSE, stringsAsFactors=FALSE)
-        warning("No simulation data available! This means that either no simulation was run yet (using the kinshipClusterTest function or runSimulation method) or that the simulation returned no result (i.e. too few affected individuals in the trait).")
+        warning("No simulation data available! This means that either no simulation was",
+                " run yet (using the kinshipClusterTest function or runSimulation method)",
+                " or that the simulation returned no result (i.e. too few affected",
+                " individuals in the trait).")
         return(MyRes)
     }
     resList <- object@sim
