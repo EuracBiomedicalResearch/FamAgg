@@ -401,4 +401,3 @@ setMethod("plotRes", "FAGenIndexResults",
               }
 })
 
-

@@ -2,6 +2,13 @@ CHANGES IN VERSION 0.99.9
 -------------------------
 
 BUG FIXES
+    o Fixes to the Vignette and addition of citation.
+
+
+CHANGES IN VERSION 0.99.9
+-------------------------
+
+BUG FIXES
     o Small fixes mainly to the Vignette and one left over problem from the git/svn
       conflict merge.
 
