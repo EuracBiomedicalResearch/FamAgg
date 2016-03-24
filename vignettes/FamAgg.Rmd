@@ -24,8 +24,8 @@ references:
 ---
 
 **Package**: `r Biocpkg("FamAgg")`<br />
-**Authors**: `r packageDescription("FamAgg")[["Author"]]`<br />
-**Modified**: 22 December, 2015<br />
+**Authors**: `r packageDescription("FamAgg")$Author`<br />
+**Modified**: 24 March, 2016<br />
 **Compiled**: `r date()`
 
 # Introduction
@@ -38,6 +38,8 @@ and promising individuals for whole genome or exome sequencing projects.
 
 For kinship coefficient calculations and pedigree plotting the package relies
 and extends the functionality of the `kinship2` package [@Sinnwell:2014kd].
+
+To cite this package please use the publication [@Rainer:2016hk].
 
 # Basic pedigree operations
 

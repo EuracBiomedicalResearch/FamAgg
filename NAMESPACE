@@ -8,6 +8,11 @@ importMethodsFrom(Matrix, as.matrix, colSums, colMeans, "[")
 importFrom(gap, pfc.sim)
 import(kinship2)
 importFrom(survey, stratsample)
+
+importFrom("graphics", "abline", "hist", "legend", "par", "plot",
+           "points", "strheight", "strwidth", "text")
+importFrom("grDevices", "dev.off", "pdf", "png")
+importFrom("stats", "aggregate", "p.adjust", "p.adjust.methods")
 ##importFrom(kinship2, kinship, pedigree, plot.pedigree)
 ##importClassesFrom(graph, graphNEL)
 ##importFrom(graph, graphNEL)

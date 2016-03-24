@@ -1,0 +1,16 @@
+citHeader("To cite the FamAgg package please use:")
+
+citEntry(entry="article",
+         title = "FamAgg: an R package to evaluate familial aggregation of traits in large pedigrees",
+         author = personList( as.person("Johannes Rainer" ),
+           as.person("Daniel Talliun" ),
+           as.person("Yuri D'Elia" ),
+           as.person("Christian Pattaro" ),
+           as.person("Francisco S. Domingues" ),
+           as.person("Christian X. Weichenberger" )),
+         year = 2016,
+         journal = "Bioinformatics",
+         doi = "10.1093/bioinformatics/btw019",
+         url = "http://bioinformatics.oxfordjournals.org/content/early/2016/02/13/bioinformatics.btw019",
+         textVersion =
+             "Rainer J, Talliun D, D'Elia Y, Domingues FS, Weichenberger CX (2016) FamAgg: an R package to evaluate familial aggregation of traits in large pedigrees. Bioinformatics. doi:10.1093/bioinformatics/btw019")

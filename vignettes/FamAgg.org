@@ -17,8 +17,7 @@
 #+latex: %\VignetteDepends{FamAgg}
 #+latex: %\VignettePackage{FamAgg}
 
-
-#+BEGIN_HTML
+#+BEGIN_html
 ---
 title: "Pedigree Analysis and Familial Aggregation"
 graphics: yes
@@ -43,13 +42,14 @@ references:
   - family: noname
     given: noname
 ---
+#+END_html
 
+#+BEGIN_html
 **Package**: `r Biocpkg("FamAgg")`<br />
-**Authors**: `r packageDescription("FamAgg")[["Author"]]`<br />
-**Modified**: 22 December, 2015<br />
+**Authors**: `r packageDescription("FamAgg")$Author`<br />
+**Modified**: 24 March, 2016<br />
 **Compiled**: `r date()`
-
-#+END_HTML
+#+END_html
 
 # #+BEGIN_SRC R :ravel echo=FALSE, results='asis', message=FALSE
 #   BiocStyle::markdown()
@@ -96,6 +96,7 @@ and promising individuals for whole genome or exome sequencing projects.
 For kinship coefficient calculations and pedigree plotting the package relies
 and extends the functionality of the =kinship2= package \cite{Sinnwell:2014kd}.
 
+To cite this package please use the publication \cite{Rainer:2016hk}.
 
 * Basic pedigree operations
 
@@ -1283,8 +1284,9 @@ considered within each family. Thus, the results from the FSIR might be biased.
    CLOSED: [2015-09-23 Wed 07:20]
    - State "DONE"       from "TODO"       [2015-09-23 Wed 07:20]
 
-** TODO Implement a =familialIncidenceRateTest= with simulation. [85%]
-
+** DONE Implement a =familialIncidenceRateTest= with simulation. [100%]
+   CLOSED: [2016-01-07 Thu 15:39]
+   - State "DONE"       from "TODO"       [2016-01-07 Thu 15:39]
 + [X] =FAFamRateResults= class similar to the above ones. What would be the
   /ideal/ name? =FAIncidenceRateResults=, =FARateResults=, =FAInciRateResults=,
   =FAFirResults=? *Name*: =FAIncidenceRateResults=
@@ -1294,7 +1296,7 @@ considered within each family. Thus, the results from the FSIR might be biased.
 + [X] Implement the =plotRes= method.
 + [X] Implement the =plotPed= method.
 + [X] Documentation.
-+ [ ] Vignette.
++ [X] Vignette.
 
 ** TODO Implement a =fsirTest= with simulation. [92%]
 
@@ -1314,13 +1316,20 @@ considered within each family. Thus, the results from the FSIR might be biased.
 + [X] Documentation.
 + [ ] Vignette.
 
-** TODO Check and eventually implement some more =$= methods for the results objects. [/]
-
+** CANCELED Check and eventually implement some more =$= methods for the results objects. [/]
+   CLOSED: [2016-01-07 Thu 15:31]
+   - State "CANCELED"   from "TODO"       [2016-01-07 Thu 15:31] \\
+     With the exception of the FIR and the FSIR such accessors do now make much
+     sense, the GIF is a measure for the full pedigree, the kinship sum is only
+     calculated for affected individuals and the kinship group test gives a measure
+     for a affected group and not a single affected individual.
 We've got already some nice =$= methods for =FAIncidenceRateResults= and
 =FAStdIncidenceRateResults=, would be nice to have some similar ones for the
 other methods (e.g. to directly access estimates or the p-value).
+These make however more sense for per-individual tests, otherwise the use of the
+=$= operator might be misleading, since e.g. =$id= returns the ids of all
+individuals in the pedigree.
 
-+ [ ] =$gif=: genealogical index of familiarity.
 
 ** DONE Merge the git and svn FamAgg version [40/40]
    CLOSED: [2015-12-02 Wed 08:47]
@@ -1428,66 +1437,9 @@ Apply that as *first* task in any of the below methods.
 
 
 
-** TODO 1a: Perform a comparison of the results.
+** TODO Implement the bayes based extension of the FSIR.
 
-Could mean:
-+ perform a comparison of the results of the individual algorithms within the
-  same data.
-+ perform a comparison of the results with other tools (that's most likely what
-  he means).
-
-** TODO 2a: Provide a more detailed description of the random sampling for the kinship sum test.
-
-** TODO 2b: Add a description/reference to the Yu and Zelterman method in the supplement/vignette.
-
-** TODO 3a: Kinship coefficient calculated in =FamAgg= or elsewhere?
-
-It is calculated in the =kinship2= package, clearly state that in the manuscript
-and make a reference to the package.
-
-We added a sentence to the vignette.
-
-** DONE 3b: Add a vignette describing how to load plink files [2/2]
-   CLOSED: [2015-12-15 Tue 14:43]
-   - State "DONE"       from "TODO"       [2015-12-15 Tue 14:43]
-+ [X] Implement pedigree import function for a variety of input formats.
-+ [X] Implement export method to export pedigrees in different formats.
-
-** DONE FAM format [/]
-   CLOSED: [2015-12-15 Tue 14:43]
-   - State "DONE"       from "TODO"       [2015-12-15 Tue 14:43]
-FAM files are from plink. Description:
-https://www.cog-genomics.org/plink2/formats.
-Text file without header, space or tab separated.
-Fields:
-+ Family ID ('FID')
-+ Within-family ID ('IID'; cannot be '0')
-+ Within-family ID of father ('0' if father isn't in dataset)
-+ Within-family ID of mother ('0' if mother isn't in dataset)
-+ Sex code ('1' = male, '2' = female, '0' = unknown)
-+ Phenotype value ('1' = control, '2' = case, '-9'/'0'/non-numeric = missing
-  data if case/control)
-
-For values other than {1,2,0,-9} it is assumed not to be case-control but numeric;
-we're not going to support that!
-
-** DONE PED format [/]
-   CLOSED: [2015-12-15 Tue 14:44]
-   - State "DONE"       from "TODO"       [2015-12-15 Tue 14:44]
-PED files are from plink. Description: http://www.gwaspi.org/?page_id=145.
-ped files contain no headers and the first 6 columns are the same as those of
-the FAM format.
-Fields:
-+ Family ID
-+ Sample ID
-+ Paternal ID
-+ Maternal ID
-+ Sex (1=male; 2=female; other=unknown)
-+ Affection (0=unknown; 1=unaffected; 2=affected)
-+ Genotypes (space or tab separated, 2 for each marker. 0=missing)
-
-
-** TODO 3c: Clearly state which methods are established and which are new.
+That will be pretty tricky as we can not compare results to anything.
 
 
 
