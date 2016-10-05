@@ -345,3 +345,8 @@ setMethod("getSingletons", "data.frame",
               return(doGetSingletons(object, ...))
           })
 
+## removeSingletons
+setMethod("removeSingletons", "data.frame",
+          function(object, ...) {
+              return(.removeSingletons(object))
+          })

@@ -1,3 +1,4 @@
+## Namespace
 import(utils)
 import(methods)
 import(BiocGenerics)
@@ -23,31 +24,36 @@ importFrom("stats", "aggregate", "p.adjust", "p.adjust.methods")
 ## importMethodsFrom(AnnotationHub, query, mcols)
 
 ## exported functions
-export("FAData", "connectedSubgraph", "doPlotPed", "estimateTimeAtRisk", "factor2matrix",
-       "ped2graph", "sliceAge", "subPedigree", "switchPlotfun", "removeSingletons")
+export("FAData", "connectedSubgraph", "doPlotPed", "estimateTimeAtRisk",
+       "factor2matrix", "ped2graph", "sliceAge", "subPedigree", "switchPlotfun")
 ## exported classes
 exportClasses("FAData", "FAProbResults", "FAKinGroupResults",
               "FAKinSumResults", "FAGenIndexResults", "FAIncidenceRateResults",
               "FAStdIncidenceRateResults")
 ## exported methods
-exportMethods("$", "[", "affectedIndividuals", "affectedKinshipGroups", "age", "age<-",
-              "buildPed", "cliques", "cliques<-", "cliqueAndTrait", "export", "family",
-              "kinship", "lambda", "pedigree", "pedigree<-",
-              "pedigreeSize", "phenotypedIndividuals",
-              "plotPed", "plotRes", "resultForId", "shareKinship", "result", "trait", "trait<-",
-              "traitByClique", "kinship", "timeAtRisk", "timeAtRisk<-",
+exportMethods("$", "[", "affectedIndividuals", "affectedKinshipGroups", "age",
+              "age<-", "buildPed", "cliques", "cliques<-", "cliqueAndTrait",
+              "export", "family", "kinship", "lambda", "pedigree", "pedigree<-",
+              "pedigreeSize", "phenotypedIndividuals", "removeSingletons",
+              "plotPed", "plotRes", "resultForId", "shareKinship", "result",
+              "trait", "trait<-", "traitByClique", "kinship", "timeAtRisk",
+              "timeAtRisk<-",
               "timeInStrata")
 ## basic pedigree utils
-exportMethods("countGenerations", "estimateGenerations", "generationsFrom", "getAncestors",
-              "getChildren", "getSiblings", "getMissingMate", "getCommonAncestor",
+exportMethods("countGenerations", "estimateGenerations", "generationsFrom",
+              "getAncestors",
+              "getChildren", "getSiblings", "getMissingMate",
+              "getCommonAncestor",
               "findFounders", "getFounders", "getSingletons")
 ## matched control methods
 exportMethods("getAll", "getExternalMatched", "getGenerationMatched",
               "getGenerationSexMatched", "getSexMatched")
 
 ## analysis methods...
-exportMethods("familialIncidenceRate", "familialIncidenceRateTest", "fsir", "fsirTest",
-              "genealogicalIndexTest", "kinshipSumTest", "kinshipGroupTest", "probabilityTest",
+exportMethods("familialIncidenceRate", "familialIncidenceRateTest", "fsir",
+              "fsirTest",
+              "genealogicalIndexTest", "kinshipSumTest", "kinshipGroupTest",
+              "probabilityTest",
               "runSimulation")
 
 

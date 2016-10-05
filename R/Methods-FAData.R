@@ -1106,4 +1106,22 @@ setMethod("getSingletons", "FAData", function(object, ...){
     return(doGetSingletons(pedigree(object)))
 })
 
-
+############################################################
+## removeSingletons
+##
+setMethod("removeSingletons", "FAData", function(object, ...) {
+    ped <- removeSingletons(pedigree(object))
+    if (nrow(ped) == nrow(pedigree(object)))
+        return(object)
+    ## In addition to replace the pedigree, we have also to replace
+    if (length(object@.trait) > 0) {
+        the_trait <- object@.trait
+        object@.trait <- numeric()
+    } else
+        the_trait <- numeric()
+    pedigree(object) <- ped
+    ## the trait
+    if (length(the_trait) > 0)
+        trait(object) <- the_trait[rownames(ped)]
+    return(object)
+})
