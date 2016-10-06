@@ -6,6 +6,14 @@
 
 mbsub <- .getMinSub()
 
+test_show <- function() {
+    mbped <- mbsub[, c("famid", "id", "fatherid", "motherid", "sex")]
+    colnames(mbped) <- FamAgg:::.PEDCN
+    fad <- FAData(pedigree=mbped)
+    res <- capture.output(show(fad))
+    checkEquals(res[1], "FAData object with:")
+}
+
 test_construct <- function(){
     mbped <- mbsub[, c("famid", "id", "fatherid", "motherid", "sex")]
     colnames(mbped) <- FamAgg:::.PEDCN

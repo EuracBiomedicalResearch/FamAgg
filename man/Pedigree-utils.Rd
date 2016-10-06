@@ -65,6 +65,8 @@
 \alias{getSingletons,data.frame-method}
 %% removeSingletons
 \alias{removeSingletons}
+\alias{removeSingletons,FAData-method}
+\alias{removeSingletons,data.frame-method}
 
 \alias{ped2graph}
 \alias{subPedigree}
@@ -112,7 +114,9 @@ connectedSubgraph(graph, nodes, mode="all", all.nodes=TRUE, ifnotfound)
 
 ped2graph(ped)
 
-removeSingletons(ped)
+\S4method{removeSingletons}{FAData}(object, ...)
+
+\S4method{removeSingletons}{data.frame}(object, ...)
 
 subPedigree(ped, id=NULL, all=TRUE)
 
@@ -204,7 +208,6 @@ subPedigree(ped, id=NULL, all=TRUE)
     the pedigree. If a \code{data.frame} is submitted, the columns
     \code{id}, \code{family}, \code{father}, \code{mother} and
     \code{sex} are required.
-    For \code{removeSingletons}: only a \code{data.frame} is supported.
   }
 
   \item{...}{

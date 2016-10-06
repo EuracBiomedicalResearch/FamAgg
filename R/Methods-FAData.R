@@ -46,21 +46,24 @@ validateFAData <- function(object){
         ## Check that father and mother id are either 0 or correspond to an ID!
         FatherId <- as.character(object@pedigree$father)
         if(!(all(FatherId[!is.na(FatherId)] %in% as.character(object@pedigree$id))))
-            Complaints <- c(Complaints, paste0("Some of the father IDs are not present",
-                                               " in the pedigree! All IDs in column 'father'",
-                                               " have to be either present in the pedigree, or",
-                                               " have to be <NA>."))
+            Complaints <- c(Complaints,
+                            paste0("Some of the father IDs are not present",
+                                   " in the pedigree! All IDs in column 'father'",
+                                   " have to be either present in the pedigree, or",
+                                   " have to be <NA>."))
         MotherId <- as.character(object@pedigree$mother)
         if(!(all(MotherId[!is.na(MotherId)] %in% as.character(object@pedigree$id))))
-            Complaints <- c(Complaints, paste0("Some of the mother IDs are not present",
-                                               " in the pedigree! All IDs in column 'mother'",
-                                               " have to be either present in the pedigree, or",
-                                               " have to be <NA>."))
+            Complaints <- c(Complaints,
+                            paste0("Some of the mother IDs are not present",
+                                   " in the pedigree! All IDs in column 'mother'",
+                                   " have to be either present in the pedigree, or",
+                                   " have to be <NA>."))
     }
     if(length(object@age)>0){
         ## has to be a named numeric vector!
         if(is.null(names(object@age))){
-            Complaints <- c(Complaints, "\nAge has to be a named numeric vector!")
+            Complaints <- c(Complaints,
+                            "\nAge has to be a named numeric vector!")
         }
     }
     ## check the trait:
@@ -89,25 +92,39 @@ setMethod("show", "FAData", function(object){
     cat(paste0("* Pedigree of length ", nrow(object@pedigree), ".\n"))
     if(!is.null(object@pedigree)){
         if(length(object@pedigree) > 0 & nrow(object@pedigree) > 0){
+            ## Number of individuals.
             UnIds <- unique(object@pedigree[, "id"])
             cat(paste0("* Number of unique individuals: ", length(UnIds), ".\n"))
+            ## Number of families.
+            famTab <- table(pedigree(object)[, "family"])
+            cat(paste0("* Number of families: ", length(famTab), ".\n"))
+            ## Number of individuals in largest family.
+            famTab <- sort(famTab)
+            cat(paste0("* Number of individuals in largest family: ",
+                       famTab[length(famTab)], ".\n"))
+            ## Number of individuals in the smallest family.
+            cat(paste0("* Number of individuals in smallest family: ",
+                       famTab[1], ".\n"))
+            ## Average number of individuals per family.
             if(length(age(object)) > 0){
-                ## check for how many individuals we have the age...
-                cat(paste0("* Number of individuals with known age: ",
-                           sum(names(age(object)) %in% UnIds), ".\n"))
+                ## check for how many individuals we have a defined age...
+                ages <- age(object)
+                if (any(!is.na(ages)))
+                    cat(paste0("* Number of individuals with known age: ",
+                               sum(!is.na(ages)), ".\n"))
             }
         }
         if(length(object@.trait) > 0){
             if(length(object@traitname)==0){
-                cat("Result on an unnamed trait\n")
+                cat("Information on an unnamed trait\n")
             }else{
-                cat("Result on trait named ", object@traitname, "\n")
+                cat("Information on trait '", object@traitname, "'\n")
             }
-            ## print trait info.
-            cat("Trait info:\n")
-            cat(paste0(" * Number of non-NA values: ", length(trait(object, na.rm=TRUE)),
+            cat(paste0(" * Number of non-NA values: ",
+                       length(trait(object, na.rm=TRUE)),
                        ".\n"))
-            cat(paste0(" * Number of non-zero values: ", sum(trait(object, na.rm=TRUE)!=0),
+            cat(paste0(" * Number of non-zero values: ",
+                       sum(trait(object, na.rm=TRUE)!=0),
                        ".\n"))
         }
     }

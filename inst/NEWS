@@ -1,3 +1,11 @@
+CHANGES IN VERSION
+-------------------------
+
+NEW FEATURES
+    o removeSingletons method for FAData objects.
+
+
+
 CHANGES IN VERSION 0.99.9
 -------------------------
 
