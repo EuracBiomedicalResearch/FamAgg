@@ -404,11 +404,21 @@ setMethod("family",
           })
 
 setMethod("buildPed", "FAData",
-          function(object, id=NULL, max.generations.up=3, max.generations.down=16,
-                   prune=FALSE, ...){
+          function(object, id = NULL, family = NULL, max.generations.up = 3,
+                   max.generations.down = 16,
+                   prune = FALSE, ...){
               ped <- pedigree(object)
-              if(is.null(id))
+              if(is.null(id) & is.null(family))
                   return(ped)
+              if (!is.null(family)) {
+                  family <- as.character(family)
+                  if (length(family) > 1)
+                      stop("'family' should be the ID of a single family!")
+                  have_fams <- as.character(unique(object$family))
+                  if (!any(have_fams == family))
+                      stop("'family' ", family, " not found in pedigree!")
+                  id <- as.character(object$id)[object$family == family]
+              }
               id <- as.character(id)
               notThere <- !(id %in% ped$id)
               if(any(notThere)){

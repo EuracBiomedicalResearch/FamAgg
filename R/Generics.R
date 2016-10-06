@@ -11,7 +11,7 @@ setGeneric("age<-", function(object, value)
     standardGeneric("age<-"))
 
 ## B
-setGeneric("buildPed", function(object, id=NULL, ...)
+setGeneric("buildPed", function(object, ...)
     standardGeneric("buildPed"))
 
 ## C

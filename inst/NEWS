@@ -4,6 +4,8 @@ CHANGES IN VERSION
 NEW FEATURES
     o removeSingletons method for FAData objects.
 
+SIGNIFICANT USER-VISIBLE CHANGES
+    o Additional argument family in buildPed.
 
 
 CHANGES IN VERSION 0.99.9
