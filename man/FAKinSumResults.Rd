@@ -43,7 +43,8 @@
 
 \S4method{result}{FAKinSumResults}(object, method="BH")
 
-\S4method{runSimulation}{FAKinSumResults}(object, nsim=50000, strata=NULL)
+\S4method{runSimulation}{FAKinSumResults}(object, nsim=50000,
+strata=NULL, ...)
 
 \S4method{trait}{FAKinSumResults}(object) <- value
 

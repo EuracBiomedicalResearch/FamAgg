@@ -25,7 +25,7 @@ setReplaceMethod("trait", "FAKinSumResults", function(object, value){
 ####
 ## the analysis method.
 setMethod("runSimulation", "FAKinSumResults",
-          function(object, nsim=50000, strata=NULL){
+          function(object, nsim=50000, strata=NULL, ...){
               if(length(trait(object)) == 0)
                   stop("No trait information available!")
               ind <- TRUE
@@ -91,9 +91,10 @@ setMethod("runSimulation", "FAKinSumResults",
               }
               if(ind){
                   res <- significant.individuals.althyp(kin, affectedIds,
-                                                             phenotypedIds,
-                                                             nr.sim=nsim,
-                                                             strata=strata)
+                                                        phenotypedIds,
+                                                        nr.sim=nsim,
+                                                        strata=strata,
+                                                        ...)
               }else{
                   ## res <- significan.population(kin, affectedIds, phenotypedIds,
                   ##                              nr.sim=nsim)
@@ -158,16 +159,18 @@ setMethod("result", "FAKinSumResults", function(object, method="BH"){
 
 
 ## null hypothesis. H0: sum of kinship values of affected
-## with all other affected is random. Test: is the sum of kinship values of affected with all
-## other affected larger or equal that we would expect by chance (randomly selected individuals
-## being affected)? The result is essentially identical to the significant.individuals2
-## function.
-## NOTE: this function is robust against cases in which the observed kinship sum was never
-##       sampled in the simulation! The significant.individuals.2 function would return a NA
-##       for the p-value and the frequency, while the p-value could be non-NA if larger kinship
-##       sums were sampled in the simulation!
+## with all other affected is random. Test: is the sum of kinship values of
+## affected with all other affected larger or equal that we would expect by
+## chance (randomly selected individuals being affected)? The result is
+## essentially identical to the significant.individuals2 function.
+## NOTE: this function is robust against cases in which the observed kinship
+## sum was never sampled in the simulation! The significant.individuals.2
+## function would return a NA for the p-value and the frequency, while the
+## p-value could be non-NA if larger kinship sums were sampled in the simulation!
 ## strata is supposed to be ordered the same way than pool
-significant.individuals.althyp = function(ks, affected, pool, nr.sim, strata=NULL){
+## tableSimVals: if TRUE a table of the simulated kinship values is returned.
+significant.individuals.althyp = function(ks, affected, pool, nr.sim,
+                                          strata=NULL, tableSimVals = FALSE){
     if( length(affected)<=1 ) {
         res = data.frame(id=NA, kc=NA, freq=NA, pval=NA);
         return(res);
@@ -202,6 +205,9 @@ significant.individuals.althyp = function(ks, affected, pool, nr.sim, strata=NUL
                 expDensity=density(simVals),
                 expHist=hist(simVals, breaks=128, plot=FALSE),
                 affected=affected)
+    if (tableSimVals) {
+        res <- c(res, list(tableSimVals = table(simVals)))
+    }
     return(res)
 }
 
