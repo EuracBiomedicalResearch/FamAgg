@@ -45,7 +45,7 @@ setMethod("independentGroupCount", "FAKinGroupResults", function(object, method=
     }
     return(indGroupCount)
 })
-## calling the trait replecement method from FAResult and in addition reset the simulation result.
+## calling the trait replacement method from FAResult and in addition reset the simulation result.
 setReplaceMethod("trait", "FAKinGroupResults", function(object, value){
     object <- callNextMethod()
     ## reset the result

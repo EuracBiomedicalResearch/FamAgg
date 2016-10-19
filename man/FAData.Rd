@@ -67,7 +67,7 @@
 
 \S4method{age}{FAData}(object) <- value
 
-\S4method{buildPed}{FAData}(object, id=NULL, max.generations.up=3,
+\S4method{buildPed}{FAData}(object, id=NULL, family = NULL, max.generations.up=3,
                             max.generations.down=16, prune=FALSE, ...)
 
 \S4method{export}{FAData}(object, con, format="ped", ...)
@@ -125,6 +125,8 @@ FAData(pedigree, age, trait, traitName, header=FALSE, sep="\t", id.col="id",
   }
 
   \item{family}{
+    For \code{buildPed}: the id of the family for which the pedigree
+    should be returned.
     For \code{family}: the id of the family for which the pedigree
     should be returned (full pedigree of the family).
     For \code{plotPed}: the id of the family for which the pedigree

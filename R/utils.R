@@ -718,7 +718,7 @@ doPrunePed <- function(ped, addMissingMates=FALSE, solveMultiGraph="use.all"){
 
 ## a singleton a.k.a childless founder is an individual which id is not present in the
 ## father or mother column of the pedigree and which has 0 in mother and father
-removeSingletons <- function(ped){
+.removeSingletons <- function(ped){
     message("Removing singletons...", appendLF=FALSE)
     ped <- checkPedCol(ped)
     ped <- sanitizePed(ped)

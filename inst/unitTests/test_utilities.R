@@ -327,6 +327,21 @@ test_singletons_vs_prune <- function(){
     ## Eventually I might want to use the removeSingletons instead of the prune.
 }
 
+test_removeSingletons <- function() {
+    ped <- minFad
+    sings <- getSingletons(ped)
+    pedSub <- removeSingletons(ped)
+    sings_2 <- getSingletons(pedSub)
+    checkTrue(length(sings_2) == 0)
+    checkTrue((length(sings) + nrow(pedigree(pedSub))) == nrow(pedigree(ped)))
+    trait <- sample(c(0, 1), nrow(pedigree(ped)), replace = TRUE)
+    names(trait) <- ped$id
+    trait(ped) <- trait
+    ## Do the subsetting with the trait:
+    pedSub <- removeSingletons(ped)
+    checkEquals(trait(pedSub), trait[pedSub$id])
+}
+
 
 
 

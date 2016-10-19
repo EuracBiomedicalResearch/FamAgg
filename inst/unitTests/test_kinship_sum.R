@@ -46,6 +46,11 @@ test_kinship_sum <- function(){
     ## testing to subset the object... which is not supported
     checkException(far[1:10, ])
 
+    ## tableSimVals
+    far <- kinshipSumTest(fad, trait=tcancer, traitName="cancer",
+                          nsim=1000, tableSimVals = TRUE)
+    checkTrue(any(names(far@sim) == "tableSimVals"))
+
     ##
     return(TRUE)
 }

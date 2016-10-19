@@ -6,6 +6,14 @@
 
 mbsub <- .getMinSub()
 
+test_show <- function() {
+    mbped <- mbsub[, c("famid", "id", "fatherid", "motherid", "sex")]
+    colnames(mbped) <- FamAgg:::.PEDCN
+    fad <- FAData(pedigree=mbped)
+    res <- capture.output(show(fad))
+    checkEquals(res[1], "FAData object with:")
+}
+
 test_construct <- function(){
     mbped <- mbsub[, c("famid", "id", "fatherid", "motherid", "sex")]
     colnames(mbped) <- FamAgg:::.PEDCN
@@ -359,6 +367,13 @@ test_buildPed <- function(){
     ## for individual 440 (father of 447) this second branch should be
     ## missing
     checkTrue(!any(buildPed(fad, id="440")$id == "26062"))
+
+    checkException(buildPed(fad, family = 2))
+    res <- buildPed(fad, family = "5")
+    res_2 <- family(fad, family = "5")
+    checkTrue(nrow(res) < nrow(res_2))
+    res_2 <- removeSingletons(res_2)
+    checkEquals(res, res_2)
 }
 
 
