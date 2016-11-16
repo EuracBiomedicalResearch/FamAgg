@@ -194,6 +194,9 @@ setReplaceMethod("pedigree", "FAData", function(object, value){
         }
         ## check and sanitize the sex...
         value[, "sex"] <- sanitizeSex(value$sex)
+        if (length(unique(value$id)) != nrow(value))
+            stop("IDs for individuals have to be unique, even for individuals",
+                 " in different families!")
         rownames(value) <- as.character(value$id)
     }else if(is(value, "pedigree") | is(value, "pedigreeList")){
         value <- ped2df(value)
@@ -217,10 +220,14 @@ setReplaceMethod("pedigree", "FAData", function(object, value){
         value$mother <- as.character(value$mother)
     if(is.character(value$father))
         value$father[value$father == ""] <- NA
+    if(is.character(value$father))
+        value$father[value$father == "0"] <- NA
     if(is.numeric(value$father))
         value$father[value$father == 0] <- NA
     if(is.character(value$mother))
         value$mother[value$mother == ""] <- NA
+    if(is.character(value$mother))
+        value$mother[value$mother == "0"] <- NA
     if(is.numeric(value$mother))
         value$mother[value$mother == 0] <- NA
     object@pedigree <- value

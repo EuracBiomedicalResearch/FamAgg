@@ -458,4 +458,32 @@ test_export <- function(){
     checkEquals(as.character(pedigree(fam4)$sex), as.character(pedigree(fam4imported)$sex))
 }
 
+test_genevieve_reported_errors <- function() {
+    ped <- data.frame(family = c("a", "a", "a", "a", "b", "b", "b"),
+                      id = c(1, 2, 3, 4, 1, 2, 3),
+                      father = c(0, 0, 1, 1, 0, 0, 1),
+                      mother = c(0, 0, 2, 2, 0, 0, 2),
+                      sex = c("M", "F", "M", "F", "M", "F", "F"),
+                      stringsAsFactors = FALSE)
+    checkException(FAData(ped))
+    ## Combine family and id
+    ped2 <- ped
+    ped2$id <- paste0(ped$family, "-", ped$id)
+    ped2$father <- paste0(ped$family, "-", ped$father)
+    ped2$mother <- paste0(ped$family, "-", ped$mother)
+    ## Fixing the founder
+    ped2$father[ped$father == 0] <- NA
+    ped2$mother[ped$mother == 0] <- NA
+
+    fad <- FAData(ped2)
+    ped3 <- ped
+    ped3$id <- paste0(ped$family, "-", ped$id)
+    ped3$father <- paste0(ped$family, "-", ped$father)
+    ped3$mother <- paste0(ped$family, "-", ped$mother)
+    ## Fixing the founder
+    ped3$father[ped$father == 0] <- 0
+    ped3$mother[ped$mother == 0] <- 0
+
+    fad <- FAData(ped3)
+}
 
