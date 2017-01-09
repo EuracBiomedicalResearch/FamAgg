@@ -46,10 +46,10 @@ setMethod("estimateGenerations", "pedigreeList",
 
 ## findFounders
 setMethod("findFounders", "data.frame",
-          function(object, family=NULL, ...){
+          function(object, family = NULL, id = NULL, ...){
               object <- checkPedCol(object)
               object <- sanitizePed(object)
-              return(doFindFounders(object, family=family))
+              return(doFindFounders(object, family = family, id = id))
           })
 setMethod("findFounders", "pedigreeList",
           function(object, family=NULL, ...){

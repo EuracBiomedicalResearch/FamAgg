@@ -183,6 +183,26 @@ test_find_founders <- function(){
                              family=family), c("1", "2"))
 }
 
+test_find_foundersForId <- function() {
+    ## Check if we get the same results for findFounders for family and for
+    ## findFounders with an id within the family.
+    fad <- minFad
+    ped <- pedigree(fad)
+    fnds <- findFounders(ped, id = 269)
+    fnds_2 <- findFounders(ped, family = 10)
+    checkEquals(fnds, fnds_2)
+    fnds <- findFounders(ped, id = 20)
+    fnds_2 <- findFounders(ped, family = 4)
+    checkEquals(fnds, fnds_2)
+    ## The same for FAData
+    fnds <- findFounders(fad, id = 269)
+    fnds_2 <- findFounders(fad, family = 10)
+    checkEquals(fnds, fnds_2)
+    fnds <- findFounders(fad, id = 20)
+    fnds_2 <- findFounders(fad, family = 4)
+    checkEquals(fnds, fnds_2)
+}
+
 test_find_siblings <- function(){
     ped <- minPed
     checkEquals(getSiblings(ped, id="11"), c("11", "12", "13"))

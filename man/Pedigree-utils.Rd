@@ -94,7 +94,7 @@ connectedSubgraph(graph, nodes, mode="all", all.nodes=TRUE, ifnotfound)
 
 \S4method{estimateGenerations}{FAData}(object, family=NULL, ...)
 
-\S4method{findFounders}{FAData}(object, family=NULL, ...)
+\S4method{findFounders}{FAData}(object, family=NULL, id = NULL, ...)
 
 \S4method{generationsFrom}{FAData}(object, id=NULL, ...)
 
@@ -160,7 +160,8 @@ subPedigree(ped, id=NULL, all=TRUE)
   \item{id}{
     A character or numeric vector length 1 or longer specifying the
     id(s) of the individual(s).
-    For \code{generationsFrom} only a single id should be submitted.
+    For \code{generationsFrom} and \code{findFounders} only a single id
+    should be submitted.
   }
 
   \item{ifnotfound}{
@@ -232,7 +233,12 @@ subPedigree(ped, id=NULL, all=TRUE)
 
     \item{findFounders}{
       Identifies the founder couple with the largest number of offspring
-      generations in the pedigree.
+      generations in the pedigree. The provided pedigree
+      object/data.frame can contain pedigrees of multiple families,
+      thus, to identify the founder pair for a family its ID can be
+      provided with the \code{family} parameter. Alternatively, the ID
+      of an individual can be specified, in which case the founder pair
+      of the (full) pedigree of the specified individual is identified.
       If two or more couples have the same, largest number of
       offspring generations, the first couple is selected.
       Returns a character vector of length 2 with the ids of the founder
@@ -408,6 +414,10 @@ doPlotPed(individual=fam4sub$id, father=fam4sub$father, mother=fam4sub$mother,
 
 ## Find the founder couple for family 4
 findFounders(fam4, family=4)
+
+## Alternatively, find the founders for the pedigree in which ibdividual 20 is a
+## member
+findFounders(fam4, id = 20)
 
 ## Return all founders in the pedigree.
 getFounders(fam4)
