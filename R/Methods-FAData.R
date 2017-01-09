@@ -1016,10 +1016,10 @@ setMethod("estimateGenerations", "FAData",
               return(doEstimateGenerationsFor2(pedigree(object), family=family))
           })
 setMethod("findFounders", "FAData",
-          function(object, family=NULL, ...){
+          function(object, family = NULL, id = NULL, ...){
               if(nrow(pedigree(object)) == 0)
                   stop("No pedigree available!")
-              return(doFindFounders(pedigree(object), family=family))
+              return(doFindFounders(pedigree(object), family = family, id = id))
           })
 setMethod("generationsFrom", "FAData",
           function(object, id=NULL, ...){

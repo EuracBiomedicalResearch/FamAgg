@@ -470,29 +470,65 @@ ped2graph <- function(ped){
 
 
 ## takes a pedigree as input and tries to identify the founders
-## in case there are more than two founder pairs (i.e. founders with the same, largest
-## number of offspring generations), it returns only one of them.
-doFindFounders <- function(ped, family){
+## in case there are more than two founder pairs (i.e. founders with the same,
+## largest number of offspring generations), it returns only one of them.
+doFindFounders <- function(ped, family, id){
     if(!any(colnames(ped) == "family"))
         ped <- data.frame(ped, family=rep(1, nrow(ped)), stringsAsFactors=FALSE)
     families <- unique(as.character(ped$family))
     if(missing(family))
         family <- NULL
-    if(is.null(family)){
+    if (missing(id))
+        id <- NULL
+    if(is.null(family) & is.null(id)){
         family <- families[1]
         warning(paste0("No family specified; using the first one in the pedigree: ",
                        family, "."))
     }
-    ped <- ped[ped$family == family, , drop=FALSE]
-    ## OK, now we have the pedigree of a single family... try to find founders.
-    founders <- ped$id[which(is.na(ped$father) & is.na(ped$mother))]
-    ## determine for each founder the number of generations of its children, grandchildren etc.
-    founderGen <- doCountGenerations(ped, id=founders, direction="down")
+    if (!is.null(family))
+        ped <- ped[ped$family == family, , drop=FALSE]
+    if (!is.null(id)) {
+        return(doFindFoundersForId(ped = ped, id = id))
+    } else {
+        founders <- ped$id[which(is.na(ped$father) & is.na(ped$mother))]
+        ## determine for each founder the number of generations of its children,
+        ## grandchildren etc.
+        founderGen <- doCountGenerations(ped, id=founders, direction="down")
+        founders <- names(founderGen)[founderGen == max(founderGen)][1]
+        founders <- c(founders, doGetMissingMate(ped, founders))
+        return(unique(founders))
+    }
+}
+
+##' Find founders for the pedigree of a given individual. Have to first build
+##' the largest pedigree for the given individual and identify the founders in
+##' that pedigree.
+##'
+##' @note The function returns only a single founder pair, i.e. the one with the
+##' largest number of offspring generations.
+##' @noRd
+doFindFoundersForId <- function(ped, id) {
+    if (length(id) > 1) {
+        id <- id[1]
+        warning("length of 'id' was > 1, but only the first id was selected!")
+    }
+    ## Check if we've got this id in the pedigree
+    if (!any(ped[, "id"] == id))
+        stop("Individual with id '", id, "' not found in the pedigree!")
+    ## Building the pedigree for that individual.
+    ids <- unique(c(doGetAncestors(ped = ped, id = id, maxlevel = 200), id))
+    ids <- unique(c(ids, doGetChildren(ped = ped, id = ids, maxlevel = 200)))
+    ids <- unique(c(ids, doGetMissingMate(ped, id = ids)))
+    ped <- ped[ped[, "id"] %in% ids, , drop = FALSE]
+    ## OK, now we have the pedigree for the individual, now find founders.
+    founders <- ped[which(is.na(ped[, "father"]) & is.na(ped[, "mother"])), "id"]
+    ## determine for each founder the number of generations of its children,
+    ## grandchildren etc.
+    founderGen <- doCountGenerations(ped, id = founders, direction = "down")
     founders <- names(founderGen)[founderGen == max(founderGen)][1]
     founders <- c(founders, doGetMissingMate(ped, founders))
     return(unique(founders))
 }
-
 
 ## calculate for each id the number of generations up- or down.
 doCountGenerations <- function(ped, id=NULL, direction="down"){
