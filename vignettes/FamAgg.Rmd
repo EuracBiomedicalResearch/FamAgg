@@ -2,10 +2,8 @@
 title: "Pedigree Analysis and Familial Aggregation"
 graphics: yes
 output:
-  BiocStyle::html_document:
-    toc_depth: 2
-  BiocStyle::pdf_document:
-    toc_depth: 2
+  BiocStyle::html_document2:
+    toc_float: true
 vignette: >
   %\VignetteIndexEntry{Pedigree Analysis and Familial Aggregation}
   %\VignetteEngine{knitr::rmarkdown}
@@ -25,8 +23,9 @@ references:
 
 **Package**: `r Biocpkg("FamAgg")`<br />
 **Authors**: `r packageDescription("FamAgg")$Author`<br />
-**Modified**: 24 March, 2016<br />
+**Modified**: 29 March, 2017<br />
 **Compiled**: `r date()`
+
 
 # Introduction
 
@@ -41,6 +40,7 @@ and extends the functionality of the `kinship2` package [@Sinnwell:2014kd].
 
 To cite this package please use the publication [@Rainer:2016hk].
 
+
 # Basic pedigree operations
 
 In the examples below we perform some simple pedigree operations, such as
@@ -51,7 +51,7 @@ in `FAData` objects, thus we first generate such an object from a subset of the
 Minnesota Breast Cancer Study provided by the `kinship2` package. In the example
 below, we generate the `FAData` providing a `data.frame` with the pedigree data,
 alternatively, the pedigree information could be imported from a file (see
-Section [3](#orgtarget1)).  Upon data set creation the kinship matrix (i.e. a
+Section [3](#org92e797e)).  Upon data set creation the kinship matrix (i.e. a
 matrix containing the kinship coefficient between each pair of individuals in
 the whole pedigree) is internally calculated using the functionality from the
 `kinship2` package [@Sinnwell:2014kd].
@@ -293,6 +293,7 @@ sum(kin2affFounders %in% affIds)
 sum(!(affIds %in% kin2affFounders))
 ```
 
+
 ## Pedigree analysis methods
 
 In this section we perform some more advanced pedigree operations. First, we
@@ -335,6 +336,7 @@ We can render these generation numbers into the pedigree:
 ```{r family-four-gens-rel-to-four, message=FALSE, fig.align='center'}
 plotPed(fad, family=4, label2=gens)
 ```
+
 
 ## Additional plotting options
 
@@ -390,6 +392,7 @@ plotPed(fad, family="9", highlight.ids=list(a=c("185", "201", "198"),
 An alternative way to highlight individuals or add text to the plot is to use
 the arguments `label1`, `label2` and `label3` or the `plotPed` method.
 
+
 ## Graph utilities
 
 Pedigrees can also be transformed to graphs using the `ped2graph` function. That
@@ -436,7 +439,8 @@ plot(subgr)
 plotPed(fad, id=c("7", "8", "17", "27"), prune=TRUE)
 ```
 
-# Importing and exporting pedigree data<a id="orgtarget1"></a>
+
+# Importing and exporting pedigree data<a id="org92e797e"></a>
 
 Besides providing the pedigree data as a `data.frame`, the `FAData` constructor
 can also read pedigree data from various file formats, such as plink
@@ -476,6 +480,7 @@ fam4 <- fad[fad$family == 4, ]
 ## Export data in ped format.
 export(fam4, tmpF, format="ped")
 ```
+
 
 # Testing for familial aggregation
 
@@ -527,16 +532,16 @@ names(tcancer) <- as.character(mbsub$id)
 ```
 
 In the following section we analyze the data set first using the *genealogical
-index* method [@Hill:1980tz] (Section [4.1](#orgtarget2)), then we estimate the
+index* method [@Hill:1980tz] (Section [4.1](#org6cec258)), then we estimate the
 per-individual risk of disease using the *familial incidence rate* (FIR, also
 abbreviated as *FR* in the original work) [@Kerber:1995cx] (Section
-[4.2](#orgtarget3)) and apply our *kinship sum test* to identify affected individuals
+[4.2](#org69e6367)) and apply our *kinship sum test* to identify affected individuals
 exhibiting a higher relationship to other affected individuals than what would
-be expected by chance (Section [4.3](#orgtarget4)). Subsequently, we apply our
-*kinship group test* (Section [4.4](#orgtarget5)) that allows to identify highly
+be expected by chance (Section [4.3](#org24d7906)). Subsequently, we apply our
+*kinship group test* (Section [4.4](#org24de662)) that allows to identify highly
 clustered affected individuals within families.
 
-In Section [4.5](#orgtarget6) we apply the *probability test* based on the method from
+In Section [4.5](#org55ed33c) we apply the *probability test* based on the method from
 Yu et al [@Yu:2002vu] for inference on family disease clusters. We use the
 corresponding implementation in the `gap` package. However, currently gap cannot
 be directly applied to large pedigrees due to a specific limitation in the
@@ -546,7 +551,8 @@ The *genealogical index of familiality*, the *familial incidence rate* and the
 *probability test* are well established methods while the *kinship sum test* and
 the *kinship group test* are novel approaches presented here for the first time.
 
-## *Genealogical index of familiality* <a id="orgtarget2"></a>
+
+## *Genealogical index of familiality* <a id="org6cec258"></a>
 
 We next calculate the *genealogical index of familiality* (GIF)
 [@Hill:1980tz] (referred to as the *genealogical index* in the original
@@ -697,7 +703,8 @@ giFam <- genealogicalIndexTest(fad, trait=tcancer, nsim=nsim,
 head(result(giFam))
 ```
 
-## *Familial incidence rate* (FIR)<a id="orgtarget3"></a>
+
+## *Familial incidence rate* (FIR)<a id="org69e6367"></a>
 
 A per-individual risk of e.g. disease can be calculated using the *familial
 incidence rate* (FIR, abbreviated as *FR* in the original work)
@@ -803,7 +810,8 @@ frRes[order(frRes[, "no_sign_fir"], decreasing=TRUE), ]
 Again, we can see that we have an enrichment of affected cases in families 432
 and 13.
 
-## *Kinship sum test* <a id="orgtarget4"></a>
+
+## *Kinship sum test* <a id="org24d7906"></a>
 
 Next, we use the *kinship sum test* that evaluates familial aggregation based on
 the sum of kinship values between affected cases. The test identifies affected
@@ -879,7 +887,8 @@ simulations.
 plotRes(kinSum, id=kinSumIds[1])
 ```
 
-## *Kinship group test* <a id="orgtarget5"></a>
+
+## *Kinship group test* <a id="org24de662"></a>
 
 Here we apply the *kinship group test* to the data set. This test first defines
 for each affected individual a group of individuals considering only individuals
@@ -938,7 +947,8 @@ plotPed(kinGroup, id=kinGroupRes[kinGroupRes$family == "432", "group_id"][1],
 	prune=TRUE, label1=fr)
 ```
 
-## Exact inference for family disease clusters (*probability test*)<a id="orgtarget6"></a>
+
+## Exact inference for family disease clusters (*probability test*)<a id="org55ed33c"></a>
 
 In this section, we apply the *probability test* that is based on the method
 from Yu et al [@Yu:2002vu] for inference on family disease clusters. We use
@@ -987,4 +997,6 @@ columns in the result table above.
 plotPed(probRes, id=probResTab[1, "group_id"])
 ```
 
+
 # References
+

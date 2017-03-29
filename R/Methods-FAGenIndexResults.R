@@ -382,22 +382,28 @@ setMethod("plotRes", "FAGenIndexResults",
               par(xpd=FALSE)
               entity <- ifelse(object@perFamilyTest, yes="Family", no="Pedigree")
               if(type == "density"){
-                  plot(dens, main=paste0(entity, " ", family, "; ", object@traitname), xlab="Mean kinship",
-                       type="h", lwd=3, col="lightgrey", xlim=range(c(range(dens$x), meanKin)))
+                  plot(dens, main = paste0(entity, " ", family, "; ",
+                                           object@traitname),
+                       xlab="Mean kinship", type="h", lwd=3, col="lightgrey",
+                       xlim=range(c(range(dens$x), meanKin)))
                   points(dens, col="grey", type="l", lwd=2)
               }
               if(type == "hist"){
-                  plot(hist, main=paste0(entity, " ", family, "; ", object@traitname), xlab="Mean kinship",
-                       col="lightgrey", border="grey", xlim=range(c(range(dens$x), meanKin)))
+                  plot(hist, main=paste0(entity, " ", family, "; ",
+                                         object@traitname), xlab="Mean kinship",
+                       col="lightgrey", border="grey",
+                       xlim=range(c(range(hist$x), meanKin)))
               }
               Blue <- "#377EB8"
               abline(v=meanKin, col=Blue)
               if(addLegend){
-                  legend("topright", legend=c(paste0("GIF: ", format(100000*meanKin, digits=4)),
-                                              paste0("mean kinship: ", format(meanKin, digits=2)),
-                                              paste0("p-value     : ", format(pval, digits=3)),
-                                              paste0("affect count: ", affCount),
-                                              paste0("ctrls count : ", ctrlsCount)))
+                  legend(
+                      "topright",
+                      legend=c(paste0("GIF: ", format(100000*meanKin, digits=4)),
+                               paste0("mean kinship: ", format(meanKin, digits=2)),
+                               paste0("p-value     : ", format(pval, digits=3)),
+                               paste0("affect count: ", affCount),
+                               paste0("ctrls count : ", ctrlsCount)))
               }
-})
+          })
 

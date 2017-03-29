@@ -11,21 +11,13 @@
 #+EXPORT_SELECT_TAGS: export
 #+EXPORT_EXCLUDE_TAGS: noexport
 
-#+latex: %\VignetteEngine{knitr::rmarkdown}
-#+latex: %\VignetteIndexEntry{Pedigree analysis and familial aggregation}
-#+latex: %\VignetteKeywords{Genetics}
-#+latex: %\VignetteDepends{FamAgg}
-#+latex: %\VignettePackage{FamAgg}
-
-#+BEGIN_html
+#+BEGIN_EXPORT html
 ---
 title: "Pedigree Analysis and Familial Aggregation"
 graphics: yes
 output:
-  BiocStyle::html_document:
-    toc_depth: 2
-  BiocStyle::pdf_document:
-    toc_depth: 2
+  BiocStyle::html_document2:
+    toc_float: true
 vignette: >
   %\VignetteIndexEntry{Pedigree Analysis and Familial Aggregation}
   %\VignetteEngine{knitr::rmarkdown}
@@ -42,18 +34,14 @@ references:
   - family: noname
     given: noname
 ---
-#+END_html
+#+END_EXPORT
 
-#+BEGIN_html
+#+BEGIN_EXPORT html
 **Package**: `r Biocpkg("FamAgg")`<br />
 **Authors**: `r packageDescription("FamAgg")$Author`<br />
-**Modified**: 24 March, 2016<br />
+**Modified**: 29 March, 2017<br />
 **Compiled**: `r date()`
-#+END_html
-
-# #+BEGIN_SRC R :ravel echo=FALSE, results='asis', message=FALSE
-#   BiocStyle::markdown()
-# #+END_SRC
+#+END_EXPORT
 
 * How to export this to a =Rmd= vignette			   :noexport:
 

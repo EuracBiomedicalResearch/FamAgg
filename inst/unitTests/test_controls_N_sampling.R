@@ -131,7 +131,7 @@ notrun_test_stratsample <- function(){
     ## Test[1:3, "sex"] <- NA
     ## strata(data=Test, stratanames="sex", size=c(M=2, F=3), method="srswor")
     ## what with str
-    require(survey)
+    library(survey)
     idx <- stratsample(Test$sex, c(M=4, F=3))
     Test$sex[idx]
     Test$sex[stratsample(Test$sex, c(M=4, F=3))]
