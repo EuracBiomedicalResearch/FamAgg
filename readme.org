@@ -10,8 +10,7 @@
 [[https://codecov.io/github/jotsetung/FamAgg?branch=master][https://codecov.io/github/jotsetung/FamAgg/coverage.svg?branch=master]]
 
 
-#+ATTR_HTML: :width 100 :align "left"
-[[https://github.com/Bioconductor/BiocStickers/blob/master/FamAgg/FamAgg.png]]
+#+HTML: <img src = "https://github.com/Bioconductor/BiocStickers/blob/master/FamAgg/FamAgg.png" height = "10">
 
 * =FamAgg=: Pedigree Analysis and Familial Aggregation
 
