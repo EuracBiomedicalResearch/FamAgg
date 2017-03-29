@@ -2,15 +2,14 @@
 #+AUTHOR: Johannes Rainer
 #+email: johannes.rainer@eurac.edu
 
+#+HTML: <a href = "https://github.com/Bioconductor/BiocStickers/"><img src = "https://github.com/Bioconductor/BiocStickers/blob/master/FamAgg/FamAgg.png" height = "100" align = "center"></a>
+
 # badges:
 
 [[http://www.bioconductor.org/packages/devel/bioc/html/FamAgg.html][http://www.bioconductor.org/shields/years-in-bioc/FamAgg.svg]]
 [[http://bioconductor.org/checkResults/devel/bioc-LATEST/FamAgg][http://www.bioconductor.org/shields/build/devel/bioc/FamAgg.svg]]
 [[https://travis-ci.org/jotsetung/FamAgg][https://travis-ci.org/jotsetung/FamAgg.svg?branch=master]]
 [[https://codecov.io/github/jotsetung/FamAgg?branch=master][https://codecov.io/github/jotsetung/FamAgg/coverage.svg?branch=master]]
-
-
-#+HTML: <a href = "https://github.com/Bioconductor/BiocStickers/"><img src = "https://github.com/Bioconductor/BiocStickers/blob/master/FamAgg/FamAgg.png" height = "100"></a>
 
 * =FamAgg=: Pedigree Analysis and Familial Aggregation
 
