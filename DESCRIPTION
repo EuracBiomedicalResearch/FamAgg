@@ -1,12 +1,12 @@
 Package: FamAgg
 Type: Package
 Title: Pedigree Analysis and Familial Aggregation
-Version: 1.5.0
+Version: 1.5.1
 Author: J. Rainer, D. Taliun, C.X. Weichenberger
 Maintainer: Johannes Rainer <johannes.rainer@eurac.edu>
 URL: https://github.com/jotsetung/FamAgg
 BugReports: https://github.com/jotsetung/FamAgg/issues
-Imports: gap, Matrix, BiocGenerics, utils, survey
+Imports: gap (>= 1.1-17), Matrix, BiocGenerics, utils, survey
 Depends: methods, kinship2, igraph
 Suggests: BiocStyle, knitr, RUnit, rmarkdown
 VignetteBuilder: knitr
