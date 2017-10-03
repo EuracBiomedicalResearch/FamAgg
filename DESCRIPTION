@@ -18,6 +18,7 @@ Collate: Classes.R Generics.R Constructors.R Methods-FAData.R
 	 Methods-FAKinGroupResults.R Methods-FAKinSumResults.R
 	 Methods-FAGenIndexResults.R Methods-FAIncidenceRateResults.R
 	 Methods-FAStdIncidenceRateResults.R
+	 Methods-FABinTestResults.R
 	 utils.R matched-controls.R Methods.R plotting-functions.R
 	 import-export.R zzz.R
 biocViews: Genetics

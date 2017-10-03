@@ -31,33 +31,29 @@ validateFAData <- function(object){
             Complaints <- c(Complaints, paste0("Required columns ",
                                                paste(missingCN, collapse=", "),
                                                " not present in pedigree!"))
-            ## stop(paste0("Required columns ",
-            ##             paste(missingCN, collapse=", "),
-            ##             " not present in pedigree!"))
         }
         object@pedigree$sex <- sanitizeSex(object@pedigree$sex)
         ## Check that we have a non-NA in id, father, mother
         if(any(is.na(object@pedigree$id)))
             Complaints <- c(Complaints, "No NAs in column 'id' allowed!")
-        ## if(any(is.na(object@pedigree$father)))
-        ##     Complaints <- c(Complaints, "No NAs in column 'father' allowed!")
-        ## if(any(is.na(object@pedigree$mother)))
-        ##     Complaints <- c(Complaints, "No NAs in column 'mother' allowed!")
-        ## Check that father and mother id are either 0 or correspond to an ID!
         FatherId <- as.character(object@pedigree$father)
-        if(!(all(FatherId[!is.na(FatherId)] %in% as.character(object@pedigree$id))))
-            Complaints <- c(Complaints,
-                            paste0("Some of the father IDs are not present",
-                                   " in the pedigree! All IDs in column 'father'",
-                                   " have to be either present in the pedigree, or",
-                                   " have to be <NA>."))
+        if(!(all(FatherId[!is.na(FatherId)] %in%
+                 as.character(object@pedigree$id))))
+            Complaints <- c(
+                Complaints,
+                paste0("Some of the father IDs are not present",
+                       " in the pedigree! All IDs in column 'father'",
+                       " have to be either present in the pedigree, or",
+                       " have to be <NA>."))
         MotherId <- as.character(object@pedigree$mother)
-        if(!(all(MotherId[!is.na(MotherId)] %in% as.character(object@pedigree$id))))
-            Complaints <- c(Complaints,
-                            paste0("Some of the mother IDs are not present",
-                                   " in the pedigree! All IDs in column 'mother'",
-                                   " have to be either present in the pedigree, or",
-                                   " have to be <NA>."))
+        if(!(all(MotherId[!is.na(MotherId)] %in%
+                 as.character(object@pedigree$id))))
+            Complaints <- c(
+                Complaints,
+                paste0("Some of the mother IDs are not present",
+                       " in the pedigree! All IDs in column 'mother'",
+                       " have to be either present in the pedigree, or",
+                       " have to be <NA>."))
     }
     if(length(object@age)>0){
         ## has to be a named numeric vector!
@@ -70,8 +66,9 @@ validateFAData <- function(object){
     if(length(object@.trait) > 0){
         ## trait has to have the same length than the pedigree has rows.
         if(length(object@.trait) != nrow(object@pedigree))
-            Complaints <- c(Complaints,
-                            "\ntrait has to have the same length than the pedigree has columns!")
+            Complaints <- c(
+                Complaints,
+                "\ntrait has to have the same length than the pedigree has columns!")
     }
     if(length(Complaints)>0){
         return(Complaints)
@@ -89,28 +86,28 @@ setMethod("initialize", "FAData", function(.Object,...){
 })
 setMethod("show", "FAData", function(object){
     cat(paste0(class(object), " object with:\n"))
-    cat(paste0("* Pedigree of length ", nrow(object@pedigree), ".\n"))
+    cat(paste0(" * Pedigree of length ", nrow(object@pedigree), ".\n"))
     if(!is.null(object@pedigree)){
         if(length(object@pedigree) > 0 & nrow(object@pedigree) > 0){
             ## Number of individuals.
             UnIds <- unique(object@pedigree[, "id"])
-            cat(paste0("* Number of unique individuals: ", length(UnIds), ".\n"))
+            cat(paste0(" * Number of unique individuals: ", length(UnIds), ".\n"))
             ## Number of families.
             famTab <- table(pedigree(object)[, "family"])
-            cat(paste0("* Number of families: ", length(famTab), ".\n"))
+            cat(paste0(" * Number of families: ", length(famTab), ".\n"))
             ## Number of individuals in largest family.
             famTab <- sort(famTab)
-            cat(paste0("* Number of individuals in largest family: ",
+            cat(paste0(" * Number of individuals in largest family: ",
                        famTab[length(famTab)], ".\n"))
             ## Number of individuals in the smallest family.
-            cat(paste0("* Number of individuals in smallest family: ",
+            cat(paste0(" * Number of individuals in smallest family: ",
                        famTab[1], ".\n"))
             ## Average number of individuals per family.
             if(length(age(object)) > 0){
                 ## check for how many individuals we have a defined age...
                 ages <- age(object)
                 if (any(!is.na(ages)))
-                    cat(paste0("* Number of individuals with known age: ",
+                    cat(paste0(" * Number of individuals with known age: ",
                                sum(!is.na(ages)), ".\n"))
             }
         }
@@ -118,7 +115,7 @@ setMethod("show", "FAData", function(object){
             if(length(object@traitname)==0){
                 cat("Information on an unnamed trait\n")
             }else{
-                cat("Information on trait '", object@traitname, "'\n")
+                cat("Information on trait '", object@traitname, "'\n", sep = "")
             }
             cat(paste0(" * Number of non-NA values: ",
                        length(trait(object, na.rm=TRUE)),
@@ -328,24 +325,27 @@ setMethod("trait", "FAData", function(object, na.rm=FALSE){
     }
 })
 ## trait will be matched to the ids in the pedigree of object.
-setReplaceMethod("trait", "FAData", function(object, value){
-    if(is.logical(value))
+setReplaceMethod("trait", "FAData", function(object, value) {
+    if (is.logical(value))
         value <- as.numeric(value)
-    if(is.numeric(value)){
+    if (is.numeric(value)) {
         ## check that trait is 0, 1, NA
-        if(!all(unique(value) %in% c(0, 1, NA)))
+        if (!all(unique(value) %in% c(0, 1, NA)))
             stop(paste0("trait should be a named logical vector or numeric",
                         " vector with values 0, 1 and NA!"))
-    }else{
+    } else {
         stop("trait has to be either a named logical or numerical vector!")
     }
-    if(is.null(names(value)))
+    if (all(is.na(value)))
+        stop("Can not use a 'trait' with only NA values (i.e. without ",
+             "phenotyped individuals)")
+    if (is.null(names(value)))
         stop(paste0("trait has to be a named vector with the names",
                     " corresponding to the IDs used in the pedigree"))
     Pedigree <- pedigree(object)
     traitInPed <- names(value) %in% Pedigree$id
     ## subsetting trait to those...
-    if(!any(traitInPed))
+    if (!any(traitInPed))
         stop(paste0("None of the ids in trait (i.e. names of the input",
                     " argument trait) can be matched to ids in the pedigree!"))
     value <- value[traitInPed]
@@ -430,7 +430,8 @@ setMethod("buildPed", "FAData",
               notThere <- !(id %in% ped$id)
               if(any(notThere)){
                   id <- id[!notThere]
-                  warning("Removed ", sum(notThere), " ids since they are not in the pedigree!")
+                  warning("Removed ", sum(notThere),
+                          " ids since they are not in the pedigree!")
                   if(length(id) == 0)
                       stop("No id available!")
               }
@@ -492,7 +493,8 @@ setMethod("buildPed", "FAData",
     pedSub[!(pedSub$father %in% pedSub$id), "father"] <- NA
     pedSub[!(pedSub$mother %in% pedSub$id), "mother"] <- NA
     ## have to use character colnames here.
-    kinSub <- kinship(x)[as.character(pedSub$id), as.character(pedSub$id), drop=FALSE]
+    kinSub <- kinship(x)[as.character(pedSub$id), as.character(pedSub$id),
+                         drop=FALSE]
     newX <- new("FAData", pedigree=pedSub, age=ageSub, .kinship=kinSub)
     ## subsetting trait...
     if(length(x@.trait) > 0){
@@ -519,8 +521,8 @@ setMethod("[", "FAData", .bracketSubset)
     ## i can be boolean -> has to be the same length than haveRows
     if(is.logical(i)){
         if(length(i) != haveRows)
-            stop(paste0("If 'i' is a logical vector its length has to match",
-                        " the number individuals in the pedigree!"))
+            stop("If 'i' is a logical vector its length has to match",
+                 " the number individuals in the pedigree!")
         ## transform to numeric
         i <- which(i)
     }
@@ -529,12 +531,12 @@ setMethod("[", "FAData", .bracketSubset)
         iLen <- length(i)
         i <- match(i, rownames(data))
         if(all(is.na(i))){
-            stop(paste0("None of the elements in 'i' matches an id of an",
-                        " individual (i.e. rownames of pedigree)!"))
+            stop("None of the elements in 'i' matches an id of an",
+                 " individual (i.e. rownames of pedigree)!")
         }
         if(any(is.na(i))){
-            warning(paste0(sum(is.na(i)), " elements in 'i' can not be",
-                           " matched to ids of individuals and were thus discarded."))
+            warning(sum(is.na(i)), " elements in 'i' can not be",
+                    " matched to ids of individuals and were thus discarded.")
             i <- i[!is.na(i)]
         }
     }
@@ -544,8 +546,8 @@ setMethod("[", "FAData", .bracketSubset)
     if(length(i)==0)
         stop("'i' has to be a numeric between 1 and ", haveRows, "!")
     if(iLen != length(i))
-        warning(paste0("Some of the values in 'i' are outside of the",
-                       " allowed range [1,",haveRows, "] and were thus discarded"))
+        warning("Some of the values in 'i' are outside of the",
+                " allowed range [1,",haveRows, "] and were thus discarded")
     ## have it.
     return(i)
 }
@@ -652,11 +654,13 @@ setMethod("genealogicalIndexTest", "FAData",
               )
               if(!missing(traitName))
                   object@traitname <- traitName
-              ## run the simulation: calls the runSimulation method for the FAProbResult cla ss.
-              object <- runSimulation(object, nsim=nsim, perFamilyTest=perFamilyTest,
+              ## run the simulation: calls the runSimulation method for the
+              ## FAProbResult cla ss.
+              runSimulation(object, nsim=nsim,
+                                      perFamilyTest=perFamilyTest,
                                       controlSetMethod=controlSetMethod,
-                                      rm.singletons=rm.singletons, strata=strata, ...)
-              return(object)
+                                      rm.singletons=rm.singletons,
+                                      strata=strata, ...)
           })
 
 

@@ -11,6 +11,8 @@ setGeneric("age<-", function(object, value)
     standardGeneric("age<-"))
 
 ## B
+setGeneric("binomialTest", function(object, ...)
+    standardGeneric("binomialTest"))
 setGeneric("buildPed", function(object, ...)
     standardGeneric("buildPed"))
 
@@ -31,7 +33,7 @@ setGeneric("estimateGenerations", function(object, family=NULL, ...)
     standardGeneric("estimateGenerations"))
 if(!isGeneric("export"))
     setGeneric("export", function(object, con, format, ...)
-               standardGeneric("export"))
+        standardGeneric("export"))
 
 ## F
 setGeneric("familialIncidenceRate", function(object, trait=NULL,
@@ -131,7 +133,7 @@ setGeneric("probabilityTest", function(object, ...)
 
 ## R
 setGeneric("removeSingletons", function(object, ...)
-           standardGeneric("removeSingletons"))
+    standardGeneric("removeSingletons"))
 setGeneric("result", function(object, ...)
     standardGeneric("result"))
 setGeneric("resultForId", function(object, id=NULL)

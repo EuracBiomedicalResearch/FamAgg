@@ -31,7 +31,7 @@ export("FAData", "connectedSubgraph", "doPlotPed", "estimateTimeAtRisk",
 ## exported classes
 exportClasses("FAData", "FAProbResults", "FAKinGroupResults",
               "FAKinSumResults", "FAGenIndexResults", "FAIncidenceRateResults",
-              "FAStdIncidenceRateResults")
+              "FAStdIncidenceRateResults", "FABinTestResults")
 ## exported methods
 exportMethods("$", "[", "affectedIndividuals", "affectedKinshipGroups", "age",
               "age<-", "buildPed", "cliques", "cliques<-", "cliqueAndTrait",
@@ -43,19 +43,17 @@ exportMethods("$", "[", "affectedIndividuals", "affectedKinshipGroups", "age",
               "timeInStrata")
 ## basic pedigree utils
 exportMethods("countGenerations", "estimateGenerations", "generationsFrom",
-              "getAncestors",
-              "getChildren", "getSiblings", "getMissingMate",
-              "getCommonAncestor",
-              "findFounders", "getFounders", "getSingletons")
+              "getAncestors", "getChildren", "getSiblings", "getMissingMate",
+              "getCommonAncestor", "findFounders", "getFounders",
+              "getSingletons")
 ## matched control methods
 exportMethods("getAll", "getExternalMatched", "getGenerationMatched",
               "getGenerationSexMatched", "getSexMatched")
 
 ## analysis methods...
 exportMethods("familialIncidenceRate", "familialIncidenceRateTest", "fsir",
-              "fsirTest",
-              "genealogicalIndexTest", "kinshipSumTest", "kinshipGroupTest",
-              "probabilityTest",
-              "runSimulation")
+              "fsirTest", "genealogicalIndexTest", "kinshipSumTest",
+              "kinshipGroupTest", "probabilityTest", "runSimulation")
+export("binomialTest")
 
 

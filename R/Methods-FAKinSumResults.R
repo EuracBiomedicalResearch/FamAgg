@@ -7,11 +7,11 @@
 setMethod("show", "FAKinSumResults", function(object){
     callNextMethod()
     cat(paste0("Result info:\n"))
-    cat(paste0(" * Dimension of result data.frame: ",
-               dim(result(object)),".\n"))
+    cat(paste0(" * Number of rows of the result data.frame: ",
+               nrow(result(object)),".\n"))
     cat(paste0(" * Number of simulations: ", object@nsim, ".\n"))
 })
-## calling the trait replecement method from FAResult and in addition
+## calling the trait replacement method from FAResult and in addition
 ## reset the simulation result.
 setReplaceMethod("trait", "FAKinSumResults", function(object, value){
     object <- callNextMethod()
@@ -34,7 +34,8 @@ setMethod("runSimulation", "FAKinSumResults",
               ped <- pedigree(object)
               affectedIds <- as.character(ped[which(ped$affected > 0), "id"])
               phenotypedIds <-as.character(ped[!is.na(ped$affected), "id"])
-              message("Cleaning data set (got in total ", nrow(ped), " individuals):")
+              message("Cleaning data set (got in total ", nrow(ped),
+                      " individuals):")
               ## Dummy for removing unaffected:
               message(" * not phenotyped individuals...")
               if(length(phenotypedIds) != nrow(ped)){
@@ -44,40 +45,40 @@ setMethod("runSimulation", "FAKinSumResults",
               }
               if(!is.null(strata)){
                   if(length(strata)!=nrow(ped))
-                      stop("Argument 'strata' has to have the same length than there are individuals in the pedigree!")
+                      stop("Argument 'strata' has to have the same length than",
+                           " there are individuals in the pedigree!")
                   ## add strata.
                   ped <- cbind(ped, STRATA=strata)
-                  ## Subset the affectedIds and phenotypedIds to those for which strata
-                  ## is not NA.
-                  ped <- ped[!is.na(ped$STRATA) & !is.na(ped$affected), , drop=FALSE]
+                  ## Subset the affectedIds and phenotypedIds to those for
+                  ## which strata is not NA.
+                  ped <- ped[!is.na(ped$STRATA) & !is.na(ped$affected), ,
+                             drop=FALSE]
                   strata <- as.character(ped$STRATA)
                   names(strata) <- as.character(ped$id)
                   newAffIds <- as.character(ped[which(ped$affected > 0), "id"])
                   newPhenoIds <- as.character(ped[, "id"])
-                  message(" * unaffected individuals without valid strata values...", appendLF=FALSE)
+                  message(paste0(" * unaffected individuals without valid ",
+                                 "strata values..."), appendLF=FALSE)
                   if(length(newPhenoIds)!=length(phenotypedIds)){
-                      ## warning(paste0("Removed ", length(phenotypedIds) - length(newPhenoIds),
-                      ##                " phenotyped individuals, as they have",
-                      ##                " a missing value in strata."))
-                      message(" ", length(phenotypedIds)-length(newPhenoIds), " removed.")
+                      message(" ", length(phenotypedIds)-length(newPhenoIds),
+                              " removed.")
                       phenotypedIds <- newPhenoIds
                   }else{
                       message(" none present.")
                   }
-                  message(" * affected individuals without valid strata values...", appendLF=FALSE)
+                  message(paste0(" * affected individuals without valid strata",
+                                 " values..."), appendLF=FALSE)
                   if(length(newAffIds)!=length(affectedIds)){
-                      ## warning(paste0("Removed ", length(affectedIds) - length(newAffIds),
-                      ##                " affected individuals, as they have",
-                      ##                " a missing value in strata."))
-                      message(" ", length(affectedIds)-length(newAffIds), " removed.")
+                      message(" ", length(affectedIds)-length(newAffIds),
+                              " removed.")
                       affectedIds <- newAffIds
                   }else{
                       message(" none present.")
                   }
               }
               message("Done")
-              ## now forcing the kinship matrix to match ordering of phenotypedIds and
-              ## eventually strata.
+              ## now forcing the kinship matrix to match ordering of
+              ## phenotypedIds and eventually strata.
               kin <- kin[phenotypedIds, phenotypedIds]
               ## removing self-self kinship:
               diag(kin) <- NA
