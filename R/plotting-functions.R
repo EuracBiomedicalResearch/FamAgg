@@ -19,26 +19,24 @@ switchPlotfun <- function(method){
     options("FamAgg"=FA)
 }
 
-## setMethod("plotPed", "missing", function(...){
-##     doPlotPed(...)
-## })
-
 ##########################
 ## the main plotting function that dispatches on options()$FamAgg$plotfun
 ## this function takes a lot of input...
-doPlotPed <- function(family=NULL, individual=NULL, father=NULL, mother=NULL, gender=NULL,
-                    affected=NULL, is.deceased=NULL, is.sab.or.top=NULL, is.proband=NULL,
-                    is.adopted=NULL, are.twins=NULL, are.consanguineous=NULL,
-                    text.inside.symbol=NULL, text.beside.symbol=NULL,
-                    text1.below.symbol=NULL, text2.below.symbol=NULL,
-                    text3.below.symbol=NULL, text4.below.symbol=NULL,
-                    filename=NULL, main=NULL, device="plot", res=600, ...){
+doPlotPed <- function(family=NULL, individual=NULL, father=NULL, mother=NULL,
+                      gender=NULL, affected=NULL, is.deceased=NULL,
+                      is.sab.or.top=NULL, is.proband=NULL, is.adopted=NULL,
+                      are.twins=NULL, are.consanguineous=NULL,
+                      text.inside.symbol=NULL, text.beside.symbol=NULL,
+                      text1.below.symbol=NULL, text2.below.symbol=NULL,
+                      text3.below.symbol=NULL, text4.below.symbol=NULL,
+                      filename=NULL, main=NULL, device="plot", res=600, ...){
     plotfun <- options()$FamAgg$plotfun
     plotfun <- match.arg(plotfun, c("ks2paint", "haplopaint"))
     if(plotfun == "haplopaint"){
         if(device == "plot"){
             device="pdf"
-            warning("haplopaint does not support device='plot', changing to 'pdf'.")
+            warning("haplopaint does not support device='plot', changing ",
+                    "to 'pdf'.")
         }
     }
     ## build the argument list.
@@ -57,18 +55,17 @@ doPlotPed <- function(family=NULL, individual=NULL, father=NULL, mother=NULL, ge
                     filename=filename, main=main, device=device,
                     res=res)
     addArgs <- list(...)
-    ## kick out arguments we know might be passed, but are not needed further down...
+    ## kick out arguments we know might be passed, but are not needed
+    ## further down...
     if(length(addArgs) > 0){
-        addArgs <- addArgs[!(names(addArgs) %in% c("prune", "max.generations.up",
-                                                   "max.generations.down"))]
+        addArgs <- addArgs[!(names(addArgs) %in%
+                             c("prune", "max.generations.up",
+                               "max.generations.down"))]
     }
     argList <- c(argList, addArgs)
     ## call the function.
     invisible(do.call(plotfun, args=argList))
 }
-
-
-
 
 ##########################
 ## ks2paint uses kinship2 to plot pedigrees.
@@ -77,13 +74,13 @@ doPlotPed <- function(family=NULL, individual=NULL, father=NULL, mother=NULL, ge
 ## text1.below.symbol is expected to be the age... add that below the ID.
 ## is.proband: highlight ids in red.
 ks2paint <- function(family=NULL, individual=NULL, father=NULL, mother=NULL,
-                      gender=NULL, affected=NULL, is.deceased=NULL, is.sab.or.top=NULL,
-                      is.proband=NULL, is.adopted=NULL, are.twins=NULL,
-                      are.consanguineous=NULL, text.inside.symbol=NULL,
-                      text.beside.symbol=NULL, text1.below.symbol=NULL,
-                      text2.below.symbol=NULL, text3.below.symbol=NULL,
-                      text4.below.symbol=NULL, filename=NULL, main=NULL,
-                      device="pdf", res=600, ...){
+                     gender=NULL, affected=NULL, is.deceased=NULL,
+                     is.sab.or.top=NULL, is.proband=NULL, is.adopted=NULL,
+                     are.twins=NULL, are.consanguineous=NULL,
+                     text.inside.symbol=NULL, text.beside.symbol=NULL,
+                     text1.below.symbol=NULL, text2.below.symbol=NULL,
+                     text3.below.symbol=NULL, text4.below.symbol=NULL,
+                     filename=NULL, main=NULL, device="pdf", res=600, ...){
     device <- match.arg(device, c("pdf", "png", "plot"))
     ## device plot means we're just plotting, not generating a file.
     ## affected can be a vector or matrix with up to 4 columns.
@@ -93,9 +90,11 @@ ks2paint <- function(family=NULL, individual=NULL, father=NULL, mother=NULL,
     if(!is.null(are.twins))
         warning("argument are.twins not yet supported for kinship2 plotting.")
     if(!is.null(are.consanguineous))
-        warning("argument are.consanguineous not yet supported for kinship2 plotting.")
+        warning("argument are.consanguineous not yet supported for kinship2 ",
+                "plotting.")
     if(!is.null(is.sab.or.top))
-        warning("argument is.sab.or.top not yet supported for kinship2 plotting.")
+        warning("argument is.sab.or.top not yet supported for kinship2 ",
+                "plotting.")
     ## check the affected.
     if(!is.null(affected)){
         affected <- checkTransformNumeric(affected, name="affected")
@@ -105,11 +104,13 @@ ks2paint <- function(family=NULL, individual=NULL, father=NULL, mother=NULL,
         affected <- rep(0, length(individual))
     }
     ## just creating the data.frame (although not using that one) to check all arguments.
-    df <- buildHaplopaintDataframe(family=family, individual=individual, father=father,
-                                   mother=mother, gender=gender, affected=affected,
-                                   is.deceased=is.deceased, is.sab.or.top=is.sab.or.top,
+    df <- buildHaplopaintDataframe(family=family, individual=individual,
+                                   father=father, mother=mother, gender=gender,
+                                   affected=affected, is.deceased=is.deceased,
+                                   is.sab.or.top=is.sab.or.top,
                                    is.proband=is.proband, is.adopted=is.adopted,
-                                   are.twins=are.twins, are.consanguineous=are.consanguineous,
+                                   are.twins=are.twins,
+                                   are.consanguineous=are.consanguineous,
                                    text.inside.symbol=text.inside.symbol,
                                    text.beside.symbol=text.beside.symbol,
                                    text1.below.symbol=text1.below.symbol,
@@ -171,7 +172,8 @@ ks2paint <- function(family=NULL, individual=NULL, father=NULL, mother=NULL,
     }else{
         symbolsize <- 1
     }
-    Coords <- plot(ped, status=is.deceased, affected=affected, keep.par=TRUE, ...)
+    Coords <- plot(ped, status=is.deceased, affected=affected,
+                   keep.par=TRUE, ...)
     oldxpd <- par()$xpd
     par(xpd=NA)
     ## if we do have any highlight ids or similar, i.e. text1.below.symbol etc.
@@ -182,31 +184,29 @@ ks2paint <- function(family=NULL, individual=NULL, father=NULL, mother=NULL,
     ## pos: y: Coords$y-Coores$boxh-strheight
     if(!is.null(text1.below.symbol)){
         strh <- strheight("0")
-        text(x=Coords$x, y=(Coords$y+Coords$boxh-strh-strh/10), pos=1, labels=text1.below.symbol,
-             cex=Cex-0.2)
+        text(x=Coords$x, y=(Coords$y+Coords$boxh-strh-strh/10), pos=1,
+             labels=text1.below.symbol, cex=Cex-0.2)
     }
     if(!is.null(text2.below.symbol)){
         ## top left
-        text(x=(Coords$x-Coords$boxw/8), y=Coords$y, pos=2, labels=text2.below.symbol,
-             cex=Cex-0.2)
+        text(x=(Coords$x-Coords$boxw/8), y=Coords$y, pos=2,
+             labels=text2.below.symbol, cex=Cex-0.2)
     }
     if(!is.null(text3.below.symbol)){
         ## top right
-        text(x=(Coords$x+Coords$boxw/8), y=Coords$y, pos=4, labels=text3.below.symbol,
-             cex=Cex-0.2)
+        text(x=(Coords$x+Coords$boxw/8), y=Coords$y, pos=4,
+             labels=text3.below.symbol, cex=Cex-0.2)
     }
     if(!is.null(text4.below.symbol))
         warning("ks2paint does not support text4.below.symbol.")
-    ## eventually, it might be nicer to highlight the id of probands in a different
-    ## color... that's however not that easy as we see below: we do have to add
-    ## the text for highlighted ids later to that plot to overplot the ids plotted
-    ## in black
+    ## eventually, it might be nicer to highlight the id of probands in a
+    ## different color... that's however not that easy as we see below: we do
+    ## have to add the text for highlighted ids later to that plot to overplot
+    ## the ids plotted in black
     if(!is.null(is.proband)){
         is.proband <- checkArgNumericLogical(is.proband, name="is.proband")
         Colors <- rep(NA, length(is.proband))
-        Colors[is.proband==1] <- "#E41A1C"    ## RColorBrewer,  Set1, color 1 (red)
-        ## text(x=Coords$x, y=(Coords$y+Coords$boxh), pos=1, labels=ped$id, cex=Cex,
-        ##      col=is.proband+1)
+        Colors[is.proband==1] <- "#E41A1C"    ## RColorBrewer, Set1, (red)
         ## from kinship2: pretty tedious to get all the settings...
         psize <- par('pin')  # plot region in inches
         stemp1 <- strwidth("ABC", units='inches', cex=Cex)* 2.5/3
@@ -224,14 +224,10 @@ ks2paint <- function(family=NULL, individual=NULL, father=NULL, mother=NULL,
         for(i in 1:maxlev){
             for(j in 1:Coords$plist$n[i]){
                 k <- Coords$plist$nid[i,j]
-                text(Coords$plist$pos[i,j], i + boxh + labh*.7, ped$id[k], cex=Cex,
-                     adj=c(.5,1), col=Colors[k])
+                text(Coords$plist$pos[i,j], i + boxh + labh*.7, ped$id[k],
+                     cex=Cex, adj=c(.5,1), col=Colors[k])
             }
         }
-        ## text(x=Coords$x, y=(Coords$y+boxh+labh*7), adj=c(0.5, 1), labels=ped$id,
-        ##     cex=Cex, col=is.proband+1)
-        ##text(plist$pos[i,j], i + boxh + labh*.7, id[k], cex=cex,.
-        ##       adj=c(.5,1), ...)
     }
     par(xpd=oldxpd)
     if(device!="plot")
@@ -244,20 +240,22 @@ ks2paint <- function(family=NULL, individual=NULL, father=NULL, mother=NULL,
 #########################
 ## haplopaint uses the HaploPainter perl script/function.
 haplopaint <- function(family=NULL, individual=NULL, father=NULL, mother=NULL,
-                       gender=NULL, affected=NULL, is.deceased=NULL, is.sab.or.top=NULL,
-                       is.proband=NULL, is.adopted=NULL, are.twins=NULL,
-                       are.consanguineous=NULL, text.inside.symbol=NULL,
-                       text.beside.symbol=NULL, text1.below.symbol=NULL,
-                       text2.below.symbol=NULL, text3.below.symbol=NULL,
-                       text4.below.symbol=NULL, filename=NULL, main=NULL,
-                       device="pdf", res=600, ...){
+                       gender=NULL, affected=NULL, is.deceased=NULL,
+                       is.sab.or.top=NULL, is.proband=NULL, is.adopted=NULL,
+                       are.twins=NULL, are.consanguineous=NULL,
+                       text.inside.symbol=NULL, text.beside.symbol=NULL,
+                       text1.below.symbol=NULL, text2.below.symbol=NULL,
+                       text3.below.symbol=NULL, text4.below.symbol=NULL,
+                       filename=NULL, main=NULL, device="pdf", res=600, ...){
     device <- match.arg(device, c("ps", "pdf", "svg", "png"))
     ## first check input arguments.
-    df <- buildHaplopaintDataframe(family=family, individual=individual, father=father,
-                                   mother=mother, gender=gender, affected=affected,
-                                   is.deceased=is.deceased, is.sab.or.top=is.sab.or.top,
+    df <- buildHaplopaintDataframe(family=family, individual=individual,
+                                   father=father, mother=mother, gender=gender,
+                                   affected=affected, is.deceased=is.deceased,
+                                   is.sab.or.top=is.sab.or.top,
                                    is.proband=is.proband, is.adopted=is.adopted,
-                                   are.twins=are.twins, are.consanguineous=are.consanguineous,
+                                   are.twins=are.twins,
+                                   are.consanguineous=are.consanguineous,
                                    text.inside.symbol=text.inside.symbol,
                                    text.beside.symbol=text.beside.symbol,
                                    text1.below.symbol=text1.below.symbol,
@@ -267,13 +265,13 @@ haplopaint <- function(family=NULL, individual=NULL, father=NULL, mother=NULL,
                                    )
     rownames(df) <- df[, "individual"]
     ## handle childless founders:
-    kins <- kinship(family=df[, "family"], id=df[, "individual"], dadid=df[, "father"],
-                    momid=df[, "mother"])
+    kins <- kinship(family=df[, "family"], id=df[, "individual"],
+                    dadid=df[, "father"], momid=df[, "mother"])
     cols <- colSums(kins)
     if(any(cols <= 0.5)){
         kins <- kins[cols > 0.5, cols > 0.5]
         df <- df[colnames(kins), ]
-        warning(paste0("Removed ", sum(cols <= 0.5), " childless founders!"))
+        warning("Removed ", sum(cols <= 0.5), " childless founders!")
     }
     if(is.null(main))
         main <- df[1, "family"]
@@ -293,7 +291,7 @@ haplopaint <- function(family=NULL, individual=NULL, father=NULL, mother=NULL,
         stop("Error calling HaploPainter!", res$message)
     }else{
         if(res!=0)
-            stop("Error calling HaploPainter! Please check error message above.")
+            stop("Error calling HaploPainter! Please check error message.")
     }
     ## return the file name.
     invisible(filename)
@@ -301,17 +299,21 @@ haplopaint <- function(family=NULL, individual=NULL, father=NULL, mother=NULL,
 
 
 #########################
-## this function first checks all input parameters for correct input and subsequently
-## builds a data.frame that can be used as input for haplopaint.
+## this function first checks all input parameters for correct input and
+## subsequently builds a data.frame that can be used as input for haplopaint.
 buildHaplopaintDataframe <- function(family=NULL, individual=NULL, father=NULL,
                                      mother=NULL, gender=NULL, affected=NULL,
-                                     is.deceased=NULL, is.sab.or.top=NULL, is.proband=NULL,
-                                     is.adopted=NULL, are.twins=NULL,
-                                     are.consanguineous=NULL, text.inside.symbol=NULL,
-                                     text.beside.symbol=NULL, text1.below.symbol=NULL,
-                                     text2.below.symbol=NULL, text3.below.symbol=NULL,
+                                     is.deceased=NULL, is.sab.or.top=NULL,
+                                     is.proband=NULL, is.adopted=NULL,
+                                     are.twins=NULL, are.consanguineous=NULL,
+                                     text.inside.symbol=NULL,
+                                     text.beside.symbol=NULL,
+                                     text1.below.symbol=NULL,
+                                     text2.below.symbol=NULL,
+                                     text3.below.symbol=NULL,
                                      text4.below.symbol=NULL){
-    if(is.null(individual) | is.null(father) | is.null(mother) | is.null(gender))
+    if(is.null(individual) | is.null(father) |
+       is.null(mother) | is.null(gender))
         stop("Arguments individual, father, mother and gender are required!")
     ninds <- length(individual)
     if(is.null(family))
@@ -319,7 +321,7 @@ buildHaplopaintDataframe <- function(family=NULL, individual=NULL, father=NULL,
     ## Fixing father & mother: Haplopaint requires 0
     father[is.na(father)] <- 0
     mother[is.na(mother)] <- 0
-    ## now going through all arguments and, if present, adding them to the argList
+    ## now going through all arguments and, if present, adding them to the list
     argList <- list(family=family,
                     individual=as.character(individual),
                     father=as.character(father),
@@ -329,10 +331,9 @@ buildHaplopaintDataframe <- function(family=NULL, individual=NULL, father=NULL,
     gender <- as.numeric(sanitizeSex(gender))
     gender[is.na(gender)] <- 0
     argList <- c(argList, list(gender=gender))
-    ##
-    ## * affected: can be 0, 1 or any other number. each number is represented by
-    ##   a different color: Note: we're adding +1 to each numeric affected value!
-    ##   the coding is: NA -> 0, 0 -> 1, 1 -> 2!
+    ## * affected: can be 0, 1 or any other number. each number is represented
+    ##   by a different color: Note: we're adding +1 to each numeric affected
+    ##   value! the coding is: NA -> 0, 0 -> 1, 1 -> 2!
     if(!is.null(affected)){
         affected <- checkTransformNumeric(affected, name="affected")
         if(length(which(affected < 0)))
@@ -352,22 +353,26 @@ buildHaplopaintDataframe <- function(family=NULL, individual=NULL, father=NULL,
     ##
     ## * is.deceased
     ##   has to be either 0 or 1 (FALSE or TRUE)
-    is.deceased <- checkArgNumericLogical(is.deceased, ninds, name="is.deceased")
+    is.deceased <- checkArgNumericLogical(is.deceased, ninds,
+                                          name="is.deceased")
     argList <- c(argList, list(is.deceased=is.deceased))
     ##
     ## * is.sab.or.top
     ##   has to be either 0 or 1 (FALSE or TRUE)
-    is.sab.or.top <- checkArgNumericLogical(is.sab.or.top, ninds, name="is.sab.or.top")
+    is.sab.or.top <- checkArgNumericLogical(is.sab.or.top, ninds,
+                                            name="is.sab.or.top")
     argList <- c(argList, list(is.sab.or.top=is.sab.or.top))
     ##
     ## * is.proband
     ##   has to be either 0 or 1 (FALSE or TRUE)
-    is.proband <- checkArgNumericLogical(is.proband, ninds, name="is.proband")
+    is.proband <- checkArgNumericLogical(is.proband, ninds,
+                                         name="is.proband")
     argList <- c(argList, list(is.proband=is.proband))
     ##
     ## * is.adopted
     ##   has to be either 0 or 1 (FALSE or TRUE)
-    is.adopted <- checkArgNumericLogical(is.adopted, ninds, name="is.adopted")
+    is.adopted <- checkArgNumericLogical(is.adopted, ninds,
+                                         name="is.adopted")
     argList <- c(argList, list(is.adopted=is.adopted))
     ##
     ## * are.twins
@@ -439,22 +444,26 @@ buildHaplopaintDataframe <- function(family=NULL, individual=NULL, father=NULL,
     ## if yes -> write temp data.frame and call haplopainter.
     Lengths <- unlist(lapply(argList, length))
     if(length(unique(Lengths)) != 1){
-        cat("Got lengths: ", paste(paste(names(argList), ": ", Lengths), collapse=", "),  "\n")
+        cat("Got lengths: ", paste(paste(names(argList), ": ", Lengths),
+                                   collapse=", "),  "\n")
         stop("All arguments have to have the same number of elements!")
     }
-    return(do.call(cbind, argList))
+    do.call(cbind, argList)
 }
 
-## tries to transform x to numeric and, in case it's not possible, throws an error.
+## tries to transform x to numeric and, in case it's not possible, throws
+## an error.
 checkTransformNumeric <- function(x, name=""){
     tryCatch(x <- as.numeric(x),
              error=function(e){
-                 stop(paste0("Error while checking argument ", name, ": argument is not numeric!"))
+                 stop("Error while checking argument ", name,
+                      ": argument is not numeric!")
              },
              warning=function(w){
-                 stop(paste0("Error while checking argument ", name, ": argument is not numeric!"))
+                 stop("Error while checking argument ", name,
+                      ": argument is not numeric!")
              })
-    return(x)
+    x
 }
 
 ## check the are.twins argument.
@@ -467,17 +476,19 @@ checkArgAreTwins <- function(are.twins=NULL, ninds){
         ## checking the levels: have to start with m_ or d_
         twinlevels <- levels(are.twins)
         if(!all(substring(twinlevels, 1, 2) %in% c("m_", "d_")))
-            stop("elements in are.twins have to be either NA or have to start with m_ (monozygotic twins) or d_ (dizygotic twins)!")
+            stop("elements in are.twins have to be either NA or have to ",
+                 "start with m_ (monozygotic twins) or d_ (dizygotic twins)!")
         ## each level has to be present at least twice.
         if(any(table(are.twins) < 2))
-            stop("each text to specify twins has to be present at least twice in argument are.twins!")
+            stop("each text to specify twins has to be present at least ",
+                 "twice in argument are.twins!")
         ## OK, seems to be OK
         are.twins <- as.character(are.twins)
         are.twins[is.na(are.twins)] <- ""
     }else{
         are.twins <- rep("", ninds)
     }
-    return(are.twins)
+    are.twins
 }
 
 ##
@@ -487,12 +498,12 @@ checkArgNumericLogical <- function(x=NULL, ninds, name=""){
     if(!is.null(x)){
         x <- checkTransformNumeric(x, name=name)
         if(any(!(x %in% c(0, 1))))
-            stop(paste0(name,
-                        " should be a logical vector or a numeric vector with 0 (no) and 1 (yes)!"))
+            stop(name, " should be a logical vector or a numeric vector ",
+                 "with 0 (no) and 1 (yes)!")
     }else{
         x <- rep(0, ninds)
     }
-    return(x)
+    x
 }
 
 ##
@@ -503,12 +514,13 @@ checkArgConsanguineous <- function(x=NULL, ninds){
         x <- factor(x)
         ## each level has to be present exactly twice.
         if(any(table(x) != 2)){
-            stop("Each text specifying consanguineous couples in argument are.consanguineous should be present exactly twice!")
+            stop("Each text specifying consanguineous couples in argument ",
+                 "are.consanguineous should be present exactly twice!")
         }
         x <- as.character(x)
         x[is.na(x)] <- ""
     }else{
         x <- rep("", ninds)
     }
-    return(x)
+    x
 }

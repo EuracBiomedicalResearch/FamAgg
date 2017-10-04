@@ -1,17 +1,13 @@
 ## just simple utility function to test for empty/not set column names
 noColNames <- function(x){
     CN <- colnames(x)
-    if(all(CN %in% paste("V", 1:ncol(x), sep=""))){
-        return(TRUE)
-    }else{
-        return(FALSE)
-    }
+    all(CN %in% paste("V", 1:ncol(x), sep=""))
 }
 
-## takes a pedigree (data.frame, pedigree or pedigreeList) as input and generates a
-## valid pedigree for the submitted ids (if no ids are specified it returns the ped).
-## basically, the function subsets the full pedigree to the individuals ids and
-## recursively adds parents if needed.
+## takes a pedigree (data.frame, pedigree or pedigreeList) as input and
+## generates a valid pedigree for the submitted ids (if no ids are specified
+## it returns the ped). basically, the function subsets the full pedigree to
+## the individuals ids and recursively adds parents if needed.
 buildPedigree <- function(ped, ids){
     ## check pedigree and eventually add missing parents...
     if(missing(ids))
@@ -34,7 +30,7 @@ buildPedigree <- function(ped, ids){
         ## parents <- parents[parents!=0]
         parents <- parents[!is.na(parents)]
     }
-    return(subfam)
+    subfam
 }
 
 
@@ -43,7 +39,7 @@ doGetSiblings <- function(ped, id=NULL){
         stop("At least one if has to be specified!")
     parents <- doGetAncestors(ped, id=id, maxlevel=1)
     siblings <- doGetChildren(ped, id=parents, maxlevel=1)
-    return(siblings)
+    siblings
 }
 
 ## gets all the ancestors for (one or more) id(s)
@@ -65,7 +61,7 @@ doGetAncestors <- function(ped, id=NULL, maxlevel=3){
         id <- newids
         allids <- c(allids, newids)
     }
-    return(as.character(unique(allids)))
+    as.character(unique(allids))
 }
 
 ## gets all the children for (one or more) id(s)
@@ -82,7 +78,7 @@ doGetChildren <- function(ped, id=NULL, maxlevel=16){
         id <- newids
         allids <- c(allids, newids)
     }
-    return(as.character(unique(allids)))
+    as.character(unique(allids))
 }
 
 ## check for the submitted id(s) whether a mate (spouse) is
@@ -95,7 +91,7 @@ doGetMissingMate <- function(ped, id){
         stop("Al least one id has to be specified")
     newids <- c(ped[ped$father %in% id, "mother"],
                 ped[ped$mother %in% id, "father"])
-    return(unique(newids))
+    unique(newids)
 }
 
 
@@ -122,7 +118,7 @@ ped2df <- function(ped){
     colnames(ped) <- .PEDCN
     ped <- data.frame(ped)
     rownames(ped) <- ped$id
-    return(ped)
+    ped
 }
 
 
@@ -136,24 +132,28 @@ df2ped <- function(ped){
     ##
     if(any(colnames(ped) == "affected")){
         if(any(colnames(ped) == "family")){
-            peddi <- kinship2::pedigree(id=ped$id, dadid=ped$father, momid=ped$mother,
-                                        famid=ped$family, sex=as.numeric(ped$sex),
+            peddi <- kinship2::pedigree(id=ped$id, dadid=ped$father,
+                                        momid=ped$mother, famid=ped$family,
+                                        sex=as.numeric(ped$sex),
                                         affected=ped$affected)
         }else{
-            peddi <- kinship2::pedigree(id=ped$id, dadid=ped$father, momid=ped$mother,
+            peddi <- kinship2::pedigree(id=ped$id, dadid=ped$father,
+                                        momid=ped$mother,
                                         sex=as.numeric(ped$sex),
                                         affected=ped$affected)
         }
     }else{
         if(any(colnames(ped) == "family")){
-            peddi <- kinship2::pedigree(id=ped$id, dadid=ped$father, momid=ped$mother,
-                                        famid=ped$family, sex=as.numeric(ped$sex))
+            peddi <- kinship2::pedigree(id=ped$id, dadid=ped$father,
+                                        momid=ped$mother, famid=ped$family,
+                                        sex=as.numeric(ped$sex))
         }else{
-            peddi <- kinship2::pedigree(id=ped$id, dadid=ped$father, momid=ped$mother,
+            peddi <- kinship2::pedigree(id=ped$id, dadid=ped$father,
+                                        momid=ped$mother,
                                         sex=as.numeric(ped$sex))
         }
     }
-    return(peddi)
+    peddi
 }
 
 
@@ -176,7 +176,7 @@ doShareKinship <- function(ped, kin, id){
     ## subset to id (which can be more than one)
     kin <- kin[id, , drop=FALSE]
     related <- colnames(kin)[colSums(kin) > 0]
-    return(related)
+    related
 }
 
 ####============================================================
@@ -185,8 +185,7 @@ doShareKinship <- function(ped, kin, id){
 ##  Returns the ids of the founders in the specified pedigree.
 ####------------------------------------------------------------
 doGetFounders <- function(ped){
-    founders <- ped[is.na(ped$mother) & is.na(ped$father), "id"]
-    return(founders)
+    ped[is.na(ped$mother) & is.na(ped$father), "id"]
 }
 
 ####============================================================
@@ -198,12 +197,13 @@ doGetFounders <- function(ped){
 doGetSingletons <- function(ped){
     founders <- ped[is.na(ped$mother) & is.na(ped$father), , drop=FALSE]
     if(nrow(founders) > 0){
-        childl <- !((founders$id %in% ped$father) | (founders$id %in% ped$mother))
+        childl <- !((founders$id %in% ped$father) |
+                    (founders$id %in% ped$mother))
         if(any(childl)){
             return(founders[childl, "id"])
         }
     }
-    return(character())
+    character()
 }
 
 
@@ -219,7 +219,7 @@ getParents <- function(ped, id){
     id <- as.character(id)
     if(!is.data.frame(ped))
         ped <- as.data.frame(ped)
-    return(ped[id, c("father", "mother"), drop=FALSE])
+    ped[id, c("father", "mother"), drop=FALSE]
 }
 
 
@@ -236,7 +236,7 @@ checkPedCol <- function(ped){
     if(!any(colnames(ped) == "family"))
         ped <- cbind(ped, family=rep(1, nrow(ped)))
     rownames(ped) <- as.character(ped$id)
-    return(ped)
+    ped
 }
 
 ## Sanitize the pedigree the way we want: sex should be sanitized (if present),
@@ -260,15 +260,16 @@ sanitizePed <- function(ped){
         Mother[which(Mother == "")] <- NA
     ped$father <- Father
     ped$mother <- Mother
-    return(ped)
+    ped
 }
 
 ## find the subPedigree (smallest pedigree) includin the individuals specified
 ## with id and all eventually needed additionals
 subPedigree <- function(ped, id=NULL, all=TRUE){
     CL <- class(ped)
-    ## handling for pedigree and pedigreeList classes: unfortunately these are not
-    ## correct classes, otherwise I could define methods instead of a function...
+    ## handling for pedigree and pedigreeList classes: unfortunately these
+    ## are not correct classes, otherwise I could define methods instead of
+    ## a function...
     if(is(ped, "pedigree") | is(ped, "pedigreeList")){
         ped <- ped2df(ped)
     }
@@ -276,8 +277,8 @@ subPedigree <- function(ped, id=NULL, all=TRUE){
     if(is.null(id))
         stop("id is missing!")
     id <- as.character(id)
-    subgr <- connectedSubgraph(ped2graph(ped), nodes=id, mode="all", all.nodes=all,
-                               ifnotfound=NA)
+    subgr <- connectedSubgraph(ped2graph(ped), nodes=id, mode="all",
+                               all.nodes=all, ifnotfound=NA)
     if(!is(subgr, "igraph")){
         stop("No common pedigree for the submitted individuals found!")
     }
@@ -291,7 +292,7 @@ subPedigree <- function(ped, id=NULL, all=TRUE){
     subped[!(subped$mother %in% subped$id), "mother"] <- NA
     if(CL == "pedigree" | CL == "pedigreeList")
         subped <- df2ped(subped)
-    return(subped)
+    subped
 }
 
 
@@ -303,11 +304,12 @@ subPedigree <- function(ped, id=NULL, all=TRUE){
 ## nodes: node (vertex) names.
 ## mode: to calculate the smallest distance.
 ## all.nodes: if all nodes should be present in the resulting graph.
-## ifnotfound: by default, the function throws an error if no connected subgraph is
-##             found, or, if all.nodes=TRUE, not all input nodes are in the connected
-##             subgraph. If ifnotfound is specified, its value is returned instead of
-##             an error.
-connectedSubgraph <- function(graph, nodes, mode="all", all.nodes=TRUE, ifnotfound){
+## ifnotfound: by default, the function throws an error if no connected
+##             subgraph is found, or, if all.nodes=TRUE, not all input nodes
+##             are in the connected subgraph. If ifnotfound is specified, its
+##             value is returned instead of an error.
+connectedSubgraph <- function(graph, nodes, mode="all", all.nodes=TRUE,
+                              ifnotfound){
     if(!is(graph, "igraph"))
         stop("graph has to be an igraph object!")
     mode <- match.arg(mode, c("all", "in", "out"))
@@ -319,11 +321,12 @@ connectedSubgraph <- function(graph, nodes, mode="all", all.nodes=TRUE, ifnotfou
     if(any(nono)){
         missingNodes <- nodes[nono]
         if(all.nodes)
-            stop("With argument all.nodes=TRUE all nodes have to be present in the graph! Nodes ",
-                 paste(missingNodes, collapse=", "), " not present in the original graph.")
+            stop("With argument all.nodes=TRUE all nodes have to be present ",
+                 "in the graph! Nodes ", paste(missingNodes, collapse=", "),
+                 " not present in the original graph.")
         nodes <- nodes[!nono]
-        warning(paste0("Nodes ", paste(missingNodes, collapse=", "),
-                       " removed as they are not present in graph! "))
+        warning("Nodes ", paste(missingNodes, collapse=", "),
+                " removed as they are not present in graph! ")
         if(length(nodes) < 2)
             stop("At least two nodes have to be present in the graph!")
     }
@@ -341,7 +344,8 @@ connectedSubgraph <- function(graph, nodes, mode="all", all.nodes=TRUE, ifnotfou
                                         to=nodes[(i+1):length(nodes)],
                                         mode=mode)
             )
-            needNodes <- unique(c(needNodes, unlist(lapply(paths$vpath, names))))
+            needNodes <- unique(c(needNodes,
+                                  unlist(lapply(paths$vpath, names))))
         }
     }else{
         for(i in 1:length(nodes)){
@@ -350,7 +354,8 @@ connectedSubgraph <- function(graph, nodes, mode="all", all.nodes=TRUE, ifnotfou
                                         to=nodes[-i],
                                         mode=mode)
             )
-            needNodes <- unique(c(needNodes, unlist(lapply(paths$vpath, names))))
+            needNodes <- unique(c(needNodes,
+                                  unlist(lapply(paths$vpath, names))))
         }
     }
     if(length(needNodes)==0){
@@ -369,15 +374,13 @@ connectedSubgraph <- function(graph, nodes, mode="all", all.nodes=TRUE, ifnotfou
             warning("Could not find any connected subgraph!")
             return(ifnotfound)
         }else{
-            warning(paste0("Nodes ",
-                           paste(nodes[!(nodes %in% needNodes)]),
-                           " not present in the returned graph!")
-                    )
+            warning("Nodes ", paste(nodes[!(nodes %in% needNodes)]),
+                    " not present in the returned graph!")
         }
     }
     ## finally build the graph...
     ## subgraph is a little tedious as it requires submitting of vertex INDICES!
-    return(induced_subgraph(graph, vids=needNodes))
+    induced_subgraph(graph, vids=needNodes)
 }
 
 ## search for a common ancestor couple in a pedigree.
@@ -436,12 +439,12 @@ doGetCommonAncestor <- function(ped, id, method="min.dist"){
     ## at last trying to get the mate... if any; usually, ancs should
     ## already correspond to the ancestor couple.
     ancs <- c(ancs, doGetMissingMate(ped, ancs))
-    return(unique(ancs))
+    unique(ancs)
 }
 
 ## returns true if a value is 0 or infinite
 infOrZero <- function(x){
-    return((is.infinite(x) | x == 0))
+    (is.infinite(x) | x == 0)
 }
 
 ## transform a pedigree into a (directed) igraph
@@ -465,7 +468,7 @@ ped2graph <- function(ped){
     ## what the heck... I need character vertex names!
     Edges <- unlist(eds, use.names=FALSE)
     igr <- graph(edges=as.character(Edges))
-    return(igr)
+    igr
 }
 
 
@@ -482,8 +485,8 @@ doFindFounders <- function(ped, family, id){
         id <- NULL
     if(is.null(family) & is.null(id)){
         family <- families[1]
-        warning(paste0("No family specified; using the first one in the pedigree: ",
-                       family, "."))
+        warning("No family specified; using the first one in the pedigree: ",
+                family, ".")
     }
     if (!is.null(family))
         ped <- ped[ped$family == family, , drop=FALSE]
@@ -521,13 +524,14 @@ doFindFoundersForId <- function(ped, id) {
     ids <- unique(c(ids, doGetMissingMate(ped, id = ids)))
     ped <- ped[ped[, "id"] %in% ids, , drop = FALSE]
     ## OK, now we have the pedigree for the individual, now find founders.
-    founders <- ped[which(is.na(ped[, "father"]) & is.na(ped[, "mother"])), "id"]
+    founders <- ped[which(is.na(ped[, "father"]) &
+                          is.na(ped[, "mother"])), "id"]
     ## determine for each founder the number of generations of its children,
     ## grandchildren etc.
     founderGen <- doCountGenerations(ped, id = founders, direction = "down")
     founders <- names(founderGen)[founderGen == max(founderGen)][1]
     founders <- c(founders, doGetMissingMate(ped, founders))
-    return(unique(founders))
+    unique(founders)
 }
 
 ## calculate for each id the number of generations up- or down.
@@ -552,9 +556,8 @@ doCountGenerations <- function(ped, id=NULL, direction="down"){
         }
     })
     names(res) <- id
-    return(res)
+    res
 }
-
 
 ## returns a list of generations for each family in the pedigree.
 ## generations are relative to the founders.
@@ -571,9 +574,8 @@ doEstimateGenerationsFor2 <- function(ped, family=NULL){
         generation <- doGetGenerationFrom2(currentPed, founders[1])
         return(generation)
     })
-    return(Gens)
+    Gens
 }
-
 
 getAllSibsNMates <- function(ped, id){
     ## recursively fetch siblings and mates
@@ -587,7 +589,7 @@ getAllSibsNMates <- function(ped, id){
             break
         }
     }
-    return(sibsNmates)
+    sibsNmates
 }
 
 doGetGenerationFrom2 <- function(ped, id, generation=0){
@@ -598,7 +600,8 @@ doGetGenerationFrom2 <- function(ped, id, generation=0){
     id <- as.character(id)
     if(length(id) > 1){
         id <- id[1]
-        warning("Length of 'id' is larger 1. Using only the first id in 'id': ", id)
+        warning("Length of 'id' is larger 1. Using only the first id ",
+                "in 'id': ", id)
     }
     if(!any(ped$id %in% id))
         stop("Can not find id in the pedigree!")
@@ -608,8 +611,9 @@ doGetGenerationFrom2 <- function(ped, id, generation=0){
     pedg <- ped2graph(ped)
     if(clusters(pedg)$no > 1){
         Cl <- clusters(pedg)
-        warning("Found ", Cl$no, " connected sub-graphs in the pedigree for family ", famid,
-                "! Will restrict the analysis to the subgraph containing individual ", id, ".")
+        warning("Found ", Cl$no, " connected sub-graphs in the pedigree ",
+                "for family ", famid, "! Will restrict the analysis to the ",
+                "subgraph containing individual ", id, ".")
         vertices <- names(Cl$membership)[Cl$membership == Cl$membership[id]]
         pedg <- induced_subgraph(pedg, vids=vertices)
     }
@@ -617,10 +621,10 @@ doGetGenerationFrom2 <- function(ped, id, generation=0){
     gens4individuals <- rep(NA, length(individuals))
     names(gens4individuals) <- individuals
     if(!any(names(gens4individuals) == id))
-        stop(paste0("Individual ", id, " is not part of the connected pedigree!"))
+        stop("Individual ", id, " is not part of the connected pedigree!")
     gens4individuals[id] <- 0
     fromId <- id
-    Tested <- rep(FALSE, length(gens4individuals))    ## that helps to prevent testing the same individual several times...
+    Tested <- rep(FALSE, length(gens4individuals))
     repeat{
         ## get the generation of the individuals from which we start
         fromIdBool <- individuals %in% fromId
@@ -649,7 +653,8 @@ doGetGenerationFrom2 <- function(ped, id, generation=0){
             warning("What the heck... stopped before we got all?")
             break
         }
-        ## don't want to search the same id several times... if Tested is TRUE, don't use them again.
+        ## don't want to search the same id several times... if Tested is
+        ## TRUE, don't use them again.
         toTestIdx <- Res[, 1][!Tested[Res[, 1]]]
         fromId <- individuals[toTestIdx]
         gens4individuals[Res[, 1]] <- Res[, 2]
@@ -660,7 +665,7 @@ doGetGenerationFrom2 <- function(ped, id, generation=0){
     allgens <- rep(NA, nrow(ped))
     names(allgens) <- ped$id
     allgens[names(gens4individuals)] <- gens4individuals
-    return(allgens)
+    allgens
 }
 
 ##********************************************************************
@@ -673,9 +678,9 @@ sanitizeSex <- function(x){
         ## require values 1, 2, NA
         numrange <- unique(x)
         if(!all(c(1, 2) %in% numrange))
-            stop(paste0("If column sex is numeric it has to contain 1 (=male) ",
-                        "and 2 (=female) values! Unknown or missing can be encoded",
-                        " by NA or any other number than 1 or 2."))
+            stop("If column sex is numeric it has to contain 1 (=male) ",
+                 "and 2 (=female) values! Unknown or missing can be encoded",
+                 " by NA or any other number than 1 or 2.")
         news <- rep(NA, length(x))
         news[which(x == 1)] <- "M"
         news[which(x == 2)] <- "F"
@@ -692,17 +697,17 @@ sanitizeSex <- function(x){
         chars <- unique(x)
         if(length(chars) == 2){
             if(!all(c("M", "F") %in% chars))
-                stop(paste0("Male and female individuals have to be represented",
-                            " by 'M' and 'F', respectively!"))
+                stop("Male and female individuals have to be represented",
+                     " by 'M' and 'F', respectively!")
         }
         if(length(chars) == 1){
             if(!any(c("M", "F") %in% chars))
-                stop(paste0("Male and female individuals have to be represented",
-                            " by 'M' and 'F', respectively!"))
+                stop("Male and female individuals have to be represented",
+                     " by 'M' and 'F', respectively!")
         }
         if(length(chars[!is.na(chars)]) > 2)
-            warning(paste0("All characters in column sex other than M and F",
-                           " (or male, female etc) are set to NA!"))
+            warning("All characters in column sex other than M and F",
+                    " (or male, female etc) are set to NA!")
         news <- rep(NA, length(x))
         news[which(x == "M")] <- "M"
         news[which(x == "F")] <- "F"
@@ -730,11 +735,13 @@ doPrunePed <- function(ped, addMissingMates=FALSE, solveMultiGraph="use.all"){
         if(clusters(pedg)$no > 1){
             Cl <- clusters(pedg)
             warning("Found ", Cl$no,
-                    " connected sub-graphs in the pedigree!",
-                    " Will restrict the analysis to the largest connected pedigree",
+                    " connected sub-graphs in the pedigree! Will restrict ",
+                    "the analysis to the largest connected pedigree",
                     " in that family.")
-            vertices <- names(Cl$membership)[Cl$membership == as.numeric(sort(table(Cl$membership),
-                                                                              decreasing=TRUE))[1]]
+            vertices <-
+                names(Cl$membership)[Cl$membership ==
+                                     as.numeric(sort(table(Cl$membership),
+                                                     decreasing=TRUE))[1]]
             pedg <- induced_subgraph(pedg, vids=vertices)
         }
     }
@@ -748,12 +755,13 @@ doPrunePed <- function(ped, addMissingMates=FALSE, solveMultiGraph="use.all"){
     if(any(notThere))
         warning("Had to remove ", sum(notThere),
                 " un-connected individuals from the pedigree.")
-    return(ped)
+    ped
 }
 
 
-## a singleton a.k.a childless founder is an individual which id is not present in the
-## father or mother column of the pedigree and which has 0 in mother and father
+## a singleton a.k.a childless founder is an individual which id is not
+## present in the father or mother column of the pedigree and which has 0
+## in mother and father
 .removeSingletons <- function(ped){
     message("Removing singletons...", appendLF=FALSE)
     ped <- checkPedCol(ped)
@@ -765,6 +773,6 @@ doPrunePed <- function(ped, addMissingMates=FALSE, solveMultiGraph="use.all"){
     }else{
         message(" none present.")
     }
-    return(ped)
+    ped
 }
 

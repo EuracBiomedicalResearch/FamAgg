@@ -6,84 +6,86 @@
 ## endDate: the end date of the study.
 ## incidenceDate: the date of the incidence.
 ## deathDate: the date of death.
-## the time at risk will be the minimum (earliest) date of (endDate, incidenceDate, deathDate)
-## minus the startDate
+## the time at risk will be the minimum (earliest) date of (endDate,
+## incidenceDate, deathDate) minus the startDate
 ## need at least endData, in that case endDate is assumed to be "all in one"
-## allowNegative: if TRUE return also negative differences. If FALSE, negative values are replaced by 0
+## allowNegative: if TRUE return also negative differences. If FALSE, negative
+## values are replaced by 0
 ## Note: we will subtract half of incidence.subtract for each affected individual.
-estimateTimeAtRisk <- function(startDate=NULL, startDateFormat="%Y-%m-%d",
-                               endDate=NULL, endDateFormat="%Y-%m-%d",
-                               incidenceDate=NULL, incidenceDateFormat="%Y-%m-%d",
-                               deathDate=NULL, deathDateFormat="%Y-%m-%d",
-                               allowNegative=FALSE, affected=NULL,
-                               incidenceSubtract=0.5){
-    if(is.null(startDate))
-        stop(paste0("'startDate' has to be specified (either the start of the study,",
-                    " or the birth date)."))
-    if(!is(startDate, "Date")){
+estimateTimeAtRisk <- function(startDate = NULL, startDateFormat = "%Y-%m-%d",
+                               endDate = NULL, endDateFormat = "%Y-%m-%d",
+                               incidenceDate = NULL,
+                               incidenceDateFormat = "%Y-%m-%d",
+                               deathDate = NULL, deathDateFormat = "%Y-%m-%d",
+                               allowNegative = FALSE, affected = NULL,
+                               incidenceSubtract = 0.5) {
+    if (is.null(startDate))
+        stop("'startDate' has to be specified (either the start of the study,",
+             " or the birth date).")
+    if (!is(startDate, "Date")) {
         message("Transforming startDate into Date format...", appendLF=FALSE)
         startDate <- as.Date(startDate, format=startDateFormat)
         message("OK")
     }
     ## check if we've got at least one of the following:
-    if(is.null(endDate)){
+    if (is.null(endDate)) {
         stop("'endDate' has to be specified!")
-    }else{
+    } else {
         if(is.null(incidenceDate) & is.null(deathDate))
-            message(paste0("'endDate' is assumed to specify, for each individual,",
-                           " either the end year of the study, the individual's death",
-                           " date or the individual's incidence date."))
-        if(length(endDate) != length(startDate))
+            message("'endDate' is assumed to specify, for each individual,",
+                    " either the end year of the study, the individual's death",
+                    " date or the individual's incidence date.")
+        if (length(endDate) != length(startDate))
             stop("'startDate' and 'endDate' have to have the same length!")
     }
     message("Transforming endDate into Date format...", appendLF=FALSE)
     endDate <- as.Date(endDate, format=endDateFormat)
     message("OK")
-    if(!is.null(affected)){
-        if(length(affected) != length(startDate)){
+    if (!is.null(affected)) {
+        if (length(affected) != length(startDate)) {
             affected <- NULL
-            warning("length of affected does not match length of startData; dropping.")
-        }else{
+            warning("length of affected does not match length of startData; ",
+                    "dropping.")
+        } else {
             affected <- as.logical(affected)
         }
     }
     ## if we've got an incidenceDate, process that.
-    if(!is.null(incidenceDate)){
-        message("Transforming incidenceDate into Date format...", appendLF=FALSE)
+    if (!is.null(incidenceDate)) {
+        message("Transforming incidenceDate into Date format...",
+                appendLF=FALSE)
         incidenceDate <- as.Date(incidenceDate, format=incidenceDateFormat)
         message("OK")
         if(length(incidenceDate) != length(startDate))
-            stop("'incidenceDate', 'startDate' and 'endDate' all have to have the same length!")
+            stop("'incidenceDate', 'startDate' and 'endDate' all have to have ",
+                 "the same length!")
         ## now get the earlier time point: incidence or end:
         DF <- data.frame(endDate, incidenceDate)
         endDate <- as.Date(apply(DF, MARGIN=1, min, na.rm=TRUE))
         affected <- rep(FALSE, length(incidenceDate))
         affected[!is.na(incidenceDate)] <- TRUE
     }
-    if(!is.null(deathDate)){
+    if (!is.null(deathDate)) {
         message("Transforming deathDate into Date format...", appendLF=FALSE)
         deathDate <- as.Date(deathDate, format=deathDateFormat)
         message("OK")
         if(length(deathDate) != length(startDate))
-            stop("'deathDate', 'startDate' and 'endDate' all have to have the same length!")
+            stop("'deathDate', 'startDate' and 'endDate' all have to have the ",
+                 "same length!")
         ## now get the earlier time point: incidence or end:
         DF <- data.frame(endDate, deathDate)
         endDate <- as.Date(apply(DF, MARGIN=1, min, na.rm=TRUE))
     }
     ## OK, now we're set.
     Diff <- endDate - startDate
-    if(!is.null(affected)){
+    if (!is.null(affected)) {
         Diff[affected] <- Diff[affected] - incidenceSubtract
     }
     Diff <- as.numeric(Diff)
     if(!allowNegative)
         Diff[which(Diff < 0)] <- 0
-    return(Diff)
+    Diff
 }
-
-## given the time at risk as a time period and the information which time period correspond to
-## time period
-## timeAtRiskFromTimePeriod <- function()
 
 ## takes a numeric vector of ages as input and slices it into
 sliceAge <- function(x, slices=c(0, 40, Inf)){
@@ -114,23 +116,23 @@ setMethod("timeAtRisk", "FAIncidenceRateResults",
               if(length(object@timeAtRisk)==0)
                   return(object@timeAtRisk)
               if(length(object@timeAtRisk) != length(object$id))
-                  stop(paste0("Length of 'timeAtRisk' does not match the ",
-                              "number of individuals in ",
-                              "the pedigree!"))
+                  stop("Length of 'timeAtRisk' does not match the number of ",
+                       "individuals in the pedigree!")
               return(object@timeAtRisk)
           })
-setReplaceMethod("timeAtRisk", "FAIncidenceRateResults", function(object, value){
-    ## check if we've got the pedigree, otherwise does not make sense to store
-    ## the timeAtRisk.
-    if(length(object$id) == 0)
-        stop(paste0("No pedigree data in 'object'! Add the pedigree data ",
-                    "before setting 'timeAtRisk'."))
-    if(length(object$id) != length(value))
-        stop(paste0("Length of 'timeAtRisk' does not match the number of ",
-                    "individuals in the pedigree!"))
-    object@timeAtRisk <- value
-    return(object)
-})
+setReplaceMethod("timeAtRisk", "FAIncidenceRateResults",
+                 function(object, value) {
+                     ## check if we've got the pedigree, otherwise does not
+                     ## make sense to store the timeAtRisk.
+                     if(length(object$id) == 0)
+                         stop("No pedigree data in 'object'! Add the pedigree ",
+                              "data before setting 'timeAtRisk'.")
+                     if(length(object$id) != length(value))
+                         stop("Length of 'timeAtRisk' does not match the ",
+                              "number of individuals in the pedigree!")
+                     object@timeAtRisk <- value
+                     object
+                 })
 
 
 ##****************************************************************************
@@ -224,7 +226,8 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
 ##          is then however not available.
 ##****************************************************************************
 .FRSimulation <- function(ped=NULL, kin=NULL, trait=NULL, timeAtRisk=NULL,
-                          prune=TRUE, nsim=50000, strata=NULL, lowMem=FALSE, ...){
+                          prune=TRUE, nsim=50000, strata=NULL,
+                          lowMem=FALSE, ...){
     ## Input argument checking.
     if(is.null(ped))
         stop("No pedigree submitted!")
@@ -233,38 +236,32 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
     if(is.null(trait))
         stop("No trait information submitted!")
     if(length(trait) != nrow(ped))
-        stop(paste0("Argument 'trait' has to have the same length then there",
-                    " are rows (individuals) in the pedigree 'ped'!"))
+        stop("Argument 'trait' has to have the same length then there",
+             " are rows (individuals) in the pedigree 'ped'!")
     ped <- cbind(ped, AFF=trait)
     allIds <- as.character(ped$id)
     if(is.null(timeAtRisk)){
         stop("Argument 'timeAtRisk' has to be submitted!")
     }
     if(length(timeAtRisk) != nrow(ped))
-        stop(paste0("Argument 'timeAtRisk' has to have the same length than there",
-                    " are rows (individuals) in the pedigree 'ped'!"))
+        stop("Argument 'timeAtRisk' has to have the same length than there",
+             " are rows (individuals) in the pedigree 'ped'!")
     timeAtRisk <- as.numeric(timeAtRisk)
     ped <- cbind(ped, TAR=timeAtRisk)
     if(!is.null(strata)){
         if(length(strata)!=nrow(ped))
-            stop(paste0("Argument 'strata' has to have the same length than there",
-                        " are individuals in the pedigree!"))
+            stop("Argument 'strata' has to have the same length than there",
+                 " are individuals in the pedigree!")
         ped <- cbind(ped, STRAT=strata)
     }
-    ## NOTE: We're not removing singletons here, as we are anyway removing them further down!
-    ## ## First thing ever: remove singletons, as they have anyway a kinship value of 0.
-    ## if(prune){
-    ##     ##ped <- doPrunePed(ped)    ## CHECK: Do I really have to do this?
-    ##     ped <- removeSingletons(ped)
-    ## }
+    ## NOTE: We're not removing singletons here, as we are anyway removing them
+    ## further down!
     ## Subset the data set to individuals with valid values for trait, timeAtRisk
     ## and strata.
     nas <- is.na(ped$AFF)
     message("Cleaning data set (got in total ", nrow(ped), " individuals):")
     message(" * not phenotyped individuals...", appendLF=FALSE)
     if(any(nas)){
-        ## warning("Removed ", sum(nas), " individuals from the pedigree ",
-        ##         "as they have missing values in the trait.")
         ped <- ped[!nas, , drop=FALSE]
         message(" ", sum(nas), " removed.")
     }else{
@@ -274,8 +271,6 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
     nas <- is.na(ped$TAR)
     message(" * individuals with unknown time at risk...", appendLF=FALSE)
     if(any(nas)){
-        ## warning("Removed ", sum(nas), " individuals from the pedigree ",
-        ##         "as they have missing values for the time at risk.")
         ped <- ped[!nas, , drop=FALSE]
         message(" ", sum(nas), " removed.")
     }else{
@@ -286,8 +281,6 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
         nas <- is.na(ped$STRAT)
         message(" * individuals without valid strata values...", appendLF=FALSE)
         if(any(nas)){
-            ## warning("Removed ", sum(nas), " individuals from the pedigree ",
-            ##         "as they have missing values in 'strata'.")
             ped <- ped[!nas, , drop=FALSE]
             message(" ", sum(nas), " removed.")
         }else{
@@ -296,7 +289,8 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
 
     }
     ## Anyway removing singletons here, since they result in NA values!
-    message(" * singletons (also caused by previous subsetting)...", appendLF=FALSE)
+    message(" * singletons (also caused by previous subsetting)...",
+            appendLF=FALSE)
     origSize <- nrow(ped)
     suppressMessages(
         ped <- removeSingletons(ped)
@@ -311,7 +305,8 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
     ## Calculate the kinship for the observed.
     idx <- match(as.character(ped$id), colnames(kin))
     if(any(is.na(idx)))
-        stop("Some of the individuals in the pedigree are missing in the kinship matrix!")
+        stop("Some of the individuals in the pedigree are missing in the ",
+             "kinship matrix!")
     kin <- as.matrix(kin[idx, idx])
     ## Remove self-self kinship and set all affected > 1 to 1.
     diag(kin) <- 0
@@ -352,16 +347,16 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
         denses <- NULL
     }else{
         ## full blown version
-        ## Simulations: generate random sets of affected individuals, same size then
-        ## the observed individuals.
+        ## Simulations: generate random sets of affected individuals, same size
+        ## then the observed individuals.
         if(is.null(strata)){
             SimFr <- lapply(1:nsim, function(z){
                 simIdx <- sample(sampleFrom, nAff)
                 simaffs <- rep(0, nAll)
                 simaffs[simIdx] <- 1
                 return(as.vector((simaffs %*% kin) / Denomi))
-                ## Would be less memory demanding to just return whether the expected
-                ## is larger than the observed
+                ## Would be less memory demanding to just return whether the
+                ## expected is larger than the observed
             })
         }else{
             affStrataCounts <- table(ped[ped$AFF > 0 , "STRAT"])
@@ -374,9 +369,10 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
             })
         }
         ## Performing the stuff on the large matrix.
-        ## Want to compare the observed FR against the simulated FOR EACH INDIVIDUAL.
-        ## Why: that way we keep the kinship the same and just calculate an expexted
-        ## FR for random occurence of cases.
+        ## Want to compare the observed FR against the simulated FOR EACH
+        ## INDIVIDUAL.
+        ## Why: that way we keep the kinship the same and just calculate an
+        ## expexted FR for random occurence of cases.
         SimFr <- do.call(cbind, SimFr)
         PVals <- rowSums(SimFr >= obsFr)/nsim
         denses <- apply(SimFr, MARGIN=1, density)
@@ -399,16 +395,18 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
     }else{
         Res <- list(fir=fr, pvalue=pv)
     }
-    return(Res)
+    Res
 }
 
-## prune: remove un-connected individuals from the pedigree AFTER removing individuals without
-##        valid value in trait or a missing value in timeAtRisk.
+## prune: remove un-connected individuals from the pedigree AFTER removing
+##        individuals without valid value in trait or a missing value in
+##        timeAtRisk.
 ## UPDATE: disable perFamilyTest!!!
 .FR <- function(ped=NULL, kin=NULL, trait=NULL, timeAtRisk=NULL,
                 prune=TRUE, ...){
     perFamilyTest <- FALSE
-    ## subset the data to all the individuals for which we do have the required data.
+    ## subset the data to all the individuals for which we do have the
+    ## required data.
     ## * trait not NA
     ## * timeAtRist not NA
     ## * did not get removed after pruning for un-connected individuals.
@@ -419,15 +417,15 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
     if(is.null(trait))
         stop("No trait information submitted!")
     if(length(trait) != nrow(ped))
-        stop(paste0("Argument 'trait' has to have the same length then there",
-                    " are rows (individuals) in the pedigree 'ped'!"))
+        stop("Argument 'trait' has to have the same length then there",
+             " are rows (individuals) in the pedigree 'ped'!")
     ped <- cbind(ped, AFF=trait)
     if(is.null(timeAtRisk)){
         stop("Argument 'timeAtRisk' has to be submitted!")
     }
     if(length(timeAtRisk) != nrow(ped))
-        stop(paste0("Argument 'timeAtRisk' has to have the same length than",
-                    " there are rows (individuals) in the pedigree 'ped'!"))
+        stop("Argument 'timeAtRisk' has to have the same length than",
+             " there are rows (individuals) in the pedigree 'ped'!")
     timeAtRisk <- as.numeric(timeAtRisk)
     ped <- cbind(ped, TAR=timeAtRisk)
     if(perFamilyTest){
@@ -436,14 +434,8 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
         entityIs <- "pedigree"
         ped[, "family"] <- 1
     }
-    ## NOTE: don't do that here, since we're going to remove them anyway further below!
-    ## ## First thing: remove singletons; keep also the original IDs, so we can return a value for ALL
-    ## ## individuals.
-    ## originalIds <- as.character(ped$id)
-    ## if(prune){
-    ##     ped <- removeSingletons(ped)
-    ## }
-    ## OK, now we can go on: lapply on the splitted ped by family
+    ## NOTE: don't do that here, since we're going to remove them anyway
+    ## further below!
     pedL <- split(ped, ped$family)
     Res <- lapply(pedL, function(z){
         allIds <- as.character(z$id)
@@ -454,9 +446,6 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
         message(" * not phenotyped individuals...", appendLF=FALSE)
         if(any(nas)){
             z <- z[!nas, , drop=FALSE]
-            ## warning(paste0("Removed ", sum(nas), " individuals from ",
-            ##                entityIs, " ", z[1, "family"],
-            ##                " as they have missing values in the trait."))
             message(" ", sum(nas), " removed.")
         }else{
             message(" none present.")
@@ -466,9 +455,6 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
         message(" * individuals with unknown time at risk...", appendLF=FALSE)
         if(any(nas)){
             z <- z[!nas, , drop=FALSE]
-            ## warning(paste0("Removed ", sum(nas), " individuals from ",
-            ##                entityIs, " ", z[1, "family"],
-            ##                " as they have missing values for the time at risk."))
             message(" ", sum(nas), " removed.")
         }else{
             message(" none present.")
@@ -488,7 +474,8 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
         ## Subset the kinship matrix and ensure correct ordering.
         idx <- match(as.character(z$id), colnames(kin))
         if(any(is.na(idx)))
-            stop("Some of the individuals in the pedigree are missing in the kinship matrix!")
+            stop("Some of the individuals in the pedigree are missing in the ",
+                 "kinship matrix!")
         kinSub <- as.matrix(kin[idx, idx])
         ## remove self-self kinship.
         diag(kinSub) <- 0
@@ -502,7 +489,7 @@ setReplaceMethod("trait", "FAIncidenceRateResults", function(object, value){
         retFR[names(FR)] <- FR
         return(retFR)
     })
-    return(Res)
+    Res
 }
 
 
@@ -528,7 +515,8 @@ setMethod("plotPed", "FAIncidenceRateResults",
               }else{
                   FR <- object@sim$fir
               }
-              callNextMethod(object=object, id=id, family=family, filename=filename,
+              callNextMethod(object=object, id=id, family=family,
+                             filename=filename,
                              device=device, label1=FR, proband.id=id,
                              only.phenotyped=only.phenotyped, ...)
           })
@@ -561,7 +549,7 @@ setMethod("plotRes", "FAIncidenceRateResults",
                    type="density", ...){
               type <- match.arg(type, c("density", "hist"))
               if(type == "hist")
-                  stop(paste0("Type 'hist' is not supported (yet)."))
+                  stop("Type 'hist' is not supported (yet).")
               if(length(object@sim) == 0)
                   stop("No analysis performed yet!")
               if(is.null(id))
@@ -572,8 +560,8 @@ setMethod("plotRes", "FAIncidenceRateResults",
               ## check if we've got id at all.
               fr <- object@sim$fir
               if(!any(names(fr) == id))
-                  stop(paste0("Individual with id ", id, " not found ",
-                              "in the pedigree."))
+                  stop("Individual with id ", id, " not found ",
+                       "in the pedigree.")
               obsFr <- fr[id]
               if(is.na(obsFr))
                   stop(paste0("No Familial Incidence Rate value for individual ",
@@ -582,10 +570,10 @@ setMethod("plotRes", "FAIncidenceRateResults",
               if(type == "density"){
                   ## Let's see whether we have the required information available.
                   if(!any(names(object@sim) == "expDensity"))
-                      stop(paste0("Distribution of familial incidence rates from ",
-                                  "the simulation runs not available. You need to",
-                                  " run 'runSimulation' without optional argument",
-                                  " 'lowMem=TRUE'."))
+                      stop("Distribution of familial incidence rates from ",
+                           "the simulation runs not available. You need to",
+                           " run 'runSimulation' without optional argument",
+                           " 'lowMem=TRUE'.")
                   dens <- object@sim$expDensity[[id]]
                   XL <- range(c(range(dens$x, na.rm=TRUE), obsFr), na.rm=TRUE)
                   plot(dens, main=paste0("Individual: ", id, ", family: ",
@@ -598,8 +586,9 @@ setMethod("plotRes", "FAIncidenceRateResults",
               if(addLegend){
                   legend("topright",
                          legend=c(paste0("fir     : ", format(obsFr, digits=2)),
-                                  paste0("p-value : ", format(object@sim$pvalue[id],
-                                                              digits=2))
+                                  paste0("p-value : ",
+                                         format(object@sim$pvalue[id],
+                                                digits=2))
                                   ))
               }
           })
@@ -644,7 +633,7 @@ setMethod("result", "FAIncidenceRateResults", function(object, method="BH"){
                         check.names=FALSE, stringsAsFactors=FALSE)
     MyRes <- MyRes[order(MyRes$pvalue, -MyRes$fir), ]
     rownames(MyRes) <- as.character(MyRes$id)
-    return(MyRes)
+    MyRes
 })
 
 

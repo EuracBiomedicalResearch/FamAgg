@@ -225,3 +225,6 @@ setMethod("result", "FABinTestResults", function(object, method = "BH") {
     pbinom(x, size, prob, lower.tail = FALSE) + dbinom(x, size, prob)
 }
 
+setMethod("[", "FABinTestResults", function(x, i, j, ..., drop){
+    stop("Subsetting of a FABinTestResults object is not supported!")
+})

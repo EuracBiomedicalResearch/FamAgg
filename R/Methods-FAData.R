@@ -68,7 +68,7 @@ validateFAData <- function(object){
         if(length(object@.trait) != nrow(object@pedigree))
             Complaints <- c(
                 Complaints,
-                "\ntrait has to have the same length than the pedigree has columns!")
+                "\nlength of trait has to match the number of rows of pedigree!")
     }
     if(length(Complaints)>0){
         return(Complaints)
@@ -198,7 +198,8 @@ setReplaceMethod("pedigree", "FAData", function(object, value){
     }else if(is(value, "pedigree") | is(value, "pedigreeList")){
         value <- ped2df(value)
     }else{
-        stop("pedigree has to be a data.frame, a pedigree or a pedigreeList object!")
+        stop("pedigree has to be a data.frame, a pedigree or a pedigreeList ",
+             "object!")
     }
 
     ## next remove all white spaces!
@@ -232,7 +233,8 @@ setReplaceMethod("pedigree", "FAData", function(object, value){
 
     ## save the kinship matrix
     message("Generating the kinship matrix...", appendLF=FALSE)
-    object@.kinship <- kinship2::kinship(pedigree(object, return.type="pedigree"))
+    object@.kinship <- kinship2::kinship(pedigree(object,
+                                                  return.type = "pedigree"))
     message("OK\n")
 
     return(object)
@@ -445,7 +447,8 @@ setMethod("buildPed", "FAData",
               }
               ## else grow the full pedigree
               ## first get all ancestors:
-              ancs <- getAncestors(object, id=id, max.generations=max.generations.up)
+              ancs <- getAncestors(object, id=id,
+                                   max.generations = max.generations.up)
               ## add eventual missing mates.
               mismate <- doGetMissingMate(ped, id=ancs)
               ## next get all children:
@@ -488,8 +491,8 @@ setMethod("buildPed", "FAData",
         ## subsetting age.
         ageSub <- x@age[names(x@age) %in% rownames(pedSub)]
     }
-    ## In order to have a valid pedigree object, I have to set all father and mother
-    ## IDs which are not in column $id to NA.
+    ## In order to have a valid pedigree object, I have to set all father and
+    ## mother IDs which are not in column $id to NA.
     pedSub[!(pedSub$father %in% pedSub$id), "father"] <- NA
     pedSub[!(pedSub$mother %in% pedSub$id), "mother"] <- NA
     ## have to use character colnames here.
@@ -588,7 +591,8 @@ setMethod("probabilityTest", "FAData",
               cliques(object) <- cliques
               if(!missing(traitName))
                   object@traitname <- traitName
-              ## run the simulation: calls the runSimulation method for the FAProbResult class.
+              ## run the simulation: calls the runSimulation method for the
+              ## FAProbResult class.
               object <- runSimulation(object, nsim=nsim, ...)
               return(object)
           })
@@ -611,7 +615,8 @@ setMethod("kinshipGroupTest", "FAData",
               )
               if(!missing(traitName))
                   object@traitname <- traitName
-              ## run the simulation: calls the runSimulation method for the FAKinshipResult class.
+              ## run the simulation: calls the runSimulation method for the
+              ## FAKinshipResult class.
               object <- runSimulation(object, nsim=nsim, strata=strata, ...)
               return(object)
           })
@@ -686,8 +691,8 @@ setMethod("familialIncidenceRate", "FAData",
 ##  familialIncidenceRateTest method.
 ##
 setMethod("familialIncidenceRateTest", "FAData",
-          function(object, trait=NULL, nsim=50000, traitName=NULL, timeAtRisk=NULL,
-                   strata=NULL, ...){
+          function(object, trait=NULL, nsim=50000, traitName=NULL,
+                   timeAtRisk=NULL, strata=NULL, ...){
               if(is.null(trait)){
                   if(length(object@.trait) == 0)
                       stop("trait is missing!")
@@ -711,7 +716,8 @@ setMethod("familialIncidenceRateTest", "FAData",
 ##  fsir method.
 ##  familial standardized incidence rate as described in Kerber
 ##
-setMethod("fsir", "FAData", function(object, trait=NULL, lambda=NULL, timeInStrata=NULL){
+setMethod("fsir", "FAData", function(object, trait=NULL, lambda=NULL,
+                                     timeInStrata=NULL){
     ## First we need to do a lot of checking and testing.
     if(is.null(trait)){
         ## check internal trait...
@@ -744,7 +750,8 @@ setMethod("fsir", "FAData", function(object, trait=NULL, lambda=NULL, timeInStra
     )
     trait <- trait(object)   # that way we ensure that we have the same ordering.
     kin <- kinship(object)
-    ## Just to be on the save side... ensure that the ordering of id/Trait matches the kin
+    ## Just to be on the save side... ensure that the ordering of id/Trait
+    ## matches the kin
     kin <- kin[names(trait), names(trait)]
     diag(kin) <- 0
     ## Now start subsetting the data:
@@ -753,8 +760,6 @@ setMethod("fsir", "FAData", function(object, trait=NULL, lambda=NULL, timeInStra
     ## * NA in trait
     nas <- is.na(trait)
     if(any(nas)){
-        ## warning(paste0("Excluding ", sum(nas),
-        ##                " individuals because of a missing value in the trait."))
         trait <- trait[!nas]
         kin <- kin[!nas, !nas]
         timeInStrata <- timeInStrata[!nas, , drop=FALSE]
@@ -768,8 +773,6 @@ setMethod("fsir", "FAData", function(object, trait=NULL, lambda=NULL, timeInStra
     })
     message(" * individuals with missing time in strata...", appendLF=FALSE)
     if(any(nas)){
-        ## warning(paste0("Excluding ", sum(nas),
-        ##                " individuals because of a missing value in timeInStrata."))
         trait <- trait[!nas]
         kin <- kin[!nas, !nas]
         timeInStrata <- timeInStrata[!nas, , drop=FALSE]
@@ -778,13 +781,11 @@ setMethod("fsir", "FAData", function(object, trait=NULL, lambda=NULL, timeInStra
         message(" none present.")
     }
     ## Anyway removing singletons here, since they result in NA values!
-    message(" * singletons (also caused by previous subsetting)...", appendLF=FALSE)
+    message(" * singletons (also caused by previous subsetting)...",
+            appendLF=FALSE)
     ## * Not related, i.e. individuals with a kinship sum of 0
     nas <- colSums(kin) == 0
     if(any(nas)){
-        ## warning(paste0("Excluding ", sum(nas),
-        ##                " individuals because they do not share kinship",
-        ##                " with any individual in the pedigree."))
         trait <- trait[!nas]
         kin <- kin[!nas, !nas]
         timeInStrata <- timeInStrata[!nas, , drop=FALSE]
@@ -795,7 +796,8 @@ setMethod("fsir", "FAData", function(object, trait=NULL, lambda=NULL, timeInStra
     message("Done")
 
     ## Well done. Now let's do the test:
-    fsirs <- doFsir(affected=trait, kin=kin, lambda=lambda, timeInStrata=timeInStrata)
+    fsirs <- doFsir(affected=trait, kin=kin, lambda=lambda,
+                    timeInStrata=timeInStrata)
     ## Prepare the results vector.
     allIds <- object$id
     allFsirs <- rep(NA, length(allIds))
@@ -873,8 +875,8 @@ setMethod("fsirTest", "FAData",
 ## highlight.ids: character vector of ids or named list with character vector(s)
 setMethod("plotPed", "FAData",
           function(object, id=NULL, family=NULL, filename=NULL,
-                   device="plot", symbol.related=NA, proband.id=NULL, highlight.ids=NULL,
-                   only.phenotyped=FALSE,
+                   device="plot", symbol.related=NA, proband.id=NULL,
+                   highlight.ids=NULL, only.phenotyped=FALSE,
                    label1=age(object), label2=NULL, label3=NULL, ...){
               ## if id was defined build the pedigree for that individual,
               ## otherwise plot the full family.
@@ -914,10 +916,6 @@ setMethod("plotPed", "FAData",
               label1 <- .checkLabels(label1, fam)
               label2 <- .checkLabels(label2, fam)
               label3 <- .checkLabels(label3, fam)
-              ## ## check ages...
-              ## ages <- age(object)[as.character(fam$id)]
-              ## ages[!is.na(ages)] <- paste0(format(ages[!is.na(ages)], digits=2), "y")
-              ## ages[is.na(ages)] <- ""
               ## do not have affected... obviously...
               is.proband <- rep(FALSE, nrow(fam))
               names(is.proband) <- as.character(fam$id)
@@ -925,17 +923,17 @@ setMethod("plotPed", "FAData",
                   proband.id <- as.character(proband.id)
                   is.proband[names(is.proband) %in% proband.id] <- TRUE
                   if(sum(is.proband)!=length(proband.id))
-                      warning("Not all probands specified in proband.id are in the pedigree!")
+                      warning("Not all probands specified in proband.id are ",
+                              "in the pedigree!")
               }
               text.inside.symbol <- rep("", nrow(fam))
               names(text.inside.symbol) <- as.character(fam$id)
               if(!is.null(id)){
-                  ## is.proband[as.character(id)] <- TRUE
                   ## get individuals that share kinship
-                  ##related <- doShareKinship(ped=fam, id=id)
                   related <- shareKinship(object, id=id)
                   related <- related[related %in% fam$id]
-                  ## could also use shareKinship(object, id), but that's not that efficient!
+                  ## could also use shareKinship(object, id), but that's not
+                  ## that efficient!
                   related <- related[related %in% names(text.inside.symbol)]
                   text.inside.symbol[related] <- symbol.related
               }
@@ -965,9 +963,9 @@ setMethod("plotPed", "FAData",
                               text4.below.symbol <- texts
                       }
                   }else{
-                      warning(paste0("Discarding argument highlight.ids. It",
-                                     " should be a character vector of ids or a",
-                                     " (named) list of character vectors with ids."))
+                      warning("Discarding argument highlight.ids. It",
+                              " should be a character vector of ids or a",
+                              " (named) list of character vectors with ids.")
                   }
               }
               ## Note that label1 to label3 has precedence to any other argument!
@@ -985,16 +983,19 @@ setMethod("plotPed", "FAData",
                   plotMe <- rep(TRUE, nrow(fam))
               }
               ## OK, now plot!!!
-              res <- doPlotPed(family=fam$family[plotMe], individual=fam$id[plotMe],
-                               father=fam$father[plotMe], mother=fam$mother[plotMe],
-                               gender=fam$sex[plotMe], is.proband=is.proband[plotMe],
-                               text1.below.symbol=label1[plotMe],
-                               text2.below.symbol=text2.below.symbol[plotMe],
-                               text3.below.symbol=text3.below.symbol[plotMe],
-                               text4.below.symbol=text4.below.symbol[plotMe],
-                               text.inside.symbol=text.inside.symbol[plotMe],
-                               affected=affected[plotMe],
-                               filename=filename, device=device, ...)
+              res <- doPlotPed(family = fam$family[plotMe],
+                               individual = fam$id[plotMe],
+                               father = fam$father[plotMe],
+                               mother = fam$mother[plotMe],
+                               gender = fam$sex[plotMe],
+                               is.proband = is.proband[plotMe],
+                               text1.below.symbol = label1[plotMe],
+                               text2.below.symbol = text2.below.symbol[plotMe],
+                               text3.below.symbol = text3.below.symbol[plotMe],
+                               text4.below.symbol = text4.below.symbol[plotMe],
+                               text.inside.symbol = text.inside.symbol[plotMe],
+                               affected = affected[plotMe],
+                               filename = filename, device = device, ...)
               invisible(res)
           })
 
@@ -1011,62 +1012,63 @@ setMethod("countGenerations", "FAData",
           function(object, id=NULL, direction="down", ...){
               if(nrow(pedigree(object)) == 0)
                   stop("No pedigree available!")
-              return(doCountGenerations(pedigree(object), id=id, direction=direction))
+              doCountGenerations(pedigree(object), id=id, direction=direction)
           })
 setMethod("estimateGenerations", "FAData",
           function(object, family=NULL, ...){
               if(nrow(pedigree(object)) == 0)
                   stop("No pedigree available!")
-              return(doEstimateGenerationsFor2(pedigree(object), family=family))
+              doEstimateGenerationsFor2(pedigree(object), family=family)
           })
 setMethod("findFounders", "FAData",
           function(object, family = NULL, id = NULL, ...){
               if(nrow(pedigree(object)) == 0)
                   stop("No pedigree available!")
-              return(doFindFounders(pedigree(object), family = family, id = id))
+              doFindFounders(pedigree(object), family = family, id = id)
           })
 setMethod("generationsFrom", "FAData",
           function(object, id=NULL, ...){
               if(nrow(pedigree(object)) == 0)
                   stop("No pedigree available!")
-              return(doGetGenerationFrom2(pedigree(object), id=id, ...))
+              doGetGenerationFrom2(pedigree(object), id=id, ...)
           })
 setMethod("getAncestors", "FAData",
           function(object, id=NULL, max.generations=3, ...){
               if(nrow(pedigree(object)) == 0)
                   stop("No pedigree available!")
-              return(doGetAncestors(pedigree(object), id=id, maxlevel=max.generations, ...))
+              doGetAncestors(pedigree(object), id=id,
+                             maxlevel=max.generations, ...)
           })
 setMethod("getChildren", "FAData",
           function(object, id=NULL, max.generations=16, ...){
               if(nrow(pedigree(object)) == 0)
                   stop("No pedigree available!")
-              return(doGetChildren(pedigree(object), id=id, maxlevel=max.generations, ...))
+              doGetChildren(pedigree(object), id=id,
+                            maxlevel=max.generations, ...)
           })
 setMethod("getMissingMate", "FAData",
           function(object, id=NULL, ...){
               if(nrow(pedigree(object)) == 0)
                   stop("No pedigree available!")
-              return(doGetMissingMate(pedigree(object), id=id, ...))
+              doGetMissingMate(pedigree(object), id=id, ...)
           })
 setMethod("getSiblings", "FAData",
           function(object, id=NULL, ...){
               if(nrow(pedigree(object)) == 0)
                   stop("No pedigree available!")
-              return(doGetSiblings(pedigree(object), id=id, ...))
+              doGetSiblings(pedigree(object), id=id, ...)
           })
 
 setMethod("shareKinship", "FAData",
           function(object, id=NULL){
               if(is.null(id))
                   stop("id has to be specified!")
-              return(doShareKinship(kin=kinship(object), id=id))
+              doShareKinship(kin=kinship(object), id=id)
           })
 
 setMethod("getCommonAncestor", "FAData",
           function(object, id, method="min.dist"){
-              return(doGetCommonAncestor(pedigree(object), id=id,
-                                         method=method))
+              doGetCommonAncestor(pedigree(object), id=id, method=method)
           })
 
 
@@ -1080,27 +1082,27 @@ setMethod("getCommonAncestor", "FAData",
 ## getAll
 setMethod("getAll", "FAData",
           function(object, id=NULL, ...){
-              return(doGetAll(pedigree(object), id=id, ...))
+              doGetAll(pedigree(object), id=id, ...)
           })
 setMethod("getExternalMatched", "FAData",
           function(object, id=NULL, match.using, ...){
-              return(doGetExternalMatched(pedigree(object), id=id, match.using, ...))
+              doGetExternalMatched(pedigree(object), id=id, match.using, ...)
           })
 setMethod("getGenerationMatched", "FAData",
           function(object, id=NULL, include.anc=0, include.off=0, ...){
-              return(doGetGenerationMatched(pedigree(object), id=id,
-                                            include.anc=include.anc,
-                                            include.off=include.off, ...))
+              doGetGenerationMatched(pedigree(object), id=id,
+                                     include.anc=include.anc,
+                                     include.off=include.off, ...)
           })
 setMethod("getGenerationSexMatched", "FAData",
           function(object, id=NULL, include.anc=0, include.off=0, ...){
-              return(doGetGenerationSexMatched(pedigree(object), id=id,
-                                               include.anc=include.anc,
-                                               include.off=include.off, ...))
+              doGetGenerationSexMatched(pedigree(object), id=id,
+                                        include.anc=include.anc,
+                                        include.off=include.off, ...)
           })
 setMethod("getSexMatched", "FAData",
           function(object, id=NULL, ...){
-              return(getSexMatched(pedigree(object), id=id, ...))
+              getSexMatched(pedigree(object), id=id, ...)
           })
 
 

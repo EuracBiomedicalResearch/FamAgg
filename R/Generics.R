@@ -50,11 +50,11 @@ setGeneric("fsirTest", function(object, ...)
     standardGeneric("fsirTest"))
 
 ## G
-setGeneric("genealogicalIndexTest", function(object, trait, nsim=50000, traitName,
-                                             perFamilyTest=FALSE,
-                                             controlSetMethod="getAll",
-                                             rm.singletons=TRUE, strata=NULL, ...)
-    standardGeneric("genealogicalIndexTest"))
+setGeneric("genealogicalIndexTest",
+           function(object, trait, nsim=50000, traitName, perFamilyTest=FALSE,
+                    controlSetMethod="getAll", rm.singletons=TRUE,
+                    strata=NULL, ...)
+               standardGeneric("genealogicalIndexTest"))
 setGeneric("generationsFrom", function(object, id=NULL, ...)
     standardGeneric("generationsFrom"))
 setGeneric("getAncestors", function(object, id=NULL, ...)
