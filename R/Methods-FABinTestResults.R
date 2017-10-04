@@ -115,6 +115,8 @@ setMethod("show", "FABinTestResults", function(object){
         if (is.null(prob))
             prob <- NA
         trait_by_fam <- c()
+        total_phenotyped <- 0
+        total_affected <- 0
         res <- data.frame(total_phenotyped = integer(),
                           total_affected = integer(),
                           family = character(),

@@ -15,6 +15,8 @@ FAData <- function(pedigree, age, trait, traitName, header=FALSE, sep="\t",
     if(missing(pedigree)){
         stop("Argument pedigree has to be specified!")
     }
+    if(missing(trait))
+        trait <- logical()
     FSD <- new("FAData")
     ## processing pedigree
     if(is.character(pedigree)){
@@ -96,17 +98,19 @@ FAData <- function(pedigree, age, trait, traitName, header=FALSE, sep="\t",
         }
         age(FSD) <- age
     }
-    validObject(FSD)
     if(!missing(traitName))
         FSD@traitname <- traitName
-    if(!missing(trait)){
-        if(length(trait) == nrow(pedigree)){
-            if(is.null(names(trait)))
-                names(trait) <- as.character(pedigree$id)
+    ## Do we have a trait???
+    if (length(trait)) {
+        if (!all(is.na(trait))) {
+            if (length(trait) == nrow(pedigree))
+                if (is.null(names(trait)))
+                    names(trait) <- as.character(pedigree$id)
+            trait(FSD) <- trait
         }
-        trait(FSD) <- trait
     }
-    return(FSD)
+    if (validObject(FSD))
+        FSD
 }
 
 

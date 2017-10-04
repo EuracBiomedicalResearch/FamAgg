@@ -94,12 +94,15 @@ test_age <- function(){
     tmp <- new("FAData")
     ages <- mbsub$endage
     names(ages) <- mbped$id
+    ## Setting ages to a empty object should not add age.
+    age(tmp) <- ages
+    checkEquals(length(age(tmp)), 0)
+    checkTrue(validObject(tmp))
+    ## With pedigree:
+    pedigree(tmp) <- mbped
+    checkTrue(validObject(tmp))
     age(tmp) <- ages
     checkEqualsNumeric(length(age(tmp)), length(ages))
-    ## pedigreee
-    pedigree(tmp) <- mbped
-    ## once the pedigree is set, the age accessor should return the
-    ## ages in the same order than ids in the pedigree!
     checkEqualsNumeric(length(age(tmp)), nrow(mbped))
     checkEquals(names(age(tmp)), as.character(mbped[, 2]))
 }
@@ -271,8 +274,8 @@ test_sex_columns <- function(){
 ## test the kinship...
 test_kinship <- function(){
     ## mbsub <- .getMinSub()
-    ped <- pedigree(id=mbsub$id, dadid=mbsub$fatherid, momid=mbsub$motherid, sex=mbsub$sex,
-                    famid=mbsub$famid)
+    ped <- pedigree(id=mbsub$id, dadid=mbsub$fatherid, momid=mbsub$motherid,
+                    sex=mbsub$sex, famid=mbsub$famid)
     kin <- kinship(ped)
     fad <- FAData(pedigree=ped)
     return(checkEquals(kin[fad$id, fad$id], kinship(fad)))

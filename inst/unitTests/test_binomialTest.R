@@ -11,45 +11,46 @@ names(tcancer) <- mbsub$id
 
 test_dot_binomialTest <- function() {
     ## Working:
-    res <- .binomialTest(fad, trait = tcancer)
+    res <- FamAgg:::.binomialTest(fad, trait = tcancer)
     checkEquals(res$total_phenotyped[1], sum(!is.na(tcancer)))
     checkEquals(res$total_affected[1], sum(tcancer, na.rm = TRUE))
     checkEquals(as.character(unique(fad$family)), res$family)
     ## Check errors
-    checkException(.binomialTest(fad, trait = tcancer, alternative = "other"))
-    checkException(.binomialTest(fad))
-    checkException(.binomialTest(fad, trait = 1:10))
+    checkException(FamAgg:::.binomialTest(fad, trait = tcancer,
+                                          alternative = "other"))
+    checkException(FamAgg:::.binomialTest(fad))
+    checkException(FamAgg:::.binomialTest(fad, trait = 1:10))
     ## no affected.
     tr <- rep(0, nrow(fad@pedigree))
-    res <- .binomialTest(fad, trait = tr)
+    res <- FamAgg:::.binomialTest(fad, trait = tr)
     checkEquals(unique(res$pvalue), 1)
     checkEquals(unique(res$affected), 0)
     checkEquals(as.character(unique(fad$family)), res$family)
     ## One affected in one family.
     tr[13] <- 1
-    res <- .binomialTest(fad, trait = tr)
+    res <- FamAgg:::.binomialTest(fad, trait = tr)
     ## NAs
     tr[] <- NA
-    res <- .binomialTest(fad, trait = tr)
+    res <- FamAgg:::.binomialTest(fad, trait = tr)
     checkEquals(as.character(unique(fad$family)), res$family)
     checkTrue(all(is.na(res$pvalue)))
     checkTrue(all(res$phenotyped == 0))
     ## only one family.
     tmp <- fad
     tmp@pedigree$family <- 1
-    checkException(.binomialTest(tmp, trait = tcancer))
+    checkException(FamAgg:::.binomialTest(tmp, trait = tcancer))
     suppressWarnings(
-        res <- .binomialTest(tmp, trait = tcancer, prob = 1/16)
+        res <- FamAgg:::.binomialTest(tmp, trait = tcancer, prob = 1/16)
     )
     checkEquals(nrow(res), 1)
     ## Different alternative.
-    res_2 <- .binomialTest(tmp, trait = tcancer, prob = 1/16,
-                           alternative = "less", global = TRUE)
+    res_2 <- FamAgg:::.binomialTest(tmp, trait = tcancer, prob = 1/16,
+                                    alternative = "less", global = TRUE)
     checkTrue(res_2$pvalue != res$pvalue)
     ## Set one family to NA and check that the pvalue is NA for them.
     tr <- tcancer
     tr[fad$family == 5] <- NA
-    res <- .binomialTest(fad, trait = tr)
+    res <- FamAgg:::.binomialTest(fad, trait = tr)
     checkTrue(is.na(res$pvalue[res$family == "5"]))
     checkTrue(all(!is.na(res$pvalue[res$family != "5"])))
     
@@ -57,13 +58,13 @@ test_dot_binomialTest <- function() {
     tr <- tcancer
     tr[] <- NA
     tr[fad$family == 5] <- tcancer[fad$family == 5]
-    res <- .binomialTest(fad, trait = tr, global = TRUE, prob = 1/16)
+    res <- FamAgg:::.binomialTest(fad, trait = tr, global = TRUE, prob = 1/16)
     checkTrue(nrow(res) == 1)
 
     tr <- tcancer
     tr[] <- NA
     tr[fad$family %in% c(5, 7)] <- tcancer[fad$family %in% c(5, 7)]
-    res <- .binomialTest(fad, trait = tr)
+    res <- FamAgg:::.binomialTest(fad, trait = tr)
     checkTrue(!is.na(res$pvalue[res$family == "5"]))
     checkTrue(!is.na(res$pvalue[res$family == "7"]))
     checkTrue(all(is.na(res$pvalue[!(res$family %in% c("5", "7"))])))
