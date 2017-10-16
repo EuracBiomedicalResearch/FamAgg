@@ -552,8 +552,12 @@ FAData(pedigree, age, trait, traitName, header=FALSE, sep="\t", id.col="id",
       more information.
       Returns the file name of the file to which the pedigree plot was
       exported or \code{NULL} for \code{kinship2} plotting and
-      \code{device="plot"}. See \code{\link{doPlotPed}} for more
-      information.
+      \code{device="plot"}.
+
+      For \code{HaploPainter} plotting and \code{device = "txt"} the name
+      of the file to which the plotting data has been exported is returned.
+      
+      See \code{\link{doPlotPed}} for more information.
     }
 
   }
@@ -586,7 +590,11 @@ FAData(pedigree, age, trait, traitName, header=FALSE, sep="\t", id.col="id",
   With \code{HaploPainter}, as it is an external too, it is not possible
   to display the plot directly, but each plot is automatically saved to
   a file (either \code{"pdf"}, \code{"ps"}, \code{"svg"} or
-  \code{"png"}; can be specified with the \code{device} parameter).
+  \code{"png"}; can be specified with the \code{device}
+  parameter). \code{HaploPainter} plotting supports also \code{device =
+  "txt"} in which case the data table is exported (in the format
+  expected by \code{HaploPainter}) to a tabulator delimited text file
+  and the name of this text file is returned - no plot is created.
   Plotting with \code{kinship2} (the default) allows to display the plot
   (\code{device="plot"}) or export it to a file (\code{device="pdf"} or
   \code{device="png"}).

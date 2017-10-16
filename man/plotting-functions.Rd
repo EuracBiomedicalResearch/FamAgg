@@ -124,10 +124,11 @@ switchPlotfun(method)
 
   \item{device}{
     The format of the output file. Can be \code{"ps"}, \code{"pdf"},
-    \code{"svg"} or \code{"png"} if \code{HaploPainter} is used to
-    create the plot, or \code{"pdf"}, \code{"png"} or \code{"plot"} if
-    \code{kinship2} is used for plotting. Note: if \code{"plot"} is specified
-    the plot is displayed instead of exported to a file.
+    \code{"svg"}, \code{"png"} or \code{"txt"} if \code{HaploPainter} is
+    used to create the plot, or \code{"pdf"}, \code{"png"} or
+    \code{"plot"} if \code{kinship2} is used for plotting. Note: if
+    \code{"plot"} is specified the plot is displayed instead of exported
+    to a file.
   }
 
   \item{res}{
@@ -177,6 +178,11 @@ switchPlotfun(method)
   or png device, while, if \code{kinship2} is used, the plot can also be
   directly plotted and displayed (if \code{device="plot"} is specified).
 
+  \code{HaploPainter} plotting supports also \code{device = "txt"} in
+  which case the pedigree data is exported (in the HaploPainter file
+  format) as a tabulator delimited file - no plot is created, the
+  name of the file is returned.
+  
   Also, the arguments of this function match the arguments for
   \code{HaploPainter} and not all settings can be directly matched to
   settings in \code{kinship2} plotting. The list below lists all

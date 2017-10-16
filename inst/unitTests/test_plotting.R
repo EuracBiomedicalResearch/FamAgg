@@ -75,6 +75,21 @@ test_kinship2_plot <- function(){
                       is.deceased=is.deceased, dev="plot")
 }
 
+test_haplopaint_txt_plot <- function() {
+    fam <- family(far, family = "4", return.type = "data.frame")
+    is.deceased <- sample(c(TRUE, FALSE), nrow(fam), replace=TRUE)
+    suppressWarnings(
+        tmp <- FamAgg:::haplopaint(family = fam$family, individual = fam$id,
+                                   father = fam$father, mother = fam$mother,
+                                   gender = fam$sex, affected = fam$affected,
+                                   is.deceased = is.deceased, dev = "txt")
+    )
+    checkTrue(is(tmp, "character"))
+    res <- read.table(tmp, sep = "\t", as.is = TRUE, header = TRUE,
+                      comment.char = "")
+    checkEquals(as.integer(is.deceased)[fam$id %in% res$INDIVID], res$DEAD)
+}
+
 notrun_test_plot <- function(){
     ## ## again, make a simple pedigree with trait.
     ## data(minnbreast)

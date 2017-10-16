@@ -156,5 +156,3 @@ doImport <- function(file, ...){
     tolower(ext)
 }
 
-
-
