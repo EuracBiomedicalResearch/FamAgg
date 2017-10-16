@@ -88,6 +88,19 @@ test_haplopaint_txt_plot <- function() {
     res <- read.table(tmp, sep = "\t", as.is = TRUE, header = TRUE,
                       comment.char = "")
     checkEquals(as.integer(is.deceased)[fam$id %in% res$INDIVID], res$DEAD)
+    pf <- options()$FamAgg$plotfun
+    FA <- options()$FamAgg
+    FA$plotfun <- "haplopaint"
+    options(FamAgg = FA)
+    suppressWarnings(
+        tmp <- plotPed(far, family = "5", device = "txt")
+    )
+    checkTrue(is(tmp, "character"))
+    res <- read.table(tmp, sep = "\t", as.is = TRUE, header = TRUE,
+                      comment.char = "")
+    checkTrue(ncol(res) == 18)
+    FA$plotfun <- pf
+    options(FamAgg = FA)
 }
 
 notrun_test_plot <- function(){
