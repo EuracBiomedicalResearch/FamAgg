@@ -7,11 +7,11 @@
 setMethod("show", "FAKinSumResults", function(object){
     callNextMethod()
     cat(paste0("Result info:\n"))
-    cat(paste0(" * Dimension of result data.frame: ",
-               dim(result(object)),".\n"))
+    cat(paste0(" * Number of rows of the result data.frame: ",
+               nrow(result(object)),".\n"))
     cat(paste0(" * Number of simulations: ", object@nsim, ".\n"))
 })
-## calling the trait replecement method from FAResult and in addition
+## calling the trait replacement method from FAResult and in addition
 ## reset the simulation result.
 setReplaceMethod("trait", "FAKinSumResults", function(object, value){
     object <- callNextMethod()
@@ -34,7 +34,8 @@ setMethod("runSimulation", "FAKinSumResults",
               ped <- pedigree(object)
               affectedIds <- as.character(ped[which(ped$affected > 0), "id"])
               phenotypedIds <-as.character(ped[!is.na(ped$affected), "id"])
-              message("Cleaning data set (got in total ", nrow(ped), " individuals):")
+              message("Cleaning data set (got in total ", nrow(ped),
+                      " individuals):")
               ## Dummy for removing unaffected:
               message(" * not phenotyped individuals...")
               if(length(phenotypedIds) != nrow(ped)){
@@ -44,40 +45,40 @@ setMethod("runSimulation", "FAKinSumResults",
               }
               if(!is.null(strata)){
                   if(length(strata)!=nrow(ped))
-                      stop("Argument 'strata' has to have the same length than there are individuals in the pedigree!")
+                      stop("Argument 'strata' has to have the same length than",
+                           " there are individuals in the pedigree!")
                   ## add strata.
                   ped <- cbind(ped, STRATA=strata)
-                  ## Subset the affectedIds and phenotypedIds to those for which strata
-                  ## is not NA.
-                  ped <- ped[!is.na(ped$STRATA) & !is.na(ped$affected), , drop=FALSE]
+                  ## Subset the affectedIds and phenotypedIds to those for
+                  ## which strata is not NA.
+                  ped <- ped[!is.na(ped$STRATA) & !is.na(ped$affected), ,
+                             drop=FALSE]
                   strata <- as.character(ped$STRATA)
                   names(strata) <- as.character(ped$id)
                   newAffIds <- as.character(ped[which(ped$affected > 0), "id"])
                   newPhenoIds <- as.character(ped[, "id"])
-                  message(" * unaffected individuals without valid strata values...", appendLF=FALSE)
+                  message(paste0(" * unaffected individuals without valid ",
+                                 "strata values..."), appendLF=FALSE)
                   if(length(newPhenoIds)!=length(phenotypedIds)){
-                      ## warning(paste0("Removed ", length(phenotypedIds) - length(newPhenoIds),
-                      ##                " phenotyped individuals, as they have",
-                      ##                " a missing value in strata."))
-                      message(" ", length(phenotypedIds)-length(newPhenoIds), " removed.")
+                      message(" ", length(phenotypedIds)-length(newPhenoIds),
+                              " removed.")
                       phenotypedIds <- newPhenoIds
                   }else{
                       message(" none present.")
                   }
-                  message(" * affected individuals without valid strata values...", appendLF=FALSE)
+                  message(paste0(" * affected individuals without valid strata",
+                                 " values..."), appendLF=FALSE)
                   if(length(newAffIds)!=length(affectedIds)){
-                      ## warning(paste0("Removed ", length(affectedIds) - length(newAffIds),
-                      ##                " affected individuals, as they have",
-                      ##                " a missing value in strata."))
-                      message(" ", length(affectedIds)-length(newAffIds), " removed.")
+                      message(" ", length(affectedIds)-length(newAffIds),
+                              " removed.")
                       affectedIds <- newAffIds
                   }else{
                       message(" none present.")
                   }
               }
               message("Done")
-              ## now forcing the kinship matrix to match ordering of phenotypedIds and
-              ## eventually strata.
+              ## now forcing the kinship matrix to match ordering of
+              ## phenotypedIds and eventually strata.
               kin <- kin[phenotypedIds, phenotypedIds]
               ## removing self-self kinship:
               diag(kin) <- NA
@@ -111,21 +112,23 @@ setMethod("result", "FAKinSumResults", function(object, method="BH"){
         TraitName <- NA
     if(length(object@sim) == 0){
         ## generate a dummy matrix...
-        MyRes <- data.frame(trait_name=TraitName,
-                            total_phenotyped=length(phenotypedIndividuals(object)),
-                            total_affected=length(affectedIndividuals(object)),
-                            affected_id=NA,
-                            family=NA,
-                            affected=NA,
-                            kinship_sum=NA,
-                            freq=NA,
-                            pvalue=NA,
-                            padj=NA,
-                            check.names=FALSE, stringsAsFactors=FALSE)
-        warning("No simulation data available! This means that either no simulation was",
-                " run yet (using the kinshipClusterTest function or runSimulation method)",
-                " or that the simulation returned no result (i.e. too few affected",
-                " individuals in the trait).")
+        MyRes <- data.frame(
+            trait_name = TraitName,
+            total_phenotyped = length(phenotypedIndividuals(object)),
+            total_affected = length(affectedIndividuals(object)),
+            affected_id = NA,
+            family = NA,
+            affected = NA,
+            kinship_sum = NA,
+            freq = NA,
+            pvalue = NA,
+            padj = NA,
+            check.names = FALSE, stringsAsFactors = FALSE)
+        warning("No simulation data available! This means that either no ",
+                "simulation was run yet (using the kinshipClusterTest ",
+                "function or runSimulation method) or that the simulation ",
+                "returned no result (i.e. too few affected individuals in ",
+                "the trait).")
         return(MyRes)
     }
     resList <- object@sim
@@ -150,9 +153,6 @@ setMethod("result", "FAKinSumResults", function(object, method="BH"){
         padj=p.adjust(resList$pvalueKinship, method=method),
         stringsAsFactors=FALSE)
     rownames(res) <- as.character(res$affected_id)
-    ## colnames(res) <- c("trait_name", "total_phenotyped", "total_affected", "affected_id",
-    ##                    "kinship_sum", "freq", "pvalue", "padj")
-    ## warning("Don't know yet how the Pedigree Size is calculated!!!")
     return(res[order(res$pvalue, -res$kinship_sum), , drop=FALSE])
 })
 
@@ -176,7 +176,8 @@ significant.individuals.althyp = function(ks, affected, pool, nr.sim,
         return(res);
     }
     if(!all(affected %in% colnames(ks))){
-        stop("Got affected ids for which I don't have a kinship value! This shouldn't happen!")
+        stop("Got affected ids for which I don't have a kinship value! ",
+             "This shouldn't happen!")
     }
     obs <- colSums(ks[affected, affected], na.rm=TRUE)
     names(obs) <- affected
@@ -250,12 +251,11 @@ setMethod("plotPed", "FAKinSumResults",
                    family=NULL, filename=NULL,
                    device="plot", only.phenotyped=FALSE, ...){
                        if(!is.null(family))
-                           stop("Generating a pedigree for a family is not supported for FAKinshipResult. See help for more information.")
-                       ## check the id, whether the id is in the result table.
-                       ## res <- result(object)
-                       ## if(!any(res$id==id))
-                       ##     stop("The submitted id has to be present in the result table (i.e. in column affected_id of result(object))!")
-                       callNextMethod(object=object, id=id, family=family, filename=filename,
+                           stop("Generating a pedigree for a family is not ",
+                                "supported for FAKinshipResult. See help for ",
+                                "more information.")
+                       callNextMethod(object=object, id=id, family=family,
+                                      filename=filename,
                                       device=device, proband.id=id,
                                       only.phenotyped=only.phenotyped, ...)
                        ## alternatively use highlight.ids
@@ -274,15 +274,18 @@ setMethod("plotRes", "FAKinSumResults",
               if(length(object@sim) == 0)
                   stop("No analysis performed yet!")
               if(is.null(id))
-                  stop("The id of the affected individual for whom the simulation results should be displayed has to be specified!")
+                  stop("The id of the affected individual for whom the ",
+                       "simulation results should be displayed has to be ",
+                       "specified!")
               id <- as.character(id)
               ## result on family is not allowed.
               if(!is.null(family) | length(id) > 1)
-                  stop("plotRes for FAKinSumResults does only support specifying a single id!")
+                  stop("plotRes for FAKinSumResults does only support ",
+                       "specifying a single id!")
               ## check if the id is an affected for which we tested...
               if(!any(names(object@sim$pvalueKinship) == id))
-                  stop(paste0("No simulation result is available for individual ", id,
-                              ". id should be one of result(object)$affected_id."))
+                  stop("No simulation result is available for individual ", id,
+                       ". id should be one of result(object)$affected_id.")
               ## OK, now we can really start doing things...
               kinSum <- object@sim$sumKinship[id]
               kinPval <- object@sim$pvalueKinship[id]
@@ -306,12 +309,12 @@ setMethod("plotRes", "FAKinSumResults",
               Blue <- "#377EB8"
               abline(v=kinSum, col=Blue)
               if(addLegend){
-                  legend("topright", legend=c(paste0("kinship sum: ", format(kinSum, digits=2)),
-                                             paste0("p-value     : ", format(kinPval, digits=3))
-                                             ## paste0("affect count: ", affCount),
-                                             ## paste0("ctrls count : ", ctrlsCount))
-                                             ))
+                  legend("topright", legend=c(paste0("kinship sum: ",
+                                                     format(kinSum, digits=2)),
+                                              paste0("p-value     : ",
+                                                     format(kinPval, digits=3))
+                                              ))
               }
-})
+          })
 
 

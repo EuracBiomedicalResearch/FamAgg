@@ -72,19 +72,18 @@ setReplaceMethod("trait", "FAProbResults", function(object, value){
 })
 
 
-## get a data.frame with the clique and the data from the trait for each individual, rownames
-## are the individual IDs.
+## get a data.frame with the clique and the data from the trait for each
+## individual, rownames are the individual IDs.
 setMethod("cliqueAndTrait", "FAProbResults", function(object, na.rm=FALSE){
     affClique <- data.frame(clique=cliques(object), trait=trait(object))
     if(na.rm){
         affClique <- affClique[!is.na(affClique[, 1]), ]
         affClique <- affClique[!is.na(affClique[, 2]), ]
     }
-    affClique <- droplevels(affClique)
-    return(affClique)
+    droplevels(affClique)
 })
-## get a matrix with the size of the clique and number of affected, rownames correspond
-## to the clique ID.
+## get a matrix with the size of the clique and number of affected, rownames
+## correspond to the clique ID.
 setMethod("traitByClique", "FAProbResults", function(object){
     affClique <- cliqueAndTrait(object, na.rm=TRUE)
     CliqueSummary <- split(affClique, f=affClique$clique)
@@ -94,7 +93,7 @@ setMethod("traitByClique", "FAProbResults", function(object){
     ## summary for the clique, i.e. size of the clique and number of affected.
     CliqueSummary <- do.call(rbind, CliqueSummary)
     colnames(CliqueSummary) <- c("size" , "affected_count")
-    return(CliqueSummary)
+    CliqueSummary
 })
 
 #######
@@ -112,7 +111,8 @@ setMethod("runSimulation", "FAProbResults", function(object, nsim=50000){
     CliqueSummary <- traitByClique(object)
 
     ## Dummy info...
-    message("Cleaning data set (got in total ", length(object$id), " individuals):")
+    message("Cleaning data set (got in total ", length(object$id),
+            " individuals):")
     message(" * not phenotyped individuals...", appendLF=FALSE)
     notPhen <- sum(is.na(trait(object)))
     if(notPhen > 0){
@@ -124,32 +124,33 @@ setMethod("runSimulation", "FAProbResults", function(object, nsim=50000){
 
     ## what is the frequency???
     l_freq <- aggregate(rep(1, nrow(CliqueSummary)),
-                        by=list(CliqueSummary[, "size"], CliqueSummary[, "affected_count"]),
+                        by=list(CliqueSummary[, "size"],
+                                CliqueSummary[, "affected_count"]),
                         FUN=sum)
     ## ASK X_: what's that frequency???
-    ## is it the size of a group, the number of affected and the number of times that this
-    ## group size/affected count is occurring?
+    ## is it the size of a group, the number of affected and the number of
+    ## times that this group size/affected count is occurring?
     colnames(l_freq) <- c("n", "affected", "freq")
     l_freq <- as.matrix(l_freq)
 
-    ## Test if there are any cliques which size exceeds the max size supported by the
-    ## gap package
+    ## Test if there are any cliques which size exceeds the max size
+    ## supported by the gap package
     TooLarge <- l_freq[, "n"] > GAP_MAX_CLIQUE_SIZE
     if(sum(TooLarge) > 0)
-        stop(sum(TooLarge),
-             " cliques are larger than supported by the Monte Carlo simulation in",
-             " the gap package! Consider defining smaller cliques!")
-
+        stop(sum(TooLarge), " cliques are larger than supported by the Monte ",
+             "Carlo simulation in the gap package! Consider defining smaller ",
+             "cliques!")
     fc.sim <- pfc.sim(l_freq, n.sim=nsim)
     object@nsim <- nsim
     object@sim <- fc.sim
-    return(object)
+    object
 })
 
 ## results; get the results table.
 setMethod("result", "FAProbResults", function(object, method="BH"){
     if(length(object@sim)==0){
-        stop("No simulation performed yet! Please use the probabilityTest function or the runSimulation method to start the simulation.")
+        stop("No simulation performed yet! Please use the probabilityTest ",
+             "function or the runSimulation method to start the simulation.")
     }
     method <- match.arg(method, p.adjust.methods)
     ## generate the result table...
@@ -196,59 +197,64 @@ setMethod("result", "FAProbResults", function(object, method="BH"){
 #############
 ## plotting method...
 ## plotPed representing the results from the probabilistic test.
-## plotPed for FAProbResults does only support plotting for id with the id being the
-## group id.
-## TODO: fix that: should I only plot the pedigree of the clique or of the full pedigree highlighing the clique?
-setMethod("plotPed", "FAProbResults",
-          function(object, id=NULL,
-                   family=NULL, filename=NULL,
-                   device="plot", ...){
-                       if(!is.null(family))
-                           stop("Generating a pedigree for a family is not supported for FAProbResults. See help for more information.")
-                       cliqs <- cliques(object)
-                       res <- result(object)
-                       if(!any(res$group_id == id))
-                           stop("The id should be one of the group ids (clique names; column group_id in result(object))!")
-                       ## get all individuals of the group...
-                       clique <- names(cliqs)[which(as.character(cliqs) == as.character(id))]
-                       highlight.ids <- list(`*`=clique)  ## alternatively, use id=clique!
-                       callNextMethod(object=object, id=id, family=family,
-                                      filename=filename, proband.id=clique,
-                                      device=device,...)
-                   })
+## plotPed for FAProbResults does only support plotting for id with the id
+## being the group id.
+## TODO: fix that: should I only plot the pedigree of the clique or of the
+## full pedigree highlighing the clique?
+setMethod("plotPed", "FAProbResults", function(object, id = NULL,
+                                               family = NULL, filename = NULL,
+                                               device = "plot", ...) {
+    if (!is.null(family))
+        stop("Generating a pedigree for a family is not supported for ",
+             "FAProbResults. See help for more information.")
+    cliqs <- cliques(object)
+    res <- result(object)
+    if(!any(res$group_id == id))
+        stop("The id should be one of the group ids (clique names; column ",
+             "group_id in result(object))!")
+    ## get all individuals of the group...
+    clique <- names(cliqs)[which(as.character(cliqs) == as.character(id))]
+    highlight.ids <- list(`*`=clique)  ## alternatively, use id=clique!
+    callNextMethod(object=object, id=id, family=family,
+                   filename=filename, proband.id=clique,
+                   device=device,...)
+})
 
-## this buildPed simply ensures that all phenotyped in the group will be included in the pedigree.
+## this buildPed simply ensures that all phenotyped in the group will be
+## included in the pedigree.
 ## TODO: how to build the pedigree?
-setMethod("buildPed", "FAProbResults",
-          function(object, id=NULL, max.generations.up=3, max.generations.down=16,
-                   prune=FALSE){
-              if(is.null(id))
-                  stop("The id of the group has to be speficied!")
-              cliqs <- cliques(object)
-              res <- result(object)
-              if(!any(res$group_id == id))
-                  stop("The id should be one of the group ids (clique names; column group_id in result(object))!")
-              ## get all individuals of the group...
-              clique <- names(cliqs)[which(as.character(cliqs) == as.character(id))]
-              ped <- callNextMethod(object=object, id=clique, prune=prune,
-                                    max.generations.up=max.generations.up,
-                                    max.generations.down=max.generations.down)
-              return(ped)
-          })
+setMethod("buildPed", "FAProbResults", function(object, id = NULL,
+                                                max.generations.up = 3,
+                                                max.generations.down = 16,
+                                                prune = FALSE) {
+    if(is.null(id))
+        stop("The id of the group has to be speficied!")
+    cliqs <- cliques(object)
+    res <- result(object)
+    if(!any(res$group_id == id))
+        stop("The id should be one of the group ids (clique names; column ",
+             "group_id in result(object))!")
+    ## get all individuals of the group...
+    clique <- names(cliqs)[which(as.character(cliqs) == as.character(id))]
+    ped <- callNextMethod(object=object, id=clique, prune=prune,
+                          max.generations.up=max.generations.up,
+                          max.generations.down=max.generations.down)
+    return(ped)
+})
 
-## this is to get all those that are related with any individuals of the group!!!
-setMethod("shareKinship", "FAProbResults",
-          function(object, id=NULL){
-              if(is.null(id))
-                  stop("The id of the group has to be speficied!")
-              cliqs <- cliques(object)
-              res <- result(object)
-              if(!any(res$group_id == id))
-                  stop("The id should be one of the group ids (clique names; column group_id in result(object))!")
-              ## get all individuals of the group...
-              clique <- names(cliqs)[which(as.character(cliqs) == as.character(id))]
-              return(doShareKinship(kin=kinship(object), id=clique))
-          })
+## this is to get all those that are related with any individuals of the group!
+setMethod("shareKinship", "FAProbResults", function(object, id = NULL) {
+    if(is.null(id))
+        stop("The id of the group has to be speficied!")
+    cliqs <- cliques(object)
+    res <- result(object)
+    if(!any(res$group_id == id))
+        stop("The id should be one of the group ids (clique names; column ",
+             "group_id in result(object))!")
+    ## get all individuals of the group...
+    clique <- names(cliqs)[which(as.character(cliqs) == as.character(id))]
+    return(doShareKinship(kin=kinship(object), id=clique))
+})
 
 setMethod("[", "FAProbResults", function(x, i, j, ..., drop){
     stop("Subsetting of a FAProbResults object is not supported!")

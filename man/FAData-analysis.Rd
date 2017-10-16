@@ -20,6 +20,7 @@
 \alias{probabilityTest}
 \alias{probabilityTest,FAData-method}
 \alias{sliceAge}
+\alias{binomialTest}
 
 \title{Pedigree analysis and familial aggregation methods}
 
@@ -28,6 +29,9 @@
   familial clustering of e.g. cancer cases.
 }
 \usage{
+
+binomialTest(object, trait, traitName, global = FALSE, prob = NULL,
+    alternative = c("greater", "less", "two.sided"))
 
 estimateTimeAtRisk(startDate=NULL, startDateFormat="\%Y-\%m-\%d",
                    endDate=NULL, endDateFormat="\%Y-\%m-\%d",
@@ -88,6 +92,14 @@ sliceAge(x, slices=c(0, 40, Inf))
     periods are set to \code{0}.
   }
 
+  \item{alternative}{
+    For \code{binomialTest}: the alternative hypothesis. See
+    \code{\link{binom.test}} for more details. Defaults to
+    \code{"greater"}, i.e. tests whether in a family a larger number of
+    affected is present than expected by chance (given a global
+    probability).
+  }
+  
   \item{cliques}{
     A named numeric or characted vector or factor with the names
     corresponding to ids of the individuals in the pedigree. The ids
@@ -130,6 +142,13 @@ sliceAge(x, slices=c(0, 40, Inf))
     submitted. See \code{\link{as.Date}} for more information.
   }
 
+  \item{global}{
+    For \code{binomialTest}: whether the binomial test should be applied
+    to the whole pedigree, or family-wise (default). If
+    \code{global = TRUE} the population probability has to be provided
+    with parameter \code{prob}.
+  }
+  
   \item{incidenceDate}{
     For \code{estimateTimeAtRisk}: the date of the incidence for an
     individual, i.e. the date when the status was changed from
@@ -169,6 +188,11 @@ sliceAge(x, slices=c(0, 40, Inf))
     clustered affected individuals within each family.
   }
 
+  \item{prob}{
+    For \code{binomialTest}: the hypothesized probability of success
+    (being affected) from/for the whole population.
+  }
+  
   \item{rm.singletons}{
     For \code{genealogicalIndexTest}:
     whether unconnected individuals in the pedigree (singletons) should
@@ -272,6 +296,23 @@ sliceAge(x, slices=c(0, 40, Inf))
 
   \describe{
 
+    \item{binomialTest}{
+      Evaluate whether the number of affected in a trait are higher than
+      expected by chance using a simple binomial test. In contrast to
+      most other methods presented here, this does not use the kinship
+      between affected individuals, but simply performs a binomial test
+      for each family considering the numbers of affected within the
+      family, the size of the family and the global probability of being
+      affected. The latter is by default calculated on the data set
+      (ratio between the total number of affected in the pedigree and
+      the total number of phenotyped individuals), can however also be
+      specified with the \code{prob} argument.
+
+      The test is performed using the \code{\link{binom.test}}.
+
+      The function returns a \code{\linkS4class{FABinTestResults}} object.
+    }
+    
     \item{familialIncidenceRate}{
       Calculate the familial incidence rate (FIR, or FR) as defined in [Kerber
       1995], formula (3). The FIR is an estimate for the risk per
@@ -510,6 +551,10 @@ sliceAge(x, slices=c(0, 40, Inf))
   Johannes Rainer, Daniel Taliun, Christian Weichenberger.
 }
 \references{
+  Rainer J, Talliun D, D'Elia Y, Domingues FS and Weichenberger CX
+  (2016) FamAgg: an R package to evaluate familial aggregation of traits
+  in large pedigrees. \emph{Bioinformatics}.
+  
   Hill, J.R. (1980) A survey of cancer sites by kinship in the Utah Mormon
   population. In Cairns J, Lyon JL, Skolnick M (eds):
   \emph{Cancer Incidence in Defined Populations. Banbury Report 4.}

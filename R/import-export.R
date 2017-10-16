@@ -9,14 +9,14 @@
 ##  + Maternal ID (0 if mother isn't in dataset)
 ##  + Sex (1=male; 2=female; other=unknown)
 ##  + Affection (0=unknown; 1=unaffected; 2=affected)
-##  + Genotypes (space or tab separated, 2 for each marker. 0, -9, non-numeric=missing)
+##  + Genotypes (space or tab separated, 2 for each marker. 0, -9,
+##    non-numeric=missing)
 ##  We will ignore the Genotype information though.
 ####------------------------------------------------------------
 doImportPed <- function(x, sep="\t", header=FALSE, ...){
     df <- read.table(x, sep=sep, header=header)
-    return(doProcessPed2Df(df))
+    doProcessPed2Df(df)
 }
-
 
 ####============================================================
 ##  import fam files
@@ -26,29 +26,29 @@ doImportPed <- function(x, sep="\t", header=FALSE, ...){
 ####------------------------------------------------------------
 doImportFam <- function(x, sep="\t", header=FALSE, ...){
     df <- read.table(x, sep=sep, header=header)
-    return(doProcessPed2Df(df))
+    doProcessPed2Df(df)
 }
 
 ####============================================================
 ##  import generic txt files
 ##
 ####------------------------------------------------------------
-doImportGeneric <- function(x, sep="\t", header=TRUE, id.col="id", family.col="family",
-                            father.col="father", mother.col="mother", sex.col="sex", ...){
+doImportGeneric <- function(x, sep="\t", header=TRUE, id.col="id",
+                            family.col="family", father.col="father",
+                            mother.col="mother", sex.col="sex", ...) {
     df <- read.table(x, sep=sep, header=header)
-    if(header){
+    if (header) {
         ## check if I have all required column names...
         if(!all(c( id.col, family.col, father.col, mother.col, sex.col) %in%
                 colnames(df)))
-            stop(paste0("One or more required column names not found! Expect: ",
-                        family.col, ", ", id.col, ", ", father.col, ", ", mother.col, ", ",
-                        sex.col, "!"))
+            stop("One or more required column names not found! Expect: ",
+                 family.col, ", ", id.col, ", ", father.col, ", ",
+                 mother.col, ", ", sex.col, "!")
         df <- df[, c(family.col, id.col, father.col, mother.col, sex.col)]
         colnames(df) <- .PEDCN
     }
-    return(df)
+    df
 }
-
 
 ####============================================================
 ##  process a data.frame corresponding to a ped file and re-format
@@ -64,8 +64,8 @@ doImportGeneric <- function(x, sep="\t", header=TRUE, id.col="id", family.col="f
 doProcessPed2Df <- function(x){
     ## Subset the ped data.frame to it's first 6 columns.
     if(ncol(x) < 6)
-        stop(paste0("A fam/ped file is expected to have at least 6 columns! ",
-                    "The present one has however only ", ncol(x), "!"))
+        stop("A fam/ped file is expected to have at least 6 columns! ",
+             "The present one has however only ", ncol(x), "!")
     ## Extract family ID.
     FamId <- as.character(x[, 1])
     ## Extract individual ID.
@@ -75,13 +75,13 @@ doProcessPed2Df <- function(x){
     ## Set all empty ("") and 0s to NA
     FatherId[which(FatherId == "" | FatherId == "0" )] <- NA
     if(!all(FatherId[!is.na(FatherId)] %in% IId))
-        stop(paste0("If provided (i.e. different from '0') the father ID has",
-                    " to correspond to an ID in the pedigree!"))
+        stop("If provided (i.e. different from '0') the father ID has",
+             " to correspond to an ID in the pedigree!")
     MotherId <- as.character(x[, 4])
     MotherId[which(MotherId == "" | MotherId == "0" )] <- NA
     if(any(!(MotherId[!is.na(MotherId)] %in% IId)))
-        stop(paste0("If provided (i.e. different from '0') the mother ID has",
-                    " to correspond to an ID in the pedigree!"))
+        stop("If provided (i.e. different from '0') the mother ID has",
+             " to correspond to an ID in the pedigree!")
     ## Check the sex: 1=male, 2=female; other=unknown.
     Sex <- rep(NA, nrow(x))
     Sex[which(x[, 5] == "1")] <- 1
@@ -95,9 +95,9 @@ doProcessPed2Df <- function(x){
     if(is.numeric(Affected)){
         amNa <- is.na(Affected)
         if(!all(Affected[!amNa] %in% c(1, 2, 0, -9)))
-            stop(paste("FamAgg supports only categorical case/control phenotype",
-                       " information (i.e. values 1, 2, 0 or -9 in phenotype ",
-                       "column 6 of the data file)!"))
+            stop("FamAgg supports only categorical case/control phenotype",
+                 " information (i.e. values 1, 2, 0 or -9 in phenotype ",
+                 "column 6 of the data file)!")
     }
     ## Convert to character and fix to only NA, 0 and 1.
     Affected <- as.character(Affected)
@@ -108,7 +108,7 @@ doProcessPed2Df <- function(x){
     df <- data.frame(family=FamId, id=IId, father=FatherId, mother=MotherId,
                      sex=Sex, trait=NewAff, stringsAsFactors=FALSE)
     df$sex <- sanitizeSex(df$sex)
-    return(df)
+    df
 }
 
 ####============================================================
@@ -127,7 +127,7 @@ doProcessDf2Ped <- function(x){
     x$sex[is.na(x$sex)] <- 0
     x$affected <- x$affected + 1
     x$affected[is.na(x$affected)] <- 0
-    return(x)
+    x
 }
 
 
@@ -144,7 +144,7 @@ doImport <- function(file, ...){
     if(extension == "ped")
         return(doImportPed(file, ...))
     ## Fall back to "generic import"
-    return(doImportGeneric(file, ...))
+    doImportGeneric(file, ...)
 }
 
 .fileExtension <- function(file){
@@ -153,7 +153,7 @@ doImport <- function(file, ...){
      ext <- sub(".*\\.", "", sub("\\.gz$|\\.gzip$", "", basename(file)))
     if(ext=="")
         stop("Unable to identify extension for file '", file, "'")
-    return(tolower(ext))
+    tolower(ext)
 }
 
 

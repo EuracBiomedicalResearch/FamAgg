@@ -19,7 +19,11 @@ setClass("FAData",
              traitname="character"
          ),
          prototype=list(
-             pedigree=NULL,
+             pedigree = data.frame(family = character(),
+                                   id = character(),
+                                   father = character(),
+                                   mother = character(),
+                                   sex = factor(levels = c("F", "M"))),
              age=numeric(),
              .kinship=new("dsCMatrix"),
              .trait=numeric(),
@@ -172,5 +176,19 @@ setClass("FAStdIncidenceRateResults",
          )
          )
 
-
+setClass("FABinTestResults",
+         contains = "FAData",
+         slots = c(result = "data.frame")
+        ,
+         prototype = list(
+             result = data.frame(total_phenotyped = integer(),
+                                 total_affected = integer(),
+                                 family = character(),
+                                 phenotyped = integer(),
+                                 affected = integer(),
+                                 pvalue = numeric(),
+                                 prob = numeric(),
+                                 check.names = FALSE, stringsAsFactors = FALSE)
+         )
+         )
 

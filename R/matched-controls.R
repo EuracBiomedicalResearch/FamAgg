@@ -1,7 +1,6 @@
 ## functions to retrieve matched controls from pedigrees for a list of input
 ## individuals
 
-
 ##***************************************************************************
 ##
 ##   Functions to get ids from the pedigree that could be used as controls
@@ -16,17 +15,18 @@
 ## ped is assumed to have the standard format.
 ## if id is "spread" across several families, ids are returned for each
 ## family separately.
-## include.ancs and include.off allow to increase the range of generations from which
-## individuals are returned (e.g. include.ancs=1 all ids form the ids' generation plus
-## one generation of ancestors is returned).
+## include.ancs and include.off allow to increase the range of generations from
+## which individuals are returned (e.g. include.ancs=1 all ids form the ids'
+## generation plus one generation of ancestors is returned).
 ## If a list of pre-calculated generations is submitted the function will run
 ## (obviously) faster.
 ##### NOTE:
-## If we want to consider also the frequency of a generation being picked/present in id:
-## get generationMatched for each id separately, concatenate the ids for all runs,
-## make a table (-> get the frequency) and use that as probability for the sampling.
-doGetGenerationMatched <- function(ped, id=NULL,
-                                 include.anc=0, include.off=0, ...){
+## If we want to consider also the frequency of a generation being
+## picked/present in id: get generationMatched for each id separately,
+## concatenate the ids for all runs, make a table (-> get the frequency) and
+## use that as probability for the sampling.
+doGetGenerationMatched <- function(ped, id=NULL, include.anc=0,
+                                   include.off=0, ...){
     if(is.null(ped))
         stop("No pedigree submitted!")
     ped <- checkPedCol(ped)
@@ -38,7 +38,7 @@ doGetGenerationMatched <- function(ped, id=NULL,
         stop("None of the ids present in the pedigree!")
     names(id) <- ped[id, "family"]
     ids <- split(id, names(id))
-    Res <- lapply(ids, function(z){
+    lapply(ids, function(z){
         gens <- doEstimateGenerationsFor2(ped,
                                           family=names(z)[1])[[1]]
         gens <- gens[!is.na(gens)]
@@ -47,12 +47,11 @@ doGetGenerationMatched <- function(ped, id=NULL,
                               gensOfIds + include.off))
         return(names(gens)[gens %in% gensOfIds])
     })
-    return(Res)
 }
 
 ##
-doGetGenerationSexMatched <- function(ped, id=NULL,
-                                    include.anc=0, include.off=0, ...){
+doGetGenerationSexMatched <- function(ped, id=NULL, include.anc=0,
+                                      include.off=0, ...){
     if(is.null(ped))
         stop("No pedigree submitted!")
     ped <- checkPedCol(ped)
@@ -64,7 +63,7 @@ doGetGenerationSexMatched <- function(ped, id=NULL,
         stop("None of the ids present in the pedigree!")
     names(id) <- ped[id, "family"]
     ids <- split(id, names(id))
-    Res <- lapply(ids, function(z){
+    lapply(ids, function(z){
         gens <- doEstimateGenerationsFor2(ped,
                                           family=names(z)[1])[[1]]
         gens <- gens[!is.na(gens)]
@@ -83,7 +82,6 @@ doGetGenerationSexMatched <- function(ped, id=NULL,
         ctrls <- ctrls[which(ctrlsSex %in% haveSex)]
         return(ctrls)
     })
-    return(Res)
 }
 
 
@@ -98,10 +96,9 @@ doGetAll <- function(ped, id=NULL, ...){
     id <- id[id %in% ped$id]
     names(id) <- ped[id, "family"]
     ids <- split(id, names(id))
-    Res <- lapply(ids, function(z){
+    lapply(ids, function(z){
         return(as.character(ped[as.character(ped$family) == names(z)[1], "id"]))
     })
-    return(Res)
 }
 
 ## just get all individuals of a family matching by sex
@@ -115,7 +112,7 @@ doGetSexMatched <- function(ped, id=NULL, ...){
     id <- id[id %in% ped$id]
     names(id) <- ped[id, "family"]
     ids <- split(id, names(id))
-    Res <- lapply(ids, function(z){
+    lapply(ids, function(z){
         ## further subset to sex:
         subPed <- ped[ped$family == names(z)[1], , drop=FALSE]
         rownames(subPed) <- as.character(subPed$id)
@@ -127,7 +124,6 @@ doGetSexMatched <- function(ped, id=NULL, ...){
         ctrls <- subPed[which(ctrlsSex %in% haveSex), "id"]
         return(as.character(ctrls))
     })
-    return(Res)
 }
 
 doGetExternalMatched <- function(ped, id=NULL, match.using, ...){
@@ -137,7 +133,8 @@ doGetExternalMatched <- function(ped, id=NULL, match.using, ...){
     if(!is.null(dim(match.using)))
         stop("'match.using' should be a one-dimensional vector!")
     if(is.null(names(match.using)))
-        stop("'match.using' has to be a named vector with the names corresponding to the ids of the individuals in the pedigree!")
+        stop("'match.using' has to be a named vector with the names ",
+             "corresponding to the ids of the individuals in the pedigree!")
     ## check the rest...
     if(is.null(ped))
         stop("No pedigree submitted!")
@@ -148,7 +145,7 @@ doGetExternalMatched <- function(ped, id=NULL, match.using, ...){
     id <- id[id %in% ped$id]
     names(id) <- ped[id, "family"]
     ids <- split(id, names(id))
-    Res <- lapply(ids, function(z){
+    lapply(ids, function(z){
         infam <- as.character(ped[ped$family == names(z)[1], "id"])
         if(!all(infam %in% names(match.using)))
             stop("Could not find some of the ids in 'names(match.using)'!")
@@ -161,7 +158,6 @@ doGetExternalMatched <- function(ped, id=NULL, match.using, ...){
         ctrls <- infam[which(ctrlsVal %in% needVal)]
         return(as.character(ctrls))
     })
-    return(Res)
 }
 
 
