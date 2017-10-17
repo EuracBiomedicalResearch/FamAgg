@@ -247,7 +247,7 @@ haplopaint <- function(family=NULL, individual=NULL, father=NULL, mother=NULL,
                        text1.below.symbol=NULL, text2.below.symbol=NULL,
                        text3.below.symbol=NULL, text4.below.symbol=NULL,
                        filename=NULL, main=NULL, device="pdf", res=600, ...){
-    device <- match.arg(device, c("ps", "pdf", "svg", "png"))
+    device <- match.arg(device, c("ps", "pdf", "svg", "png", "txt"))
     ## first check input arguments.
     df <- buildHaplopaintDataframe(family=family, individual=individual,
                                    father=father, mother=mother, gender=gender,
@@ -277,21 +277,32 @@ haplopaint <- function(family=NULL, individual=NULL, father=NULL, mother=NULL,
         main <- df[1, "family"]
     if(is.null(filename))
         filename <- paste0(tempfile(), ".", device)
-    ## save the data.frame to a temporary file
-    dfFile <- tempfile()
-    write.table(df, file=dfFile, sep="\t", row.names=FALSE, col.names=FALSE,
-                quote=FALSE)
-    ## call haplopaint
-    plotcall <- paste0("perl ", options()$FamAgg$haplopaint, " -b -pedfile ",
-                       dfFile, " -pedformat csv -outfile ", filename,
-                       " -bgcolor \\#ffffff -outformat ", device,
-                       " -resolution ", res, " -family ", main)
-    res <- tryCatch(system(plotcall), error=function(e){return(e)})
-    if(inherits(res, "simpleError")){
-        stop("Error calling HaploPainter!", res$message)
-    }else{
-        if(res!=0)
-            stop("Error calling HaploPainter! Please check error message.")
+    if (device == "txt") {
+        dfFile <- filename
+        ## Write a header info
+        write(paste0("#FAMID\tINDIVID\tDADID\tMOMID\tGENDER\tAFF\tDEAD\t",
+                     "SABTOP\tPROBAND\tADOPT\tTWINS\tCONSAN\tTINSYM\t",
+                     "TBESSYM\tT1UNDR\tT2UNDR\tT3UNDR\tT4UNDR"),
+              file = filename)
+    } else {
+        dfFile <- tempfile()
+    }
+    write.table(df, file = dfFile, sep = "\t", row.names = FALSE,
+                col.names = FALSE, quote = FALSE, append = (device == "txt"))
+    if (device != "txt") {
+        ## call haplopaint
+        plotcall <- paste0("perl ", options()$FamAgg$haplopaint,
+                           " -b -pedfile ", dfFile,
+                           " -pedformat csv -outfile ", filename,
+                           " -bgcolor \\#ffffff -outformat ", device,
+                           " -resolution ", res, " -family ", main)
+        res <- tryCatch(system(plotcall), error=function(e){return(e)})
+        if (inherits(res, "simpleError")) {
+            stop("Error calling HaploPainter!", res$message)
+        } else {
+            if (res!=0)
+                stop("Error calling HaploPainter! Please check error message.")
+        }
     }
     ## return the file name.
     invisible(filename)
