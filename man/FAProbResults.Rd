@@ -319,6 +319,9 @@ affs <- ped[, 6]
 affs[affs==2] <- 1
 names(affs) <- ped[, 2]
 
+## Note: the gap package on which this test is based can result in errors on
+## Windows, thus we disable the examples on Windows machines.
+if (.Platform$OS.type == "unix") {
 ## Performing the test
 far <- probabilityTest(fad, trait=affs,
                        cliques=cliqs, nsim=1000)
@@ -338,7 +341,7 @@ nrow(buildPed(far, id=res[1, "group_id"]))
 ## restrict to the individuals in the tested clique:
 nrow(buildPed(far, id=res[1, "group_id"], prune=TRUE))
 plotPed(far, id=res[1, "group_id"], prune=TRUE)
-
+}
 
 }
 \keyword{classes}

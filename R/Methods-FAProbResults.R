@@ -140,6 +140,9 @@ setMethod("runSimulation", "FAProbResults", function(object, nsim=50000){
         stop(sum(TooLarge), " cliques are larger than supported by the Monte ",
              "Carlo simulation in the gap package! Consider defining smaller ",
              "cliques!")
+    if (.Platform$OS.type != "unix")
+        warning("On Windows the 'gap' package on which this test is based on ",
+                "seems to be buggy. You might encounter errors due to that.")
     fc.sim <- pfc.sim(l_freq, n.sim=nsim)
     object@nsim <- nsim
     object@sim <- fc.sim
