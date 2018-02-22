@@ -57,7 +57,7 @@ in `FAData` objects, thus we first generate such an object from a subset of the
 Minnesota Breast Cancer Study provided by the `kinship2` package. In the example
 below, we generate the `FAData` providing a `data.frame` with the pedigree data,
 alternatively, the pedigree information could be imported from a file (see
-Section [3](#org7e444ba)).  Upon data set creation the kinship matrix (i.e. a
+Section [3](#org99a8d9e)).  Upon data set creation the kinship matrix (i.e. a
 matrix containing the kinship coefficient between each pair of individuals in
 the whole pedigree) is internally calculated using the functionality from the
 `kinship2` package [@Sinnwell:2014kd].
@@ -449,7 +449,7 @@ plotPed(fad, id=c("7", "8", "17", "27"), prune=TRUE)
 ```
 
 
-# Importing and exporting pedigree data<a id="org7e444ba"></a>
+# Importing and exporting pedigree data<a id="org99a8d9e"></a>
 
 Besides providing the pedigree data as a `data.frame`, the `FAData` constructor
 can also read pedigree data from various file formats, such as plink
@@ -543,27 +543,21 @@ names(tcancer) <- as.character(mbsub$id)
 ```
 
 In the following section we analyze the data set first using the *genealogical
-index* method [@Hill:1980tz] (Section [4.1](#orgbc1ab19)), then we estimate the
+index* method [@Hill:1980tz] (Section [4.1](#org1dbf9f5)), then we estimate the
 per-individual risk of disease using the *familial incidence rate* (FIR, also
 abbreviated as *FR* in the original work) [@Kerber:1995cx] (Section
-[4.2](#org156844d)) and apply our *kinship sum test* to identify affected individuals
+[4.2](#org7913823)) and apply our *kinship sum test* to identify affected individuals
 exhibiting a higher relationship to other affected individuals than what would
-be expected by chance (Section [4.3](#orge5029ab)). Subsequently, we apply our
-*kinship group test* (Section [4.4](#org028cffe)) that allows to identify highly
+be expected by chance (Section [4.3](#orgb323644)). Subsequently, we apply our
+*kinship group test* (Section [4.4](#orgaac6b02)) that allows to identify highly
 clustered affected individuals within families.
 
-In Section [4.5](#org3ef3a2a) we apply the *probability test* based on the method from
-Yu et al [@Yu:2002vu] for inference on family disease clusters. We use the
-corresponding implementation in the `gap` package. However, currently gap cannot
-be directly applied to large pedigrees due to a specific limitation in the
-implementation.
-
-The *genealogical index of familiality*, the *familial incidence rate* and the
-*probability test* are well established methods while the *kinship sum test* and
-the *kinship group test* are novel approaches presented here for the first time.
+The *genealogical index of familiality* and the *familial incidence rate* test are
+well established methods while the *kinship sum test* and the *kinship group test*
+are novel approaches presented here for the first time.
 
 
-## *Genealogical index of familiality* <a id="orgbc1ab19"></a>
+## *Genealogical index of familiality* <a id="org1dbf9f5"></a>
 
 We next calculate the *genealogical index of familiality* (GIF) [@Hill:1980tz]
 (referred to as the *genealogical index* in the original work) for cancer
@@ -721,7 +715,7 @@ head(result(giFam))
 ```
 
 
-## *Familial incidence rate* (FIR)<a id="org156844d"></a>
+## *Familial incidence rate* (FIR)<a id="org7913823"></a>
 
 A per-individual risk of e.g. disease can be calculated using the *familial
 incidence rate* (FIR, abbreviated as *FR* in the original work)
@@ -835,7 +829,7 @@ frRes[order(frRes[, "no_sign_fir"], decreasing = TRUE), ]
 We have an enrichment of affected cases in families 173, 13 and 432.
 
 
-## *Kinship sum test* <a id="orge5029ab"></a>
+## *Kinship sum test* <a id="orgb323644"></a>
 
 Next, we use the *kinship sum test* that evaluates familial aggregation based on
 the sum of kinship values between affected cases. The test identifies affected
@@ -917,7 +911,7 @@ plotRes(kinSum, id = kinSumIds[1])
 ```
 
 
-## *Kinship group test* <a id="org028cffe"></a>
+## *Kinship group test* <a id="orgaac6b02"></a>
 
 Here we apply the *kinship group test* to the data set. This test first defines
 for each affected individual a group of individuals considering only individuals
@@ -977,58 +971,6 @@ plot.
 plotPed(kinGroup, id = kinGroupRes[kinGroupRes$family == "432",
 				   "group_id"][1],
 	prune = TRUE, label1 = fr) 
-```
-
-
-## Exact inference for family disease clusters (*probability test*)<a id="org3ef3a2a"></a>
-
-In this section, we apply the *probability test* that is based on the method from
-Yu et al [@Yu:2002vu] for inference on family disease clusters. We use the
-corresponding implementation in the `gap` package, that, due to an implementation
-specific limitation, can however not be directly applied to large pedigrees as
-the present, but requires definitions of smaller pedigree sub-sets (cliques).
-
-We will thus restrict the analysis to families with fewer than 22 individuals
-and provide this information with the argument `cliques`. Unfortunately, this
-excludes most families in the present pedigree that exhibit significant familial
-aggregation of cancer.
-
-```{r  probtest-1, message=FALSE, eval = !isWindows }
-## First we load the trait/affected information into the FAData object.
-trait(fad) <- tcancer
-
-## Next we determine the number of phenotyped individuals per family.
-famAff <- pedigree(fad)[, c("family", "affected")]
-## Exclude individuals that were not phenotyped.
-famAff <- famAff[!is.na(famAff$affected), ]
-## Calculate the number of phenotyped per family.
-famSize <- table(famAff$family)
-
-keepFams <- names(famSize)[famSize < 22]
-
-## Extract the family and restrict to those on which we can perform
-## the analysis.
-famCliq <- fad$family
-famCliq <- famCliq[famCliq %in% keepFams]
- 
-```
-
-Now we can run the analysis.
-
-```{r  probtest-2, message=FALSE, eval = !isWindows }
-probRes <- probabilityTest(fad, trait = tcancer,
-			   traitName = "Cancer",
-			   cliques = famCliq, nsim = nsim)
-probResTab <- result(probRes)
-head(probResTab) 
-```
-
-We plot the pedigree for the most significant clique. Notice however, that there
-are no significant results, as it can be seen from the `pvalue` and `padj` columns
-in the result table above.
-
-```{r  probtest-3, mbreast-prob-clique-1, message=FALSE, warning=FALSE, fig.align='center', eval = !isWindows }
-plotPed(probRes, id = probResTab[1, "group_id"]) 
 ```
 
 

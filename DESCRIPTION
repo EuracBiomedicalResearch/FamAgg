@@ -1,7 +1,7 @@
 Package: FamAgg
 Type: Package
 Title: Pedigree Analysis and Familial Aggregation
-Version: 1.7.2
+Version: 1.7.3
 Author: J. Rainer, D. Taliun, C.X. Weichenberger
 Maintainer: Johannes Rainer <johannes.rainer@eurac.edu>
 URL: https://github.com/EuracBiomedicalResearch/FamAgg
@@ -13,8 +13,7 @@ VignetteBuilder: knitr
 Description: Framework providing basic pedigree analysis and plotting
 	     utilities as well as a variety of methods to evaluate
 	     familial aggregation of traits in large pedigrees.
-Collate: Classes.R Generics.R Constructors.R Methods-FAData.R
-	 Methods-FAProbResults.R
+Collate: Classes.R Generics.R Deprecated.R Constructors.R Methods-FAData.R
 	 Methods-FAKinGroupResults.R Methods-FAKinSumResults.R
 	 Methods-FAGenIndexResults.R Methods-FAIncidenceRateResults.R
 	 Methods-FAStdIncidenceRateResults.R

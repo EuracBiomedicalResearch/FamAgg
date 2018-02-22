@@ -1,5 +1,74 @@
 ##************************************************
 ##
+##       FAProbResult
+##
+##       Main class defining/containing results and data.
+##       * clique
+##************************************************
+setClass("FAProbResults",
+         contains="FAData",
+         slots=c(.cliques="factor",
+                 sim="list",
+                 nsim="numeric"),
+         prototype=list(.cliques=factor(),
+                        sim=list(),
+                        nsim=0)
+         )
+
+setGeneric("probabilityTest", function(object, ...)
+    standardGeneric("probabilityTest"))
+setGeneric("cliques", function(object, ...)
+    standardGeneric("cliques"))
+setGeneric("cliques<-", function(object, value)
+    standardGeneric("cliques<-"))
+setGeneric("cliqueAndTrait", function(object, ...)
+    standardGeneric("cliqueAndTrait"))
+setGeneric("traitByClique", function(object)
+    standardGeneric("traitByClique"))
+##********************************************************************
+##
+##   Data analysis methods
+##
+##********************************************************************
+## probabilistic test.
+## based partially on code from Daniel Taliun
+## x: FAData
+## trait: trait data, need IDs and 0, 1 NA encoding.
+## cliques: cliques data: two columns, first is "clique", second is ID.
+## nsim: number of simulations.
+## traitName: the name of the trait.
+.prob_msg <- paste0("Due to problems with the 'gap' package in MS Windows the",
+                    " 'probability test' will be removed in Bioconductor ",
+                    "version 3.8. We apologize for any inconveniences.")
+setMethod("probabilityTest", "FAData",
+          function(object, trait, cliques, nsim=50000, traitName, ...){
+              if(missing(cliques))
+                  stop("cliques is missing!")
+              if(missing(trait)){
+                  ## check internal trait...
+                  if(length(object@.trait) == 0)
+                      stop("trait is missing!")
+                  trait <- trait(object)
+              }
+              OrigTrait <- trait
+              OrigCliques <- cliques
+              ## building the result data object
+              ## object <- as(object, "FATrait")
+              object <- as(object, "FAProbResults")
+              suppressMessages(
+                  trait(object) <- trait
+              )
+              cliques(object) <- cliques
+              if(!missing(traitName))
+                  object@traitname <- traitName
+              ## run the simulation: calls the runSimulation method for the
+              ## FAProbResult class.
+              object <- runSimulation(object, nsim=nsim, ...)
+              return(object)
+          })
+
+##************************************************
+##
 ##       FAProbResults
 ##
 ##
@@ -20,6 +89,7 @@ setMethod("show", "FAProbResults", function(object){
 })
 ## get the clique information.
 setMethod("cliques", "FAProbResults", function(object, na.rm=FALSE){
+    .Deprecated(msg = .prob_msg)
     cl <- object@.cliques
     if(na.rm){
         cl <- cl[!is.na(cl)]
@@ -28,6 +98,7 @@ setMethod("cliques", "FAProbResults", function(object, na.rm=FALSE){
     return(cl)
 })
 setReplaceMethod("cliques", "FAProbResults", function(object, value){
+    .Deprecated(msg = .prob_msg)
     if(!(is.character(value) | is.numeric(value) | is.factor(value))){
         stop("'cliques' should be a numeric or character vector or a factor!")
     }
@@ -63,6 +134,7 @@ setReplaceMethod("cliques", "FAProbResults", function(object, value){
 ## calling the trait replecement method from FAResult and in addition reset
 ## the simulation result.
 setReplaceMethod("trait", "FAProbResults", function(object, value){
+    .Deprecated(msg = .prob_msg)
     object <- callNextMethod()
     ## reset the result
     object@sim <- list()
@@ -75,6 +147,7 @@ setReplaceMethod("trait", "FAProbResults", function(object, value){
 ## get a data.frame with the clique and the data from the trait for each
 ## individual, rownames are the individual IDs.
 setMethod("cliqueAndTrait", "FAProbResults", function(object, na.rm=FALSE){
+    .Deprecated(msg = .prob_msg)
     affClique <- data.frame(clique=cliques(object), trait=trait(object))
     if(na.rm){
         affClique <- affClique[!is.na(affClique[, 1]), ]
@@ -85,6 +158,7 @@ setMethod("cliqueAndTrait", "FAProbResults", function(object, na.rm=FALSE){
 ## get a matrix with the size of the clique and number of affected, rownames
 ## correspond to the clique ID.
 setMethod("traitByClique", "FAProbResults", function(object){
+    .Deprecated(msg = .prob_msg)
     affClique <- cliqueAndTrait(object, na.rm=TRUE)
     CliqueSummary <- split(affClique, f=affClique$clique)
     CliqueSummary <- lapply(CliqueSummary, function(z){
@@ -99,6 +173,7 @@ setMethod("traitByClique", "FAProbResults", function(object){
 #######
 ## the analysis method:
 setMethod("runSimulation", "FAProbResults", function(object, nsim=50000){
+    .Deprecated(msg = .prob_msg)
     ## only makes sense if we've got trait and cliques
     if(length(trait(object)) == 0)
         stop("No trait information available!")
@@ -151,6 +226,7 @@ setMethod("runSimulation", "FAProbResults", function(object, nsim=50000){
 
 ## results; get the results table.
 setMethod("result", "FAProbResults", function(object, method="BH"){
+    .Deprecated(msg = .prob_msg)
     if(length(object@sim)==0){
         stop("No simulation performed yet! Please use the probabilityTest ",
              "function or the runSimulation method to start the simulation.")
@@ -207,6 +283,7 @@ setMethod("result", "FAProbResults", function(object, method="BH"){
 setMethod("plotPed", "FAProbResults", function(object, id = NULL,
                                                family = NULL, filename = NULL,
                                                device = "plot", ...) {
+    .Deprecated(msg = .prob_msg)
     if (!is.null(family))
         stop("Generating a pedigree for a family is not supported for ",
              "FAProbResults. See help for more information.")
@@ -230,6 +307,7 @@ setMethod("buildPed", "FAProbResults", function(object, id = NULL,
                                                 max.generations.up = 3,
                                                 max.generations.down = 16,
                                                 prune = FALSE) {
+    .Deprecated(msg = .prob_msg)
     if(is.null(id))
         stop("The id of the group has to be speficied!")
     cliqs <- cliques(object)

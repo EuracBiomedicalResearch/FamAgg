@@ -17,12 +17,6 @@ setGeneric("buildPed", function(object, ...)
     standardGeneric("buildPed"))
 
 ## C
-setGeneric("cliques", function(object, ...)
-    standardGeneric("cliques"))
-setGeneric("cliques<-", function(object, value)
-    standardGeneric("cliques<-"))
-setGeneric("cliqueAndTrait", function(object, ...)
-    standardGeneric("cliqueAndTrait"))
 setGeneric("countGenerations", function(object, id=NULL, ...)
     standardGeneric("countGenerations"))
 
@@ -126,8 +120,6 @@ setGeneric("plotPed", function(object, id=NULL, family=NULL, filename=NULL,
     standardGeneric("plotPed"))
 setGeneric("plotRes", function(object, id=NULL, family=NULL, ...)
     standardGeneric("plotRes"))
-setGeneric("probabilityTest", function(object, ...)
-    standardGeneric("probabilityTest"))
 
 ## Q
 
@@ -156,8 +148,6 @@ setGeneric("trait", function(object, ...)
     standardGeneric("trait"))
 setGeneric("trait<-", function(object, value)
     standardGeneric("trait<-"))
-setGeneric("traitByClique", function(object)
-    standardGeneric("traitByClique"))
 
 ## U
 ## V

@@ -23,7 +23,7 @@
 \alias{traitByClique,FAProbResults-method}
 
 
-\title{Probability test}
+\title{DEPRECATED: Probability test}
 
 \description{
   The \code{FAProbResults} object contains the results from the
@@ -35,6 +35,11 @@
   pedigrees need to be split with specialized software such as Jenti
   [Falchi and Fuchsberger ea. (2008)], which within large families
   define cliques that can then be used as input to this algorithm.
+
+  \emph{DEPRECATION WARNING:}
+  
+  Due to problems of the \code{gap} package on MS Windows systems, this
+  test will be removed in the next Bioconductor release (3.8).
 }
 \section{Objects from the Class}{
   \code{FAProbResults} objects are created by the
@@ -300,49 +305,6 @@
   \code{\link{genealogicalIndexTest}},
   \code{\link{familialIncidenceRateTest}},
   \code{\link{fsirTest}}
-}
-\examples{
-
-## Build the data based on the internal test data set.
-pedFile <- system.file("txt/Large.ped", package="FamAgg")
-cliqFile <- system.file("txt/Large-cliques.txt", package="FamAgg")
-ped <- read.table(pedFile, sep=";")
-cliqDf <- read.table(cliqFile, sep="\t")
-cliqs <- cliqDf[, 1]
-names(cliqs) <- cliqDf[, 2]
-
-## generate the FAData
-fad <- FAData(ped[, 1:5])
-
-## define the trait
-affs <- ped[, 6]
-affs[affs==2] <- 1
-names(affs) <- ped[, 2]
-
-## Note: the gap package on which this test is based can result in errors on
-## Windows, thus we disable the examples on Windows machines.
-if (.Platform$OS.type == "unix") {
-## Performing the test
-far <- probabilityTest(fad, trait=affs,
-                       cliques=cliqs, nsim=1000)
-
-## display the results:
-res <- result(far)
-head(res)
-
-## plot the pedigree for the first group
-## we are using the kinshiup2 plotting function, since the pedigree is
-## quite busy
-plotPed(far, id=res[1, "group_id"])
-
-## the full pedigree for this affected individual is:
-nrow(buildPed(far, id=res[1, "group_id"]))
-
-## restrict to the individuals in the tested clique:
-nrow(buildPed(far, id=res[1, "group_id"], prune=TRUE))
-plotPed(far, id=res[1, "group_id"], prune=TRUE)
-}
-
 }
 \keyword{classes}
 

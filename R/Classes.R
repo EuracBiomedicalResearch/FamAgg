@@ -50,23 +50,6 @@ setClass("FAData",
 
 ##************************************************
 ##
-##       FAProbResult
-##
-##       Main class defining/containing results and data.
-##       * clique
-##************************************************
-setClass("FAProbResults",
-         contains="FAData",
-         slots=c(.cliques="factor",
-                 sim="list",
-                 nsim="numeric"),
-         prototype=list(.cliques=factor(),
-                        sim=list(),
-                        nsim=0)
-         )
-
-##************************************************
-##
 ##       FAKinGroupResult
 ##
 ##       sim: the results from the simulation.

@@ -624,15 +624,15 @@ be expected by chance (Section [[section.kinsum]]). Subsequently, we apply our
 /kinship group test/ (Section [[section.kingroup]]) that allows to identify highly
 clustered affected individuals within families.
 
-In Section [[section.prob]] we apply the /probability test/ based on the method from
-Yu et al \cite{Yu:2002vu} for inference on family disease clusters. We use the
-corresponding implementation in the =gap= package. However, currently gap cannot
-be directly applied to large pedigrees due to a specific limitation in the
-implementation.
+# In Section [[section.prob]] we apply the /probability test/ based on the method from
+# Yu et al \cite{Yu:2002vu} for inference on family disease clusters. We use the
+# corresponding implementation in the =gap= package. However, currently gap cannot
+# be directly applied to large pedigrees due to a specific limitation in the
+# implementation.
 
-The /genealogical index of familiality/, the /familial incidence rate/ and the
-/probability test/ are well established methods while the /kinship sum test/ and
-the /kinship group test/ are novel approaches presented here for the first time.
+The /genealogical index of familiality/ and the /familial incidence rate/ test are
+well established methods while the /kinship sum test/ and the /kinship group test/
+are novel approaches presented here for the first time.
 
 ** /Genealogical index of familiality/ <<section.gi>>
 
@@ -1070,7 +1070,7 @@ plot.
 	  prune = TRUE, label1 = fr)
 #+END_SRC
 
-** Exact inference for family disease clusters (/probability test/)<<section.prob>>
+** Exact inference for family disease clusters (/probability test/)<<section.prob>> :noexport:
 
 In this section, we apply the /probability test/ that is based on the method from
 Yu et al \cite{Yu:2002vu} for inference on family disease clusters. We use the

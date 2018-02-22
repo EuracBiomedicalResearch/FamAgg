@@ -556,46 +556,6 @@ setMethod("[", "FAData", .bracketSubset)
 }
 
 
-
-
-##********************************************************************
-##
-##   Data analysis methods
-##
-##********************************************************************
-## probabilistic test.
-## based partially on code from Daniel Taliun
-## x: FAData
-## trait: trait data, need IDs and 0, 1 NA encoding.
-## cliques: cliques data: two columns, first is "clique", second is ID.
-## nsim: number of simulations.
-## traitName: the name of the trait.
-setMethod("probabilityTest", "FAData",
-          function(object, trait, cliques, nsim=50000, traitName, ...){
-              if(missing(cliques))
-                  stop("cliques is missing!")
-              if(missing(trait)){
-                  ## check internal trait...
-                  if(length(object@.trait) == 0)
-                      stop("trait is missing!")
-                  trait <- trait(object)
-              }
-              OrigTrait <- trait
-              OrigCliques <- cliques
-              ## building the result data object
-              ## object <- as(object, "FATrait")
-              object <- as(object, "FAProbResults")
-              suppressMessages(
-                  trait(object) <- trait
-              )
-              cliques(object) <- cliques
-              if(!missing(traitName))
-                  object@traitname <- traitName
-              ## run the simulation: calls the runSimulation method for the
-              ## FAProbResult class.
-              object <- runSimulation(object, nsim=nsim, ...)
-              return(object)
-          })
 ##
 ## kinship test.
 ## based partially on code from Daniel Taliun.

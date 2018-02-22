@@ -478,6 +478,10 @@ sliceAge(x, slices=c(0, 40, Inf))
     }
 
     \item{probabilityTest}{
+      DEPRECATED: this test will be removed in Bioconductor version 3.8
+      due to problems and incompatibilities of the \code{gap} package on
+      MS Windows systems.
+      
       This is only a convience method that calls the \code{gap} package's
       method \code{pfc.sim} to compute probabilities of familial clustering
       of phenotypes [Yu and Zelterman (2002)]. One drawback of that method
